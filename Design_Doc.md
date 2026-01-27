@@ -309,7 +309,7 @@ State where phase artifacts live:
 | Receiver logic | Self | 1/28/26 |  |
 | Injection (if required) |  |  |  |
 | Figures/plots (if required) |  |  |  |
-| README + reproducibility |  | 1/30/26 |  |
+| README + reproducibility | Self | 1/30/26 |  |
 
 ### 10.2 Milestones (keep it realistic)
 - Milestone 1:
@@ -317,5 +317,6 @@ State where phase artifacts live:
 - Milestone 3:
 
 ---
+
 
 ## Appendix (optional)
