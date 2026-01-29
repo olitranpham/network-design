@@ -20,11 +20,12 @@ For Phase 1 of this 5-phased project, UDP socket programming will be implemented
 
 ## 1) Phase requirements
 ### 1.1 Demo deliverable
-You will submit a **screen recording** demonstrating the required scenarios.
 
 - **Private YouTube link:** *(fill in at submission time)*  
-  - Link:
+  - Link: https://youtu.be/rH1DO7EJlp4
   - Timestamped outline (mm:ss → scenario name):
+  	- 0:00-0:04 -> UDP server initialized and waiting for incoming message
+    - 0:04-0:11 -> UDP client sends "HELLO" to server, server receives message and echoes back to client
 
 ### 1.2 Required demo scenarios
 Fill in the scenarios required by the phase spec.
@@ -316,4 +317,5 @@ State where phase artifacts live:
 
 
 ## Appendix (optional)
+
 
