@@ -3,12 +3,12 @@
 > **Purpose:** This document is your team’s *proposal* for how you will implement the current phase **before** you start coding.  
 > Keep it clear, concrete, and lightweight.
 
-**Team Name:**  
+**Team Name:**  N/A
 **Members:** (Olivia Pham, olivia_pham@student.uml.edu)  
 **GitHub Repo URL (with GitHub usernames):** https://github.com/olitranpham/network-design, olitranpham 
-**Phase:** (1)  
-**Submission Date:**  
-**Version:** (v1)
+**Phase:** 1
+**Submission Date:**  1/30/26
+**Version:** v2
 
 ---
 
@@ -21,7 +21,7 @@ For Phase 1 of this 5-phased project, UDP socket programming will be implemented
 ## 1) Phase requirements
 ### 1.1 Demo deliverable
 
-- **Private YouTube link:** *(fill in at submission time)*  
+- **Private YouTube link:** https://youtu.be/rH1DO7EJlp4
   - Link: https://youtu.be/rH1DO7EJlp4
   - Timestamped outline (mm:ss → scenario name):
   	- 0:00-0:04 -> UDP server initialized and waiting for incoming message
@@ -317,5 +317,6 @@ State where phase artifacts live:
 
 
 ## Appendix (optional)
+
 
 
