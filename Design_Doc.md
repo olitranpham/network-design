@@ -36,12 +36,8 @@ Fill in the scenarios required by the phase spec.
 | 3 |  |  |  |
 
 ### 1.3 Required figures / plots
-Fill in the figures/plots required by the phase spec (if none, write “N/A”).
 
-| Figure/Plot | X-axis | Y-axis | Sweep range + step | Data source (CSV/log) | Output filename |
-|---|---|---|---|---|---|
-| 1 |  |  |  |  |  |
-| 2 |  |  |  |  |  |
+N/A
 
 ---
 
@@ -320,3 +316,4 @@ State where phase artifacts live:
 
 
 ## Appendix (optional)
+
