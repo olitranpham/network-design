@@ -25,8 +25,7 @@
 
 ---
 
-## Repository Structure (required)
-Your repo must match this layout (minimum):
+## Repository Structure 
 
 ```
 project/
@@ -66,13 +65,13 @@ project/
 
 ## Standard CLI Interface 
 
-### Receiver (required flags)
+### Receiver
 - `--port <int>`: UDP port to bind
 - `--out <path>`: output file path to write received bytes
 - `--seed <int>`: RNG seed (default: 0)
 - `--log-level <debug|info|warning|error>` (default: info)
 
-### Sender (required flags)
+### Sender 
 - `--host <ip/hostname>`: receiver host
 - `--port <int>`: receiver port
 - `--file <path>`: input file to send
