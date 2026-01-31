@@ -86,10 +86,6 @@ N/A for Phase 1.
 
 N/A for Phase 1.
 
-**Notes**
-- “Rates” are probabilities per packet/ACK.
-- Timing experiments must disable verbose logging (use `--log-level warning` or `error`).
-
 ---
 
 ## Quick Start (Run Locally)
