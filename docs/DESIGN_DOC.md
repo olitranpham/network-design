@@ -2,10 +2,14 @@
 ## (Phase 1 of 5)
 
 **Team Name:**  N/A
+
 **Members:** (Olivia Pham, olivia_pham@student.uml.edu)  
 **GitHub Repo URL (with GitHub usernames):** https://github.com/olitranpham/network-design, olitranpham 
+
 **Phase:** 1
+
 **Submission Date:**  1/30/26
+
 **Version:** v2
 
 ---
