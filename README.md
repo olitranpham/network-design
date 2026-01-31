@@ -101,7 +101,6 @@ python sender.py --host 127.0.0.1 --port 9000 --file image.bmp
 ---
 
 ## Required Demo Scenarios
-Provide the exact commands used to demonstrate each required scenario.
 
 ### Scenario 1: Phase 1(a) - UDP Echo
 
