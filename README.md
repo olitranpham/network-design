@@ -36,10 +36,6 @@ project/
 |   |-- receiver.py        # Phase 1(b): RDT 1.0 receiver
 |   |-- make_packet.py     # Packet encode/decode
 |
-|-- tests/
-|   |-- test_packet.py     # Unit tests for packet module
-|   |-- test_transfer.py   # Integration tests
-|
 |-- scripts/
 |   |-- run_demo.sh        # Demo script
 |
