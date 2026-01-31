@@ -1,9 +1,6 @@
 # Network Design Project – Phase Proposal & Design Document 
 ## (Phase 1 of 5)
 
-> **Purpose:** This document is your team’s *proposal* for how you will implement the current phase **before** you start coding.  
-> Keep it clear, concrete, and lightweight.
-
 **Team Name:**  N/A
 **Members:** (Olivia Pham, olivia_pham@student.uml.edu)  
 **GitHub Repo URL (with GitHub usernames):** https://github.com/olitranpham/network-design, olitranpham 
