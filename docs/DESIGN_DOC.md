@@ -154,11 +154,85 @@ Will be submitted once code is completed.
 
 ```
 
+                         +-------------------+
+                         |   Wait for Call   |
+                         |     (seq = 0)     |
+                         +-------------------+
+                                   |
+                                   | rdt_send(data)
+                                   | sndpkt = make_pkt(0, data, checksum)
+                                   | udt_send(sndpkt)
+                                   v
+                         +-------------------+
+              +--------->|  Wait for ACK 0   |<----------+
+              |          +-------------------+           |
+              |                    |                     |
+              |                    | rcv valid ACK0      |
+              |                    | seq = 1             |
+              |                    v                     |
+              |          +-------------------+           |
+              |          |   Wait for Call   |           |
+              |          |     (seq = 1)     |           |
+              |          +-------------------+           |
+              |                    |                     |
+              |                    | rdt_send(data)      |
+              |                    | sndpkt = make_pkt(1, data, checksum)
+              |                    | udt_send(sndpkt)    |
+              |                    v                     |
+              |          +-------------------+           |
+              +----------|  Wait for ACK 1   |-----------+
+                         +-------------------+
+                                   |
+                                   | rcv valid ACK1
+                                   | seq = 0
+                                   v
+                         (returns to Wait for Call 0)
+
 ```
 
 #### Phase 2(b): Error Injection and Recovery
 
 ```
+                         +-------------------+
+              +--------->| Wait for Packet 0 |<----------+
+              |          | (expected_seq=0)  |           |
+              |          +-------------------+           |
+              |               |           |               |
+              |               |           +---------------+
+              |               |           rcv corrupt pkt OR
+              |               |           rcv pkt1
+              |               |           sndpkt = make_pkt(ACK1, checksum)
+              |               |           udt_send(sndpkt)
+              |               |           [Stay in Wait for Packet 0]
+              |               |
+              |               | rcv valid pkt0
+              |               | extract(data)
+              |               | deliver_data(data)
+              |               | sndpkt = make_pkt(ACK0, checksum)
+              |               | udt_send(sndpkt)
+              |               | expected_seq = 1
+              |               v
+              |          +-------------------+
+              +----------|Wait for Packet 1  |-----------+
+                         | (expected_seq=1)  |           |
+                         +-------------------+           |
+                                  |                      |
+                                  |                      +----------+
+                                  |                      rcv corrupt pkt OR
+                                  |                      rcv pkt0
+                                  |                      sndpkt = make_pkt(ACK0, checksum)
+                                  |                      udt_send(sndpkt)
+                                  |                      [Stay in Wait for Packet 1]
+                                  |
+                                  | rcv valid pkt1
+                                  | extract(data)
+                                  | deliver_data(data)
+                                  | sndpkt = make_pkt(ACK1, checksum)
+                                  | udt_send(sndpkt)
+                                  | expected_seq = 0
+                                  v
+                         (returns to Wait for Packet 0)
+
 
 ```
 
