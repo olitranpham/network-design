@@ -212,8 +212,8 @@ Reciever State Diagram:
               +----------|Wait for Packet 1  |-----------+
                          | (expected_seq=1)  |           |
                          +-------------------+           |
-                                  |                      |
-                                  |                      +----------+
+                                  |       |              |
+                                  |       |--------------+
                                   |                      rcv corrupt pkt OR
                                   |                      rcv pkt0
                                   |                      sndpkt = make_pkt(ACK0, checksum)
