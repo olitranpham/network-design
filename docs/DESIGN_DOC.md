@@ -1,17 +1,20 @@
 # Network Design Project – Phase Proposal & Design Document 
-## (Phase 1 of 5)
+## (Phase 2 of 5)
 
-**Team Name:**  N/A
+**Team Name:**  Don't Be COI
 
-**Members:** (Olivia Pham, olivia_pham@student.uml.edu)  
+**Members:** 
+- Cody Nguyen: cody_nguyen@student.uml.edu
+- Olivia Pham: olivia_pham@student.uml.edu
+- Ian Khoo: ian_khoo@student.uml.edu
 
 **GitHub Repo URL (with GitHub usernames):** https://github.com/olitranpham/network-design, olitranpham 
 
-**Phase:** 1
+**Phase:** 2
 
-**Submission Date:**  1/30/26
+**Submission Date:**  2/13/26
 
-**Version:** v2
+**Version:** v3
 
 ---
 
@@ -34,9 +37,14 @@
 
 ## 0 Executive summary
 
-**Phase 1(a):** UDP socket programming will be implemented with Python for a client and server, displaying bidirectional message transfer and an echo workflow. The first deliverable sends a "HELLO" message from the UDP client to the UDP server and echoes back to the client using different port numbers, although the client and server can run on the same machine. 
+**Phase 2(a):** Implement RDT2.2 over UDP for reliable delivery under bit errors. The protocol will use sequence numbers, checksums, and ACK packets so the sender only moves on after receiving a valid ACK from the current sequence number.
 
-**Phase 1(b):** The second deliverable (Phase 1(b)) transfers a BMP image file from the client to server over UDP, while implementing the RDT 1.0 protocol. The sender will parse the BMP into fixed-size chunks and send one packet at a time, while the receiver reassembles packets in order and reconstructs the output BMP. Validation will be shown via a YouTube video plus a file-compare check. 
+**Phase 2(b):** Add required bit-error injection scenarios to demonstrate order under corruption.
+	- Option 1: No loss/bit-errors.
+	- Option 2: Corrupt ACK packets where sender can detect invalid ACK and retransmits the last DATA packet.
+	- Option 3: DATA bit-error where receiver detcts corruption and sends the last valid ACK, allowing for sender retransmission. 
+
+**Phase 2(c):** Run a performance evaluation by measuring completion time over impairment rate from 0% to 95% in 5% increments, taking the average of 5 runs per impairment level, and generating the required plots. 
 
 ---
 
@@ -44,40 +52,41 @@
 
 ### 1.1 Demo Deliverable
 
-- **Private YouTube link - Phase 1(a)** 
-	- Link: https://youtu.be/g8XUVhSGN4Q
+- **Private YouTube link** 
+	- Link: TBD
 		- Timestamped outline:
-			- 0:00-0:04 -> UDP server initialized and waiting for incoming message
-			- 0:04-0:11 -> UDP client sends "HELLO" to server, server receives message and echoes back to client
-
-- **Private YouTube link - Phase 1(b)** 
-	- Link: https://youtu.be/gzKlD03q-Sw
-		- Timestamped outline:
-			- 0:00-0:02 -> Showing original BMP image file in folder  
-			- 0:02-0:05 -> Initializing receiver.py
-			- 0:05-0:11 -> Sender (right) sending 1024-byte packets sequentially, and receiver (left) receives and reassembles all 157 packets successfully
-			- 0:11-0:32 -> comparing original BMP file with received/new file
+			- 
+			- 
 
 ### 1.2 Required Demo Scenarios
 
-**Phase 1(a) - UDP Echo**
+**Phase 2(a) - RDT 2.2 File Transfer**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-| 1 - Client sends "HELLO" | Client bound to port 5000, server on port 5001, both sharing same host | Server receives "HELLO" messsage and echoes it back to client | Terminal with successful communication output |
-| 2 - Bidirectional communication | Repeated message exchanges between client and server | Messages are successfully transmitted and echoed in both directions | Console log demonstrating multiple send/receive cycles |
+| 1 |  |  |
+| 2 |  |  |
+| 3 |  |  |
 
-**Phase 1(b) - RDT 1.0 File Transfer**
+**Phase 2(b) - Error Injection and Recovery**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-| 1 - BMP file transfer | Transfer image.bmp using 1024-byte packets | Image file is successfully transmitted from sender to receiver | Terminal output showing packets being sent and received sequentially |
-| 2 - File integrity verification | Compare original file with reconstructed file | File sizes and byte contents exactly match | Console output showing successful fire comparison |
-| 3 - Visual confirmation | Open received file | Image displays correctly | Opening both original and received images |
+| 1 |  |  |
+| 2 |  |  |
+| 3 |  |  |
+
+**Phase 2(c) - Performance Evaluation**
+
+| Scenario | Configuration | Expected Behavior | What Video Will Show |
+|---|---|---|---|
+| 1 |  |  |
+| 2 |  |  |
+| 3 |  |  |
 
 ### 1.3 Required Figures/Plots
 
-N/A for Phase 1.
+Will be submitted once code is completed.
 
 ---
 
@@ -86,50 +95,54 @@ N/A for Phase 1.
 ### 2.1 Scope
 
 **New behaviors added:** 
-- Phase 1(a): UDP client sends "HELLO" message to server, server echoes message back to client
-- Phase 1(b): BMP file is transferred from client to server using RDT 1.0 behavior -> input file is parsed and packetized into fixed sizes using make_packet function
+- Implement RDT 2.2
+- Add checksum field and validation
+- Add ACK packets
+- Add timeouts and retransmissions at sender phase
+- Add bit-error injection hooks
+	- ACK corruption injection (option 2)
+ 	- DATA corruption injection (option 3)
+- Generate plots for all 3 bit-error injection options
 
 **Behaviors unchanged from previous phase:** 
-- No prior behaviors since this is the initial phase
+- UDP sockets from Phase 1 used for data file transport
+- File packetization still fixed into 1024 byte payloads
+- Receiver reassembles file and writes to disk
 
 **Out of scope (explicitly):**
-- No implementation to handle packet loss or corruption
+- 
 
 ### 2.2 Acceptance Criteria 
 
-**Phase 1(a):**
-- [x] Client/server run via CLI with configurable ports.
-- [x] "HELLO" is sent to client, sent and echoed to server, and sent back to client
+**Phase 2(a):**
+- [ ] Sender uses alternating-bit sequence numbers `(0,1)`, checksum validation, and waits for correct ACK before sending next DATA packet
+- [ ] Receiver validates checksum and sequence number, delivers only the expected pacet, and responds with the appropriate ACK as per RDT 2.2 behavior
 
-**Phase 1(b):**
-- [x] Select a BMP image file to transfer
-- [x] Packetize the BMP image file
-- [x] UDP sockets send and receive packets one file at a time
-- [x] Receiver assembles packets in order and writes a complete output file in order
-- [x] Receiver is delivered the entire transfer file
+**Phase 2(b):**
+- [ ] Option 1: Completes successfully with no bit errors or retransmissions
+- [ ] Option 2: Detected by sender and triggers retranmission of last DATA packet
+- [ ] Option 3: Detected by receiver and sends a duplicate ACK to prevent corrupted data delivery
+
+**Phase 2(c):**
+- [ ] Completion-time measurements are collected for impairment rates from 0% to 95% in 5% increments
+- [ ] Each impairment rate is tested with 5 independent runs; results are averaged
+- [ ] Plot is generated and included in Section 1.3
 
 **General:**
-- [x] README.md is complete
-- [x] Invite instructor(s) to GitHub repo and include GitHub link
-- [x] Record demo and upload to YouTube 
+- [ ] README.md is complete
+- [ ] Invite instructor(s) to GitHub repo and include GitHub link
+- [ ] Record demo and upload to YouTube 
 
 ### 2.3 Work Breakdown
 
-**Workstream A: Phase 1(a)**
-- Create client.py function to send "HELLO" via UDP
-- Create server.py function to echo "HELLO" back via UDP
-- Test bidirectional communication
+**Workstream A: Cody Nguyen**
+- 
 
-**Workstream B: Phase 1(b)**
-- Create make_packet function
-- Create parse_packet function
-- Create sender/receiver file
-- Compare input BMP file to output
+**Workstream B: Olivia Pham**
+- 
 
-**Workstream C: General**
-- Complete file/function creation
-- Record demos
-- Complete/finalize documentation
+**Workstream C: Ian Khoo**
+- 
 
 ---
 
@@ -137,134 +150,63 @@ N/A for Phase 1.
 
 ### 3.1 State Diagram Evolution
 
-#### Phase 1(a): UDP Echo
+#### Phase 2(a): RDT 2.2 File Transfer
 
 ```
-        UDP Server                               UDP Client
-┌────────────────────────┐               ┌────────────────────────┐
-│ Create UDP socket      │               │ Create UDP socket      │
-└───────────┬────────────┘               └───────────┬────────────┘
-            │                                        │
-            ▼                                        ▼
-┌────────────────────────┐     "HELLO"    ┌───────────────────────┐
-│ Bind to server port    │◄─────sent──────│ Bind to client port   │
-│ and wait for message   │                │ and send datagram     │
-│                        │                │ to server IP:port     │
-└───────────┬────────────┘                └───────────────────────┘
-            │ Message received                         ▲
-            ▼                                          │
-┌────────────────────────┐     Echo       ┌────────────┴───────────┐
-│ Send received message  │─────sent──────►│ Receive echoed message │
-│ back to client using   │                │ on client socket       │
-│ server socket          │                │                        │
-└────────────────────────┘                └───────────┬────────────┘
-                                                       │ Message received
-                                                       ▼
-                                            ┌────────────────────────┐
-                                            │ Close client socket    │
-                                            └────────────────────────┘
-```
-#### Phase 1(b): RDT 1.0 File Transfer
-
-**Sender State Machine:**
 
 ```
-    +----------------------------------+
-    |  Wait for file data from sender  |<----+
-    +----------------------------------+     |
-                 |                           |
-                 | for each chunk            |
-                 v                           |
-    +----------------------------------+     |
-    | packet = make_packet(seq, data,  |     |
-    |           total_packets)         |     |
-    | socket.sendto(packet)            |     |
-    +----------------------------------+     |
-                 |                           |
-                 +---------------------------+
-```
 
-**Transition Conditions:**
-- Triggered by: Sender reading the next file chunk in the send loop
-- Action: Create a packet using `make_packet(seq, chunk, total_packets)` and transmit it with `socket.sendto()`
-- Next state: Wait for the next file chunk (or terminate after the final packet is sent)
-
-**Receiver State Machine:**
+#### Phase 2(b): Error Injection and Recovery
 
 ```
-    +----------------------------------+
-    |  Listen for incoming UDP packet  |<----+
-    +----------------------------------+     |
-               |                             |
-               | recvfrom()                  |
-               v                             |
-    +----------------------------------+     |
-    | parse_packet()                   |     |
-    | packets[seq] = payload           |     |
-    +----------------------------------+     |
-               |                             |
-               +-----------------------------+
-```
 
-**Transition Conditions:**
-- Triggered by: Arrival of a UDP packet on the receiving socket via socket.recvfrom()
-- Action: Parse the packet using `parse_packet()`, store the payload at `packets[seq]`, and update the received packet count
-- Next state: Wait for the next packet (or terminate once `received_count == total_packets`)
+```
 
 ### 3.2 Component Responsibilities
 
 **Sender Components**
 
-`client.py` (Phase 1(a)) - Main responsibilities:
-- Create a UDP socket for the client
-- Send the fixed message "HELLO" to the server
-- Receive the echoed response from the server
-- Display the received message and close the socket
-
-`sender.py` (Phase 1(b)) - Main responsibilities:
+`sender.py` Main Responsibilities:
 - Read BMP into memory
-- Compute the total number of packets using a fixed payload size
+- Compute the total number of packets using a fixed payload size 
 - Divide BMP file data into chunks of 1024 bytes
-- Create packets using `make_packet(seq, payload, total_packets)`
-- Send packets one at a time to the receiver using UDP
+- Packetize file and send via RDT 2.2
+- Maintain `seq` and last sent packet
+- Validate ACK checksum adn ACK number
+- Implement retransmit on corrupt/wrong ACK or timeout
 - Print transmission progress into console
+- Phase 2(b) option 2: intentionally corrupt received ACK bits before validation
 
 **Receiver Components**
 
-`server.py` (Phase 1(a)) - Main responsibilities:
-- Create and bind a UDP socket to the server port
-- Listen for incoming UDP messages
-- Print received message into console
-- Echo received messages back to the clinet
-
-`receiver.py` (Phase 1(b)) - Main responsibilities:
+`receiver.py` Main Responsibilities:
 - Create and bind UDP socket to the specified port
-- Receive incoming packets from sender
-- Parse packets using `parse_packet()` to extract sequence number and payload
+- Receive DATA packets and validate checksum
+- Deliver only expected `seq`
 - Store payloads in a buffer indexed by sequence number
 - Track the number of packets received
-- Detect transfer completion when `received_count == total packets`
-- Reassemble the original file in sequential order
+- Send ACK packets with checksum
+- On corrupt/duplicate DATA: re-send last ACK
+- Phase 2(b) option 3: intentionally corrupt received DATA bits before checksum validation
 - Write the reconstructed file to disk
 
 **Shared Modules**
-- `make_packet.py` - Packet encoding/decoding utilities
-	- `make_packet(seq, payload, total_packets)` encodes packet header fields and payload into a byte stream
-- `parse_packet(data)` decodes received packet bytes into `(sequence_number, payload, total_packets)`
+- `packet.py` - Packet encoding/decoding utilities
+	- Build/parse DATA and ACK packets
+   	- Compute checksum
 
 ### 3.3 Message Flow Overview
 
-**Phase 1(a) - UDP Echo**
+#### Phase 2(a): RDT 2.2 File Transfer
 
 ```
-[client] --["HELLO"]-> [server]
-[client] <-["HELLO"]-- [server]
-```
-
-**Phase 1(b) - RDT 1.0 File Transfer**
 
 ```
-[input.bmp] -> sender -> UDP port -> receiver -> [output.bmp]
+
+#### Phase 2(b): Error Injection and Recovery
+
+```
+
 ```
 
 ---
@@ -272,25 +214,27 @@ N/A for Phase 1.
 ## 4 Packet Format
 
 ### 4.1 Packet Types
-- DATA: carries chunks of BMP file
+- DATA: carries file chunk with seq (0/1)
+- ACK: acknowledges DATA seq (0/1)
 - END: indicates end of file transfer
 
 ### 4.2 Header Fields
 
 | Field | Size (bytes/bits) | Type | Description | Notes |
 |---|---:|---|---|---|
-| seq | 4 | uint32 | Packet sequence number | Used by receiver to place payloads in correct order |
-| payload_length | 4 | uint32 | Payload length in bytes | Allows last packet to be smaller than 1024 bytes |
-| total_packets | 4 | uint32 | Detects transfer completion |  
-| payload | ≤ 1024 | bytes | File data chunk | Binary-safe |
+| pkt_type | 1 | uint8 | O = DATA, 1 = ACK |  |
+| seq | 1 | uint8 | DATA seq (0/1) or ACK number (0/1) | | 
+| payload_length | 2 | uint16 | DATA payload size (0 for ACK) |  |
+| total_packets | 4 | uint32 | Total number of DATA packets |
+| checksum | 4 | uint32 | Checksum over header and payload with checksum field = 0 during calculations | | 
+| payload | ≤ 1024 | bytes | File data chunk | DATA only |
 
 **Total header size:** 12 bytes
 **Maximum packet size:** 12 + 1024 = 1036 bytes
 
 **Encoding format (Python struct):**
 ```python
-# Network byte order (big-endian)
-header_format = "!III"  # 3 unsigned 32-bit integers
+header_format = "!BBHII"  # type, seq, payload_len, total_packets, checksum
 ```
 
 ---
