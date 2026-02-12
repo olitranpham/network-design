@@ -153,7 +153,7 @@ Will be submitted once code is completed.
 #### Phase 2(a): RDT 2.2 File Transfer
 
 ```
-
+Sender State Diagram:
                          +-------------------+
                          |   Wait for Call   |
                          |     (seq = 0)     |
@@ -188,11 +188,7 @@ Will be submitted once code is completed.
                                    v
                          (returns to Wait for Call 0)
 
-```
-
-#### Phase 2(b): Error Injection and Recovery
-
-```
+Reciever State Diagram:
                          +-------------------+
               +--------->| Wait for Packet 0 |<----------+
               |          | (expected_seq=0)  |           |
@@ -232,6 +228,12 @@ Will be submitted once code is completed.
                                   | expected_seq = 0
                                   v
                          (returns to Wait for Packet 0)
+
+```
+
+#### Phase 2(b): Error Injection and Recovery
+
+```
 
 
 ```
