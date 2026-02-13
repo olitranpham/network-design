@@ -1,15 +1,15 @@
 # Network Design Project – Phase Proposal & Design Document 
-## (Phase 1 of 5)
+## (Phase 2 of 5)
 
 **Team Name:**  N/A
 
-**Members:** (Olivia Pham, olivia_pham@student.uml.edu)  
+**Members:** (Olivia Pham (olivia_pham@student.uml.edu), Cody Nguyen (cody_nguyen@student.uml.edu), Ian Khoo (ian_khoo@student.uml.edu))
 
 **GitHub Repo URL (with GitHub usernames):** https://github.com/olitranpham/network-design, olitranpham 
 
-**Phase:** 1
+**Phase:** 2
 
-**Submission Date:**  1/30/26
+**Submission Date:**  2/13/26
 
 **Version:** v2
 
@@ -273,7 +273,7 @@ N/A for Phase 1.
 
 ### 4.1 Packet Types
 - DATA: carries chunks of BMP file
-- END: indicates end of file transfer
+- ACK: confirms successful receipt of a DATA packet
 
 ### 4.2 Header Fields
 
@@ -283,6 +283,8 @@ N/A for Phase 1.
 | payload_length | 4 | uint32 | Payload length in bytes | Allows last packet to be smaller than 1024 bytes |
 | total_packets | 4 | uint32 | Detects transfer completion |  
 | payload | ≤ 1024 | bytes | File data chunk | Binary-safe |
+| checksum | 2 | bytes | Error detection |
+| type | 1 | bytes | DATA (0) or ACK(1) |
 
 **Total header size:** 12 bytes
 **Maximum packet size:** 12 + 1024 = 1036 bytes
@@ -506,7 +508,47 @@ Not implemented in Phase 1. RDT 1.0 assumes a perfectly reliable channel.
 
 ## 7 Experiments and Metrics Plan
 
-Phase 1 does not require performance metrics, timing measurements, or plots.
+Phase 2 evaluates performance and correctness of RDT 2.2 under unreliable channel conditions
+
+The same BMP file is transferred under three scenarios
+- Option 1: No bit-errors: Baseline performance
+- Option 2: ACK packet bit-error injection: Bit errors are intentionally introduced into ACK packets at the sender’s receive path
+- Option 3: DATA packet bit-error injection: Bit errors are intentionally introduced into DATA packets at the receiver’s receive path
+
+### 7.1 Setup
+- Payload size: 1024 bytes
+- Non-pipelined stop-and-wait behavior
+- Sequence numbers: alternating bit (0/1)
+- Checksum: 16-bit additive checksum
+- Loss/error rates: Transfers are executed across error rates from 0% to 95% in increments of 5%
+
+Each rate is tested:
+- 5 independent runs
+- Same input BMP file
+- Debug logging disabled during timing
+
+### 7.2 Timing Measurement 
+End-to-end completion time is measured at the sender and includes:
+- Retransmissions
+- ACK recovery
+- All protocol overhead
+It ends when the final packet is acknowledged.
+
+For each error rate and scenario, at least five runs are performed and averaged to reduce variability. Debug output is disabled during timing measurements.
+
+### 7.3 Plot Generation 
+A single plot is generated with:
+- X-axis: error rate (%)
+- Y-axis: average completion time (seconds)
+- Three lines representing Options 1, 2, and 3
+Completion time is expected to increase as error rate rises due to retransmissions triggered by checksum failures.
+
+### 7.4 Correctness Validation
+For every run:
+- The output file must match the input file byte-for-byte.
+- Sequence numbers must alternate correctly.
+- No deadlocks or infinite retransmissions may occur.
+
 
 **Output Artifacts:**
 - Console logs showing packet transmission progress
@@ -515,6 +557,7 @@ Phase 1 does not require performance metrics, timing measurements, or plots.
 ---
 
 ## 8 Edge Cases and Test Plan
+Phase 2 must validate RDT 2.2.
 
 ### 8.1 Expected Edge Cases
 
@@ -524,15 +567,30 @@ Phase 1 does not require performance metrics, timing measurements, or plots.
 | duplicate packets/ACKs | protocol correctness | ignored or re-ACKed |
 | corrupted header | checksum coverage | drop / request retransmit |
 | termination marker handling | clean shutdown | no deadlocks |
+| Corrupted DATA/ACK packet | Receiver must detect via checksum | Receiver discards packet and resends last DATA/ACK packet |
+| Duplicate DATA/ACK packet | Caused by lost ACK or retransmission | Receiver resends ACK but does not deliver duplicate, or sender ignores if incorrect seq|
+| High error rate (≥80%) | Stress test | Transfer completes eventually |
 
 ### 8.2 Tests
 - `test_make_parse_roundtrip`: `make_packet(seq, payload, total)` then `parse_packet()` returns the same `seq`, `payload`, and `total`
 - `test_max_payload_1024`: payload of exactly 1024 bytes encodes/decodes correctly
 - `test_small_payload`: payloads of less than 1024 bytes encodes/decodes correctly
+- `test_checksum_correct`: checksum function produces the expected value and detects corruption
+- `test_ack_packet_format`: ACK packets are encoded/decoded correctly and contain only ACK fields.
+- `test_data_packet_format`: DATA packets include expected fields and validate correctly.
 
 **Integration Tests:**
-- `test_udp_echo_hello`: run `server.py` and `client.py`, verify that the received message is "HELLO"
--`test_transfer_bmp`: run `receiver.py` and `sender.py` with BMP image file, verify output file opens correctly and matches input byte-for-byte
+Option 1: 
+- Transfer file
+- Confirm byte match
+Option 2:
+- Corrupt ACK with probability p
+- Confirm retransmission logic works
+- Confirm file correctness
+Option 3:
+- Corrupt DATA with probability p
+- Confirm receiver discards corrupted packet
+- Confirm retransmission occurs
 
 ### 8.3 Test Artifacts
 
@@ -540,6 +598,20 @@ Phase 1 does not require performance metrics, timing measurements, or plots.
 - Output files from tests in `results/`
 - Test scripts in `tests/`
 
+### 8.4 FSM Validation
+Ensure sender states match textbook FSM 
+
+Sender states:
+- Wait for call from above
+- Wait for ACK 0
+- Wait for call 1 from above
+- Wait for ACK 1
+
+Receiver states:
+- Wait for 0
+- Wait for 1
+
+Each transition must match the RDT 2.2 diagram.
 ---
 
 ## 9 Repository Structure and Reproducibility
