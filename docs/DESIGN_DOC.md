@@ -188,7 +188,7 @@ Sender State Diagram:
                                    v
                          (returns to Wait for Call 0)
 
-Reciever State Diagram:
+Receiver State Diagram:
                          +-------------------+
               +--------->| Wait for Packet 0 |<----------+
               |          | (expected_seq=0)  |           |
@@ -234,7 +234,45 @@ Reciever State Diagram:
 #### Phase 2(b): Error Injection and Recovery
 
 ```
+Option 1 No Loss/Bit Errors:
+    Sender                           Receiver
+      |                                 |
+      |------- DATA(seq=0) ----------->|
+      |                                 | (valid, deliver)
+      |<-------- ACK0 -----------------|
+      | (valid ACK)                     |
+      |------- DATA(seq=1) ----------->|
+      |                                 | (valid, deliver)
+      |<-------- ACK1 -----------------|
+      | (valid ACK)                     |
 
+Option 2 Corrupt ACK Packets:
+    Sender                           Receiver
+      |                                 |
+      |------- DATA(seq=0) ----------->|
+      |                                 | (valid, deliver)
+      |<-------- ACK0 -----------------|
+      | (CORRUPT injected by sender)    |
+      | Checksum fails!                 |
+      |------- DATA(seq=0) ----------->| (retransmit)
+      |                                 | (duplicate, already have)
+      |<-------- ACK0 -----------------|
+      | (valid ACK this time)           |
+      | Move to seq=1                   |
+
+Option 3 Data bit-error:
+    Sender                           Receiver
+      |                                 |
+      |------- DATA(seq=0) ----------->|
+      |                                 | (CORRUPT injected by receiver)
+      |                                 | Checksum fails!
+      |<-------- ACK1 -----------------|  (last valid ACK)
+      | (wrong ACK number!)             |
+      |------- DATA(seq=0) ----------->| (retransmit)
+      |                                 | (valid, deliver)
+      |<-------- ACK0 -----------------|
+      | (valid ACK)                     |
+      | Move to seq=1                   |
 
 ```
 
