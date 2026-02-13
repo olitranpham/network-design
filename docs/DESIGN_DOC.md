@@ -213,7 +213,7 @@ Receiver State Diagram:
                          | (expected_seq=1)  |           |
                          +-------------------+           |
                                   |       |              |
-                                  |       |--------------+
+                                  |       +--------------+
                                   |                      rcv corrupt pkt OR
                                   |                      rcv pkt0
                                   |                      sndpkt = make_pkt(ACK0, checksum)
@@ -237,40 +237,40 @@ Receiver State Diagram:
 Option 1 No Loss/Bit Errors:
     Sender                           Receiver
       |                                 |
-      |------- DATA(seq=0) ----------->|
+      |------- DATA(seq=0) ------------>|
       |                                 | (valid, deliver)
-      |<-------- ACK0 -----------------|
+      |<-------- ACK0 ------------------|
       | (valid ACK)                     |
-      |------- DATA(seq=1) ----------->|
+      |------- DATA(seq=1) ------------>|
       |                                 | (valid, deliver)
-      |<-------- ACK1 -----------------|
+      |<-------- ACK1 ------------------|
       | (valid ACK)                     |
 
 Option 2 Corrupt ACK Packets:
     Sender                           Receiver
       |                                 |
-      |------- DATA(seq=0) ----------->|
+      |------- DATA(seq=0) ------------>|
       |                                 | (valid, deliver)
-      |<-------- ACK0 -----------------|
+      |<-------- ACK0 ------------------|
       | (CORRUPT injected by sender)    |
       | Checksum fails!                 |
-      |------- DATA(seq=0) ----------->| (retransmit)
+      |------- DATA(seq=0) ------------>| (retransmit)
       |                                 | (duplicate, already have)
-      |<-------- ACK0 -----------------|
+      |<-------- ACK0 ------------------|
       | (valid ACK this time)           |
       | Move to seq=1                   |
 
 Option 3 Data bit-error:
     Sender                           Receiver
       |                                 |
-      |------- DATA(seq=0) ----------->|
+      |------- DATA(seq=0) ------------>|
       |                                 | (CORRUPT injected by receiver)
       |                                 | Checksum fails!
-      |<-------- ACK1 -----------------|  (last valid ACK)
+      |<-------- ACK1 ------------------|  (last valid ACK)
       | (wrong ACK number!)             |
-      |------- DATA(seq=0) ----------->| (retransmit)
+      |------- DATA(seq=0) ------------>| (retransmit)
       |                                 | (valid, deliver)
-      |<-------- ACK0 -----------------|
+      |<-------- ACK0 ------------------|
       | (valid ACK)                     |
       | Move to seq=1                   |
 
