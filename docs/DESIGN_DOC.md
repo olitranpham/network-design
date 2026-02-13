@@ -235,46 +235,218 @@ Receiver State Diagram:
 #### Phase 2(b): Error Injection and Recovery
 
 ```
-Option 1 No Loss/Bit Errors:
-    Sender                           Receiver
-      |                                 |
-      |------- DATA(seq=0) ------------>|
-      |                                 | (valid, deliver)
-      |<-------- ACK0 ------------------|
-      | (valid ACK)                     |
-      |------- DATA(seq=1) ------------>|
-      |                                 | (valid, deliver)
-      |<-------- ACK1 ------------------|
-      | (valid ACK)                     |
-
 Option 2 Corrupt ACK Packets:
-    Sender                           Receiver
-      |                                 |
-      |------- DATA(seq=0) ------------>|
-      |                                 | (valid, deliver)
-      |<-------- ACK0 ------------------|
-      | (CORRUPT injected by sender)    |
-      | Checksum fails!                 |
-      |------- DATA(seq=0) ------------>| (retransmit)
-      |                                 | (duplicate, already have)
-      |<-------- ACK0 ------------------|
-      | (valid ACK this time)           |
-      | Move to seq=1                   |
+Sender State Diagram (MODIFIED FOR OPTION 2):
+                         +-------------------+
+                         |   Wait for Call   |
+                         |     (seq = 0)     |
+                         +-------------------+
+                                   |
+                                   | rdt_send(data)
+                                   | sndpkt = make_pkt(0, data, checksum)
+                                   | udt_send(sndpkt)
+                                   v
+                         +-------------------+
+              +--------->|  Wait for ACK 0   |<----------+
+              |          +-------------------+           |
+              |                    |                     |
+              |                    | rcv ACK             |
+              |                    | ┌─────────────────────────────────┐
+              |                    | │ [OPTION 2 INJECTION]            │
+              |                    | │ if should_corrupt_ack():        │
+              |                    | │   rcvpkt = flip_bits(rcvpkt)    │
+              |                    | └─────────────────────────────────┘
+              |                    | validate_checksum(rcvpkt)
+              |                    | parse_ack_num(rcvpkt)
+              |                    |
+              |                    | IF (NOT corrupt AND ack_num == 0):
+              |                    |   seq = 1
+              |                    |   [move to Wait for Call 1]
+              |                    v
+              |          +-------------------+
+              |          |   Wait for Call   |
+              |          |     (seq = 1)     |
+              |          +-------------------+
+              |                    |
+              |                    | rdt_send(data)
+              |                    | sndpkt = make_pkt(1, data, checksum)
+              |                    | udt_send(sndpkt)
+              |                    v
+              |          +-------------------+
+              +----------|  Wait for ACK 1   |-----------+
+                         +-------------------+           |
+                                   |                     |
+                                   | rcv ACK             |
+                                   | ┌─────────────────────────────────┐
+                                   | │ [OPTION 2 INJECTION]            │
+                                   | │ if should_corrupt_ack():        │
+                                   | │   rcvpkt = flip_bits(rcvpkt)    │
+                                   | └─────────────────────────────────┘
+                                   | validate_checksum(rcvpkt)
+                                   | parse_ack_num(rcvpkt)
+                                   |
+                                   | IF (NOT corrupt AND ack_num == 1):
+                                   |   seq = 0
+                                   |   [move to Wait for Call 0]
+                                   v
+                         (returns to Wait for Call 0)
+Receiver State Diagram (MODIFIED FOR OPTION 2, though no differences from the original):
+                         +-------------------+
+              +--------->| Wait for Packet 0 |<----------+
+              |          | (expected_seq=0)  |           |
+              |          +-------------------+           |
+              |               |           |               |
+              |               |           +---------------+
+              |               |           rcv corrupt pkt OR
+              |               |           rcv pkt1
+              |               |           sndpkt = make_pkt(ACK1, checksum)
+              |               |           udt_send(sndpkt)
+              |               |           [Stay in Wait for Packet 0]
+              |               |
+              |               | rcv valid pkt0
+              |               | extract(data)
+              |               | deliver_data(data)
+              |               | sndpkt = make_pkt(ACK0, checksum)
+              |               | udt_send(sndpkt)
+              |               | expected_seq = 1
+              |               v
+              |          +-------------------+
+              +----------|Wait for Packet 1  |-----------+
+                         | (expected_seq=1)  |           |
+                         +-------------------+           |
+                                  |       |              |
+                                  |       +--------------+
+                                  |                      rcv corrupt pkt OR
+                                  |                      rcv pkt0
+                                  |                      sndpkt = make_pkt(ACK0, checksum)
+                                  |                      udt_send(sndpkt)
+                                  |                      [Stay in Wait for Packet 1]
+                                  |
+                                  | rcv valid pkt1
+                                  | extract(data)
+                                  | deliver_data(data)
+                                  | sndpkt = make_pkt(ACK1, checksum)
+                                  | udt_send(sndpkt)
+                                  | expected_seq = 0
+                                  v
+                         (returns to Wait for Packet 0)
 
 Option 3 Data bit-error:
-    Sender                           Receiver
-      |                                 |
-      |------- DATA(seq=0) ------------>|
-      |                                 | (CORRUPT injected by receiver)
-      |                                 | Checksum fails!
-      |<-------- ACK1 ------------------|  (last valid ACK)
-      | (wrong ACK number!)             |
-      |------- DATA(seq=0) ------------>| (retransmit)
-      |                                 | (valid, deliver)
-      |<-------- ACK0 ------------------|
-      | (valid ACK)                     |
-      | Move to seq=1                   |
+Sender State Diagram (MODIFIED FOR OPTION 3, though no differences from the original):
+                         +-------------------+
+                         |   Wait for Call   |
+                         |     (seq = 0)     |
+                         +-------------------+
+                                   |
+                                   | rdt_send(data)
+                                   | sndpkt = make_pkt(0, data, checksum)
+                                   | udt_send(sndpkt)
+                                   v
+                         +-------------------+
+              +--------->|  Wait for ACK 0   |<----------+
+              |          +-------------------+           |
+              |                    |                     |
+              |                    | rcv valid ACK0      |
+              |                    | seq = 1             |
+              |                    v                     |
+              |          +-------------------+           |
+              |          |   Wait for Call   |           |
+              |          |     (seq = 1)     |           |
+              |          +-------------------+           |
+              |                    |                     |
+              |                    | rdt_send(data)      |
+              |                    | sndpkt = make_pkt(1, data, checksum)
+              |                    | udt_send(sndpkt)    |
+              |                    v                     |
+              |          +-------------------+           |
+              +----------|  Wait for ACK 1   |-----------+
+                         +-------------------+
+                                   |
+                                   | rcv valid ACK1
+                                   | seq = 0
+                                   v
+                         (returns to Wait for Call 0)
 
+Receiver State Diagram (MODIFIED FOR OPTION 3):
+                         +-------------------+
+              +--------->| Wait for Packet 0 |<----------+
+              |          | (expected_seq=0)  |           |
+              |          | last_ack_num=1    |           |
+              |          +-------------------+           |
+              |               |           |               |
+              |               |           +---------------+
+              |               |           rcv DATA
+              |               |           ┌─────────────────────────────────┐
+              |               |           │ [OPTION 3 INJECTION]            │
+              |               |           │ if should_corrupt_data():       │
+              |               |           │   rcvpkt = flip_bits(rcvpkt)    │
+              |               |           └─────────────────────────────────┘
+              |               |           validate_checksum(rcvpkt)
+              |               |           parse_seq_num(rcvpkt)
+              |               |           
+              |               |           IF (corrupt OR seq_num == 1):
+              |               |             sndpkt = make_pkt(ACK, last_ack_num)
+              |               |             udt_send(sndpkt)
+              |               |             [Send LAST valid ACK = ACK1]
+              |               |             [Stay in Wait for Packet 0]
+              |               |
+              |               | rcv DATA
+              |               | ┌─────────────────────────────────┐
+              |               | │ [OPTION 3 INJECTION]            │
+              |               | │ if should_corrupt_data():       │
+              |               | │   rcvpkt = flip_bits(rcvpkt)    │
+              |               | └─────────────────────────────────┘
+              |               | validate_checksum(rcvpkt)
+              |               | parse_seq_num(rcvpkt)
+              |               |
+              |               | IF (NOT corrupt AND seq_num == 0):
+              |               |   extract(data)
+              |               |   deliver_data(data)
+              |               |   sndpkt = make_pkt(ACK0, checksum)
+              |               |   udt_send(sndpkt)
+              |               |   last_ack_num = 0
+              |               |   expected_seq = 1
+              |               v
+              |          +-------------------+
+              +----------|Wait for Packet 1  |-----------+
+                         | (expected_seq=1)  |           |
+                         | last_ack_num=0    |           |
+                         +-------------------+           |
+                                  |       |              |
+                                  |       +--------------+
+                                  |                      rcv DATA
+                                  |                      ┌─────────────────────────────────┐
+                                  |                      │ [OPTION 3 INJECTION]            │
+                                  |                      │ if should_corrupt_data():       │
+                                  |                      │   rcvpkt = flip_bits(rcvpkt)    │
+                                  |                      └─────────────────────────────────┘
+                                  |                      validate_checksum(rcvpkt)
+                                  |                      parse_seq_num(rcvpkt)
+                                  |                      
+                                  |                      IF (corrupt OR seq_num == 0):
+                                  |                        sndpkt = make_pkt(ACK, last_ack_num)
+                                  |                        udt_send(sndpkt)
+                                  |                        [Send LAST valid ACK = ACK0]
+                                  |                        [Stay in Wait for Packet 1]
+                                  |
+                                  | rcv DATA
+                                  | ┌─────────────────────────────────┐
+                                  | │ [OPTION 3 INJECTION]            │
+                                  | │ if should_corrupt_data():       │
+                                  | │   rcvpkt = flip_bits(rcvpkt)    │
+                                  | └─────────────────────────────────┘
+                                  | validate_checksum(rcvpkt)
+                                  | parse_seq_num(rcvpkt)
+                                  |
+                                  | IF (NOT corrupt AND seq_num == 1):
+                                  |   extract(data)
+                                  |   deliver_data(data)
+                                  |   sndpkt = make_pkt(ACK1, checksum)
+                                  |   udt_send(sndpkt)
+                                  |   last_ack_num = 1
+                                  |   expected_seq = 0
+                                  v
+                         (returns to Wait for Packet 0)
 ```
 
 ### 3.2 Component Responsibilities
@@ -315,12 +487,238 @@ Option 3 Data bit-error:
 #### Phase 2(a): RDT 2.2 File Transfer
 
 ```
+    SENDER                                              RECEIVER
+    ======                                              ========
+    
+    seq = 0                                             expected_seq = 0
+    |                                                   |
+    | Create pkt0                                       |
+    | Checksum: 0xAB12                                  |
+    |                                                   |
+    |------------- DATA(seq=0, "chunk0") -------------->|
+    |              [Type='D', Seq=0, Len=1024]          |
+    |              [Payload=chunk0, Checksum=0xAB12]    |
+    |                                                   | Validate checksum ✓
+    |                                                   | expected_seq == 0 ✓
+    |                                                   | Deliver chunk0 to buffer[0]
+    |                                                   | expected_seq = 1
+    |                                                   |
+    |<------------- ACK(ack_num=0) ---------------------|
+    |              [Type='A', ACK=0, Checksum=0x1234]   |
+    | Validate checksum ✓                               |
+    | ACK matches seq ✓                                 |
+    | seq = 1                                           |
+    |                                                   |
+    |                                                   |
+    | Create pkt1                                       |
+    | Checksum: 0xCD34                                  |
+    |                                                   |
+    |------------- DATA(seq=1, "chunk1") -------------->|
+    |              [Type='D', Seq=1, Len=1024]          |
+    |              [Payload=chunk1, Checksum=0xCD34]    |
+    |                                                   | Validate checksum ✓
+    |                                                   | expected_seq == 1 ✓
+    |                                                   | Deliver chunk1 to buffer[1]
+    |                                                   | expected_seq = 0
+    |                                                   |
+    |<------------- ACK(ack_num=1) ---------------------|
+    |              [Type='A', ACK=1, Checksum=0x5678]   |
+    | Validate checksum ✓                               |
+    | ACK matches seq ✓                                 |
+    | seq = 0                                           |
+    |                                                   |
+    |                                                   |
+    | Create pkt0                                       |
+    | Checksum: 0xEF56                                  |
+    |                                                   |
+    |------------- DATA(seq=0, "chunk2") -------------->|
+    |              [Type='D', Seq=0, Len=1024]          |
+    |              [Payload=chunk2, Checksum=0xEF56]    |
+    |                                                   | Validate checksum ✓
+    |                                                   | expected_seq == 0 ✓
+    |                                                   | Deliver chunk2 to buffer[2]
+    |                                                   | expected_seq = 1
+    |                                                   |
+    |<------------- ACK(ack_num=0) ---------------------|
+    |              [Type='A', ACK=0, Checksum=0x9ABC]   |
+    | Validate checksum ✓                               |
+    | ACK matches seq ✓                                 |
+    | seq = 1                                           |
+    |                                                   |
+    |                                                   |
+    | Create pkt1                                       |
+    | Checksum: 0x7890                                  |
+    |                                                   |
+    |------------- DATA(seq=1, "chunk3") -------------->|
+    |              [Type='D', Seq=1, Len=1024]          |
+    |              [Payload=chunk3, Checksum=0x7890]    |
+    |                                                   | Validate checksum ✓
+    |                                                   | expected_seq == 1 ✓
+    |                                                   | Deliver chunk3 to buffer[3]
+    |                                                   | expected_seq = 0
+    |                                                   |
+    |<------------- ACK(ack_num=1) ---------------------|
+    |              [Type='A', ACK=1, Checksum=0xDEF0]   |
+    | Validate checksum ✓                               |
+    | ACK matches seq ✓                                 |
+    | seq = 0                                           |
+    |                                                   |
+    | Transfer complete!                                | File reconstruction complete!
+    | 4 packets sent                                    | 4 packets received
+    | 0 retransmissions                                 | Write output.bmp
 
 ```
 
 #### Phase 2(b): Error Injection and Recovery
 
 ```
+Option 2 Corrupt ACK Packet w/ example data: 
+    SENDER                                              RECEIVER
+    ======                                              ========
+    
+    seq = 0                                             expected_seq = 0
+    |                                                   |
+    | Create pkt0                                       |
+    |                                                   |
+    |------------- DATA(seq=0, "chunk0") -------------->|
+    |              Checksum=0xAB12                      |
+    |                                                   | Validate checksum ✓
+    |                                                   | Deliver chunk0
+    |                                                   | expected_seq = 1
+    |                                                   |
+    |<------------- ACK(ack_num=0) ---------------------|
+    |              Checksum=0x1234                      |
+    | Validate checksum ✓                               |
+    | seq = 1                                           |
+    |                                                   |
+    |                                                   |
+    | Create pkt1                                       |
+    |                                                   |
+    |------------- DATA(seq=1, "chunk1") -------------->|
+    |              Checksum=0xCD34                      |
+    |                                                   | Validate checksum ✓
+    |                                                   | Deliver chunk1
+    |                                                   | expected_seq = 0
+    |                                                   |
+    |<------------- ACK(ack_num=1) ---------------------|
+    |              Checksum=0x5678                      |
+    |                                                   |
+    | ┌─────────────────────────────────────────┐       |
+    | │ ERROR INJECTION (Option 2)              │       |
+    | │ Flip bits in ACK before validation      │       |
+    | │ ACK corrupted: 0x5678 → 0x56FF          │       |
+    | └─────────────────────────────────────────┘       |
+    |                                                   |
+    | Validate checksum ✗ FAIL!                         |
+    | Corrupt ACK detected                              |
+    | Retransmit packet 1                               |
+    |                                                   |
+    |                                                   |
+    |------------- DATA(seq=1, "chunk1") -------------->|
+    |              [RETRANSMISSION]                     |
+    |              Checksum=0xCD34                      |
+    |                                                   | Validate checksum ✓
+    |                                                   | seq == expected_seq? NO (dup)
+    |                                                   | Already have chunk1
+    |                                                   | Resend ACK1
+    |                                                   |
+    |<------------- ACK(ack_num=1) ---------------------|
+    |              Checksum=0x5678                      |
+    | Validate checksum ✓                               |
+    | ACK matches seq ✓                                 |
+    | seq = 0                                           |
+    |                                                   |
+    |                                                   |
+    | Create pkt0                                       |
+    |                                                   |
+    |------------- DATA(seq=0, "chunk2") -------------->|
+    |              Checksum=0xEF56                      |
+    |                                                   | Validate checksum ✓
+    |                                                   | Deliver chunk2
+    |                                                   | expected_seq = 1
+    |                                                   |
+    |<------------- ACK(ack_num=0) ---------------------|
+    | Validate checksum ✓                               |
+    | seq = 1                                           |
+    |                                                   |
+    | Transfer complete!                                | File reconstruction complete!
+    | 3 packets sent                                    | 3 unique packets received
+    | 1 retransmission                                  |
+
+Option 3 Data bit-Error w/ example data:
+    SENDER                                              RECEIVER
+    ======                                              ========
+    
+    seq = 0                                             expected_seq = 0
+    |                                                   |
+    | Create pkt0                                       |
+    |                                                   |
+    |------------- DATA(seq=0, "chunk0") -------------->|
+    |              Checksum=0xAB12                      |
+    |                                                   | Validate checksum ✓
+    |                                                   | Deliver chunk0
+    |                                                   | expected_seq = 1
+    |                                                   | last_ack = 0
+    |                                                   |
+    |<------------- ACK(ack_num=0) ---------------------|
+    | Validate checksum ✓                               |
+    | seq = 1                                           |
+    |                                                   |
+    |                                                   |
+    | Create pkt1                                       |
+    |                                                   |
+    |------------- DATA(seq=1, "chunk1") -------------->|
+    |              Checksum=0xCD34                      |
+    |                                                   |
+    |                                                   | ┌────────────────────────────┐
+    |                                                   | │ ERROR INJECTION (Option 3) │
+    |                                                   | │ Flip bits before checksum  │
+    |                                                   | │ 0xCD34 → 0xCDFF            │
+    |                                                   | └────────────────────────────┘
+    |                                                   |
+    |                                                   | Validate checksum ✗ FAIL!
+    |                                                   | Corrupt DATA detected
+    |                                                   | Send last valid ACK (ACK0)
+    |                                                   | Do NOT deliver data
+    |                                                   | Do NOT change expected_seq
+    |                                                   |
+    |<------------- ACK(ack_num=0) ---------------------|
+    |              [Last valid ACK]                     |
+    | Validate checksum ✓                               |
+    | Wrong ACK! (Expected ACK1, got ACK0)              |
+    | Retransmit packet 1                               |
+    |                                                   |
+    |                                                   |
+    |------------- DATA(seq=1, "chunk1") -------------->|
+    |              [RETRANSMISSION]                     |
+    |              Checksum=0xCD34                      |
+    |                                                   | Validate checksum ✓
+    |                                                   | expected_seq == 1 ✓
+    |                                                   | Deliver chunk1
+    |                                                   | expected_seq = 0
+    |                                                   | last_ack = 1
+    |                                                   |
+    |<------------- ACK(ack_num=1) ---------------------|
+    | Validate checksum ✓                               |
+    | ACK matches seq ✓                                 |
+    | seq = 0                                           |
+    |                                                   |
+    |                                                   |
+    | Create pkt0                                       |
+    |                                                   |
+    |------------- DATA(seq=0, "chunk2") -------------->|
+    |              Checksum=0xEF56                      |
+    |                                                   | Validate checksum ✓
+    |                                                   | Deliver chunk2
+    |                                                   | expected_seq = 1
+    |                                                   |
+    |<------------- ACK(ack_num=0) ---------------------|
+    | Validate checksum ✓                               |
+    | seq = 1                                           |
+    |                                                   |
+    | Transfer complete!                                | File reconstruction complete!
+    | 3 packets sent                                    | 3 unique packets received
+    | 1 retransmission                                  |
 
 ```
 
@@ -574,8 +972,11 @@ end if
 ```
 
 ### 6.3 Error / Loss Injection Specification
-
-
+During Phase 2(b):
+ACK packet Bit error - ACK packet will be intentionally changed at the sender 
+	-ACK will be changed randomly.
+Data packet bit error - Data packet will be intentionally changed at the receiver
+	-Bits will be shuffled, flipped, or randomized.
 
 ---
 
@@ -612,7 +1013,7 @@ Phase 1 does not require performance metrics, timing measurements, or plots.
 ---
 
 ## 9 Repository Structure and Reproducibility
-
+WILL BE MORE UP-TO-DATE AFTER CODE
 ```
 project/
 |-- src/
@@ -655,12 +1056,18 @@ project/
 |  |  | 2/20/26 |  |
 |  |  | 2/20/26 |  |
 |  |  | 2/20/26 |  |
-|  |  | 2/20/26 |  |
-|  |  | 2/20/26 |  |
+| Collect completion time measurements in 5% increments | Ian Khoo | 2/20/26 | Measurements are collected |
+| Generate plot of collected data | Ian Khoo | 2/20/26 | Plot is generated and sharable |
 
 ### 10.2 Milestones
 
-1.  
+1.  ACK is successfully implemented into the sender/receiver logic
+2.  Receiver/Sender is able to detect and validate errors
+3.  ACK packet bit error is correctly changing the data of ACK
+4.  The data packet bit error is correctly changing the data of the data packet
+5.  Completion time measurements are collected, and each impairment rate is tested with 5 independent runs, with results averaged.
+6.  Plot with all data from completion time is generated
+7.  Videos of working code are taken.
 
 ---
 
@@ -669,13 +1076,14 @@ project/
 ### Pre-Recording Checklist
 
 **Phase 2(a):**
-- [ ] 
+- [ ] Both terminal windows visible side-by-side
 
 **Phase 2(b):**
-- [ ] 
+- [ ] Both terminal windows visible side-by-side
+- [ ] Terminal that shows error injection open
 
 **Phase 2(c):**
-- [ ] 
+- [ ] Both terminal windows visible side-by-side
 
 **Video Quality:**
 - [ ] Both terminal windows visible side-by-side
