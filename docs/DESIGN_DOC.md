@@ -136,13 +136,14 @@ Will be submitted once code is completed.
 ### 2.3 Work Breakdown
 
 **Workstream A: Cody Nguyen**
-- 
+- Integrate and validate all three Phase 2(b)  scenarios (Options 1, 2, and 3) within the protocol logic.
 
 **Workstream B: Olivia Pham**
-- 
+- Design and implement the updated RDT 2.2 sender and receiver logic, including checksum validation, ACK handling, and retransmission behavior.
 
 **Workstream C: Ian Khoo**
-- 
+- Conduct performance evaluation experiments across all impairment levels.
+- Generate completion-time plots and record demonstration videos for Phase 2.
 
 ---
 
@@ -357,208 +358,224 @@ header_format = "!BBHII"  # type, seq, payload_len, total_packets, checksum
 
 ### 5.1 Key Data Structures
 
-**Packet Structure** (in `make_packet.py`)
+**RDT 2.2 Packet Structure** (in `packet.py`)
 
 - Fields:
-  - `seq` (uint32): Sequence number of the packet, starting at 0
-  - `payload_length`(uint32): Number of valid bytes in the payload
-  - `total_packets` (uint32): Total number of packets in the transfer
+  - `pkt_type` (uint8): Packet type identifier (DATA/ACK)
+  - `seq` (uint8): Sequence number (alternating bit: 0/1)
+  - `payload_length`(uint32): Number of valid bytes in the payload (0 for ACK packets)
+  - `total_packets` (uint32): Total number of DATA packets in the transfer
+  - `checksum` (uint32): Checksum computer over header and payload
   - `payload` (bytes): File data chunk (up to 1024 bytes)
 
 - Invariants:
-  - `0 <= seq < total_packets`
-  - `1 <= payload_length <= 1024`
+  - `seq ∈ {0, 1}`
+  - `0 <= payload_length <= 1024`
   - `total_packets >= 1`
 
-**Sender File Buffer** (in `sender.py`)
+**Sender Transmission State** (in `sender.py`)
 
 - Fields:
-  - `file_data` (bytes): Entire input file read into memory
-  - `file_size` (int): Total size of the input file in bytes
-  - `total_packets` (int) - Number of packets required to send the file
+  - `seq` (uint8): Current sequence number
+  - `last_packet` (bytes): Most recently transmitted DATA packet
+  - `file_data` (int): Size of the input file in bytes
+  - `total_packets` (int): Total number of DATA packets to send
+  - `timeout` (float): Sender timeout duration in seconds
 
 - Invariants:
   - `file_size == len(file_data)`
   - `total_packets == (file_size + MAX_PAYLOAD - 1) // MAX_PAYLOAD`
-  - Each packet payload size is <= 1024 bytes
+  - `last_packet` is retransmitted upon timeout or corrupt/invalid ACK
+  - Sender transmits one DATA packet at a time
+  - Sender advances `seq` only after receiving a valid ACK
 
-**Receiver Packet Buffer** (in `receiver.py`)
+**Receiver Reception State** (in `receiver.py`)
 
 - Fields:
+  - `expected_seq` (uint8): Sequence number expected
+  - `last_ack` (bytes): Most recently sent valid ACK packet
   - `packets` (list): List of packet payloads indexed by `seq`
   - `total_packets` (int): Expected total number of packets (from first received packet)
   - `received_count` (int): Number of packets successfully received
 
 - Invariants:
-  - `len(packets) == total_packets`
+  - Receiver delivers DATA only if packet is valid/non-corrupt and `seq == expected_seq`
+  - Dupllicate or corrupt DATA packets are not delivered
   - `received_count <= total_packets`
-  - Each payload is written at index `packets[seq]`
-  - Transfer is complete when `received_count == total_packets`
+  - Transfer completed when `received_count == total_packets`
+  - Receiver always responds to invalid or duplicate DATA with `last_ack`
 
 ### 5.2 Module Map and Dependencies
 
 ```
 src/
-|-- client.py       # Phase 1(a): UDP echo client sends "HELLO"
-|-- server.py       # Phase 1(a): UDP echo server (echoes received message)
-|-- sender.py       # Phase 1(b): RDT 1.0 file sender
-|-- receiver.py    	# Phase 1(b): RDT 1.0 file receiver
-|-- make_packet.py  # Packet encode/decode utilities
+|-- sender.py       	# Phase 2(a): RDT 2.2 file sender
+|-- receiver.py   	 	# Phase 2(a): RDT 2.2 file receiver
+|-- packet.py  			# Phase 2(a): DATA/ACK packet creation, parsing, and checksum utilities
+|-- channel.py			# Phase 2(b): Bit-error injection and unreliable channel simulation 
+|-- experiments.py		# Phase 2(c): Completion-time experiments and data collection
 ```
 
 **Dependency Graph:**
 
 ```
-client.py  	  	 -> socket
-server.py   	 -> socket
+sender.py       -> socket, argparse, packet.py, channel.py, time
+receiver.py     -> socket, argparse, packet.py, channel.py
 
-sender.py  		 -> socket, argparse, make_packet.py
-receiver.py 	 -> socket, argparse, make_packet.py
+packet.py       -> struct, zlib (or checksum utility)
+channel.py      -> random
 
-make_packet.py   -> struct
+experiments.py  -> subprocess, time, csv, matplotlib
 ```
 
 ## 6 Protocol Logic 
 
 ### 6.1 Sender Behavior
 
-**Phase 1(a) - UDP Client Logic**
+**Phase 2(a) - RDT 2.2 File Transfer**
 
 Steps:
-1. Create UDP socket
-2. Send "HELLO" to server
-3. Print received message
+1. Open BMP file
+2. Read the file and split into fixed-size chunks (<= 1024 bytes)
+3. Initialize alternating-bit sequence number
+4. For each chunk:
+	a. Create DATA packet containing the sequence number, payload length, total packet count, checksum, and payload
+	b. Send the DATA packet over UDP socket
+	c. Start a timer and wait for an ACK
+5. Upon receiving ACK
+   	a. Validate checksum and sequence number
+   	b. If the ACK is valid and matches the current sequence number, stop the timer and toggle the sequence number
+6. Continue until all file chunks are transmitted 
 
-**Phase 1(a) Pseudocode:**
+**Phase 2(a) Sender Pseudocode:**
 
 ```
-initialize sequence_number = 0
+initialize seq = 0
+read input file and compute total_packets
 
-while true do
-    read up to 1024 bytes from input file into chunk
-    if chunk is empty then
-        break
-    end if
+for each chunk in file do
+	packet <- make_DATA_packet(seq, chunk, total_packets)
+	send packet over UDP
+	start timer
 
-    packet ← make_packet(sequence_number, chunk, total_packets)
-    send packet over UDP socket
-
-    sequence_number ← sequence_number + 1
-end while
-
-send final END packet over UDP socket
+	wait for ACK or timeout
+	if ACK received and valid AND ACK.seq == seq then
+		stop timer
+		seq <- toggle(seq0
+	else
+		retransmit packet
+	end if
+end for
 ```
 
-**Phase 1(b) - RDT 1.0 Sender Logic**
+**Phase 2(b) - Error Injection and Recovery**
 
 Steps:
-1. Open input BMP in binary
-2. Loop
-	- Read up to 1024 bytes
-	- Create DATA packet with seq, len, and payload
-	- Send packet over UDP
-	- Increment seq
-3. Close socket
+1. Enable error injection based on option 1, 2, or 3 (ACK/DATA corruption)
+2. After sending a DATA packet, wait for an ACK
+3. If the ACK is corrupted, invalid, or times out:
+	a. Retransmit the previously sent DATA packet
+4. Continue retransmission until a valid ACK is received
+5. Only advance the sequence number after successful ACK validation
 	
-**Phase 1(b) Sender Pseudocode:**
+**Phase 2(b) Pseudocode:**
 
 ```
-set seq to 0
+initialize seq = 0
+initialize last_packet = null
 
-repeat
-    read next 1024-byte block from file into chunk
-    if no data was read then
-        exit loop
-    end if
+for each chunk in file do
+    last_packet <- make_DATA_packet(seq, chunk, total_packets)
+    send last_packet over UDP
+    start timer
 
-    create DATA packet with:
-        sequence number = seq
-        payload length = size of chunk
-        payload = chunk
-
-    send packet using UDP
-    increment seq
-until end of file reached
-
-create END packet with:
-    sequence number = seq
-    payload length = 0
-
-send END packet using UDP
+    while true do
+        wait for ACK or timeout
+        if timeout OR ACK corrupt OR ACK.seq != seq then
+            retransmit last_packet
+            restart timer
+        else
+            stop timer
+            seq <- toggle(seq)
+            break
+        end if
+    end while
+end for
 ```
 
 ### 6.2 Receiver Behavior
 
-**Phase 1(a) - UDP Server Logic**
+**Phase 2(a) - RDT 2.2 File Transfer**
 Steps:
-1. Bind UDP socket to server port
-2. Receive "HELLO" from sender
-3. Echo message back to sender address
+1. Bind UDP socket to the receiver port
+2. Initialize the expected sequence number
+3. Initialize a buffer for storing received payloads
+4. Loop until all packets are received:
+	a. Receive a DATA packet
+	b. Validate the checksum and sequence number
+	c. If the packet is valid and matches the expected sequence number:
+		i. Deliver the payload and store it
+		ii. Send an ACK for the received sequence number
+		iii. Toggle the expected sequence number
+	d. Otherwise, resend the last valid ACK
 
-**Phase 1(a) Pseudocode:**
-
-```
-initialize UDP server socket
-bind socket to server port
-
-print "server is ready to receive"
-
-while true do
-    receive message and client address from UDP socket
-    display received message
-    send the same message back to the client
-end while
-```
-
-**Phase 1(b) - RDT 1.0 Receiver Logic**
-Steps:
-1. Bind UDP socket to server port
-2. Open output BMP
-3. Loop:
-	- Receive UDP data
-	- Parse header
-	- If END: break
-	- If DATA: Accept in sequential order
-4. Close socket
-
-**Phase 1(b) Receiver Pseudocode:**
+**Phase 2(a) Receiver Pseudocode:**
 
 ```
-initialize UDP socket
-bind socket to receiver port
+initialize expected_seq = 0
+initialize last_ack = ACK(1)
+initialize received_count = 0
 
-initialize total_packets to null
-initialize packets buffer to empty
-initialize received_count to 0
+while received_count < total_packets do
+    receive packet from UDP
 
-while true do
-    receive packet from UDP socket
-    parse packet to extract seq, payload, and total_packets
-
-    if total_packets is null then
-        set total_packets from packet header
-        initialize packets buffer with size total_packets
-    end if
-
-    if packets[seq] is empty then
-        store payload in packets[seq]
-        increment received_count
-        display receive progress
-    end if
-
-    if received_count equals total_packets then
-        break
+    if packet corrupt OR packet.seq != expected_seq then
+        send last_ack
+    else
+        deliver payload
+        store payload
+        last_ack <- make_ACK(expected_seq)
+        send last_ack
+        expected_seq <- toggle(expected_seq)
+        received_count <- received_count + 1
     end if
 end while
 
-reassemble file by concatenating packets in sequence order
-write reconstructed file to output
-close UDP socket
+reassemble file and write to disk
+close socket
+```
+
+**Phase 2(b) - Error Injection and Recovery**
+Steps:
+1. Enable DATA bit-error injection if configured
+2. Once receiving corrupted DATA packet:
+	a. Discard the packet
+	b. Send the last valid ACK
+3. Once receiving a duplicate DATA packet:
+	a. Do not deliver the payload
+	b. Send the last valid ACK
+4. Continue as normal once a valid packet is received
+
+**Phase 2(b) Receiver Pseudocode:**
+
+```
+if received DATA packet is corrupt then
+    discard packet
+    send last_ack
+else if packet.seq != expected_seq then
+    discard packet
+    send last_ack
+else
+    accept packet
+    deliver payload
+    send ACK(expected_seq)
+    expected_seq ← toggle(expected_seq)
+end if
 ```
 
 ### 6.3 Error / Loss Injection Specification
 
-Not implemented in Phase 1. RDT 1.0 assumes a perfectly reliable channel.
+
 
 ---
 
@@ -578,25 +595,19 @@ Phase 1 does not require performance metrics, timing measurements, or plots.
 
 | Edge case | Why it matters | Expected behavior |
 |---|---|---|
-| last packet smaller than payload size | correct file reconstruction | receiver writes exact bytes |
-| duplicate packets/ACKs | protocol correctness | ignored or re-ACKed |
-| corrupted header | checksum coverage | drop / request retransmit |
-| termination marker handling | clean shutdown | no deadlocks |
+|  |  |  |
+|  |  |  |
+|  |  |  |
+|  |  |  |
 
 ### 8.2 Tests
-- `test_make_parse_roundtrip`: `make_packet(seq, payload, total)` then `parse_packet()` returns the same `seq`, `payload`, and `total`
-- `test_max_payload_1024`: payload of exactly 1024 bytes encodes/decodes correctly
-- `test_small_payload`: payloads of less than 1024 bytes encodes/decodes correctly
+- 
 
 **Integration Tests:**
-- `test_udp_echo_hello`: run `server.py` and `client.py`, verify that the received message is "HELLO"
--`test_transfer_bmp`: run `receiver.py` and `sender.py` with BMP image file, verify output file opens correctly and matches input byte-for-byte
+- 
 
 ### 8.3 Test Artifacts
-
-- Console logs saved to `results/logs/`
-- Output files from tests in `results/`
-- Test scripts in `tests/`
+- 
 
 ---
 
@@ -605,24 +616,19 @@ Phase 1 does not require performance metrics, timing measurements, or plots.
 ```
 project/
 |-- src/
-|   |-- client.py          # Phase 1(a): UDP echo client
-|   |-- server.py          # Phase 1(a): UDP echo server
-|   |-- sender.py          # Phase 1(b): RDT 1.0 sender
-|   |-- receiver.py        # Phase 1(b): RDT 1.0 receiver
-|   |-- make_packet.py     # Packet encode/decode
+|	|--
 |
 |-- tests/
-|   |-- test_packet.py     # Unit tests for packet module
-|   |-- test_transfer.py   # Integration tests
+|	|--
 |
 |-- scripts/
-|   |-- run_demo.sh        # Demo script
+|	|--
 |
 |-- test_files/
-|   |-- test.bmp           # Test input file
+|	|--
 |
 |-- results/
-|   |-- (output files)
+|	|--
 |
 |-- docs/
 |   |-- DESIGN_DOC.md      # This document
@@ -632,11 +638,7 @@ project/
 
 **To reproduce:**
 ```
-:: Terminal 1 – Start receiver
-python receiver.py --port 9000 --output received.bmp
 
-:: Terminal 2 – Start sender
-python sender.py --host 127.0.0.1 --port 9000 --file image.bmp
 ```
 
 ---
@@ -647,22 +649,18 @@ python sender.py --host 127.0.0.1 --port 9000 --file image.bmp
 
 | Task | Owner | Target Date | Definition of Done |
 |---|---|---|---|
-| UDP client/server (1a) | Self | 1/30/26 | Client sends "HELLO" and server echoes it back successfully |
-| Packet encode/decode | Self | 1/30/26 | `make_packet()` and `parse_packet()` correctly encode/decode packets |
-| Sender logic (1b) | Self | 1/30/26 | `sender.py` sends all file packets sequentially over UDP |	
-| Receiver logic (1b) | Self | 1/30/26 | `receiver.py` reassembles the file correctly from received packets |
-| Integration testing | Self | 1/30/26 | File transfer completes and output file matches input |
-| Demo video | Self | 1/30/26 | Video demonstrates Phase 1(a) and Phase 1(b) successfully |
-| Documentation | Self | 1/30/26 | Design document and README completed and submitted |
+| Implement RDT 2.2 sender loop | Olivia Pham | 2/20/26 | Sender transmits DATA packets with alternating-bit seq, waits for ACK before advancing, and supports configurable timeout. |
+| Implement ACK validation + retransmission logic | Olivia Pham | 2/20/26 | Sender correctly detects corrupt/wrong-seq ACKs and retransmits the last DATA packet until a valid ACK is received. |
+| Implement RDT 2.2 receiver accept/duplicate/corrupt handling | Olivia Pham | 2/20/26 | Receiver validates checksum, delivers only expected seq packets, discards corrupt/duplicate packets, and responds with correct ACK or last ACK. |
+|  |  | 2/20/26 |  |
+|  |  | 2/20/26 |  |
+|  |  | 2/20/26 |  |
+|  |  | 2/20/26 |  |
+|  |  | 2/20/26 |  |
 
 ### 10.2 Milestones
 
-1. **M1:** Phase 1(a) complete –> UDP client sends `"HELLO"` and server echoes response  
-2. **M2:** Packet utilities complete –> `make_packet()` and `parse_packet()` validated  
-3. **M3:** Sender complete –> file packetized and sent sequentially over UDP  
-4. **M4:** Receiver complete –> packets received and file reassembled correctly  
-5. **M5:** End-to-end transfer verified –> received file matches original  
-6. **M6:** Submission ready –> demo video recorded and documentation finalize
+1.  
 
 ---
 
@@ -670,24 +668,18 @@ python sender.py --host 127.0.0.1 --port 9000 --file image.bmp
 
 ### Pre-Recording Checklist
 
-**Phase 1(a):**
-- [x] Server starts successfully on specified port
-- [x] Client sends "HELLO" message
-- [x] Server receives and displays message
-- [x] Server echoes message back
-- [x] Client receives and displays echoed message
+**Phase 2(a):**
+- [ ] 
 
-**Phase 1(b):**
-- [x] Receiver starts and listens on specified port
-- [x] Sender reads BMP file successfully
-- [x] Packet transmission shows progress (seq/total)
-- [x] All packets received (receiver shows count)
-- [x] File saved to output directory
-- [x] Both BMP files open and display correctly
+**Phase 2(b):**
+- [ ] 
+
+**Phase 2(c):**
+- [ ] 
 
 **Video Quality:**
-- [x] Both terminal windows visible side-by-side
-- [x] Clear explanation of steps
-- [x] Show file comparison/verification
+- [ ] Both terminal windows visible side-by-side
+- [ ] Clear explanation of steps
+- [ ] Show file comparison/verification
 
 
