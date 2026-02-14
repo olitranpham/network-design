@@ -65,6 +65,7 @@
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
 | 1 | File Transfer using RDT 2.2 | A file will be sent over with the code checking for errors or duplicates | Video will show file being sent with terminal showing sequence numbers, and errors (when applicable), then file will be opened for validation |
+| The video above will be the same video as Phase 2(b) Option 1 |
 
 **Phase 2(b) - Error Injection and Recovery**
 
@@ -78,7 +79,7 @@
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-| 1 | Test Completion time for each impairment rate | completion time will be tested | The video will show various tests running |
+| 1 | Test Completion time for each impairment rate | completion time will be tested | The video will show various plots |
 |The test above will be replicated for each impairment rate from 0% to 95% in 5% increments. Each impairment rate has 5 independent tests, and the results are averaged. So to keep this section from being 20 lines long, this note was added |
 
 ### 1.3 Required Figures/Plots
