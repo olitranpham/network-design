@@ -1,2 +1,12 @@
 Design Doc Contributions:
-Section Number | Who is responsible | Date Complete
+Section Number | Who is responsible | Date Complete |
+| 1  | Olivia | 02/13/2026 |
+| 2  | Olivia | 02/13/2026 |
+| 3  | Ian | 02/13/2026 |
+| 4  | Olivia | 02/13/2026 |
+| 5  | Olivia | 02/13/2026 |
+| 6  | Ian | 02/13/2026 |
+| 7  | Ian | 02/13/2026 |
+| 8  | Cody | 02/13/2026 |
+| 9  | Cody | 02/13/2026 |
+| 10 | Ian/Cody| 02/13/2026 |
