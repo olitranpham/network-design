@@ -920,34 +920,107 @@ Data packet bit error - Data packet will be intentionally changed at the receive
 
 ## 7 Experiments and Metrics Plan
 
-This will be filled out once code for Phase 2 is complete. 
+Phase 2 evaluates performance and correctness of RDT 2.2 under unreliable channel conditions
+
+The same BMP file is transferred under three scenarios
+- Option 1: No bit-errors: Baseline performance
+- Option 2: ACK packet bit-error injection: Bit errors are intentionally introduced into ACK packets at the sender’s receive path
+- Option 3: DATA packet bit-error injection: Bit errors are intentionally introduced into DATA packets at the receiver’s receive path
+
+### 7.1 Setup
+- Payload size: 1024 bytes
+- Non-pipelined stop-and-wait behavior
+- Sequence numbers: alternating bit (0/1)
+- Checksum: 16-bit additive checksum
+- Loss/error rates: Transfers are executed across error rates from 0% to 95% in increments of 5%
+
+Each rate is tested:
+- 5 independent runs
+- Same input BMP file
+- Debug logging disabled during timing
+
+### 7.2 Timing Measurement 
+End-to-end completion time is measured at the sender and includes:
+- Retransmissions
+- ACK recovery
+- All protocol overhead
+It ends when the final packet is acknowledged.
+
+### 7.3 Plot Generation 
+A single plot is generated with:
+- X-axis: error rate (%)
+- Y-axis: average completion time (seconds)
+- Three lines representing Options 1, 2, and 3
+Completion time is expected to increase as error rate rises
+
+### 7.4 Correctness Validation
+For every run:
+- The output file must match the input file byte-for-byte.
+- Sequence numbers must alternate correctly.
+- No deadlocks or infinite retransmissions may occur.
+
 
 **Output Artifacts:**
 - Console logs showing packet transmission progress
 - Transferred file saved to `results/` directory
+- Plot saved to `results/plots/`
 
 ---
 
 ## 8 Edge Cases and Test Plan
+Phase 2 must validate RDT 2.2.
 
 ### 8.1 Expected Edge Cases
 
 | Edge case | Why it matters | Expected behavior |
 |---|---|---|
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
+| last packet smaller than payload size | correct file reconstruction | receiver writes exact bytes |
+| Corrupted DATA/ACK packet | Receiver must detect via checksum | Receiver discards packet and resends last DATA/ACK packet |
+| Duplicate DATA/ACK packet | Caused by lost ACK or retransmission | Receiver resends ACK but does not deliver duplicate, or sender ignores if incorrect seq|
+| High error rate (≥80%) | Stress test | Transfer completes eventually |
+| Wrong seq ACK | Protocol correctness | sender ignores ACK and retransmits last DATA packet after timeout |
 
 ### 8.2 Tests
-- 
+- `test_make_parse_roundtrip`: `make_packet(seq, payload, total)` then `parse_packet()` returns the same fields
+- `test_max_payload_1024`: payload of exactly 1024 bytes encodes/decodes correctly
+- `test_small_payload`: payloads of less than 1024 bytes encodes/decodes correctly
+- `test_checksum_correct`: checksum function produces the expected value and detects corruption
+- `test_ack_packet_format`: ACK packets are encoded/decoded correctly and contain only ACK fields.
+- `test_data_packet_format`: DATA packets include expected fields and validate correctly.
 
 **Integration Tests:**
-- 
+Option 1: 
+- Transfer file
+- Confirm byte match
+Option 2:
+- Corrupt ACK with probability p
+- Confirm retransmission logic works
+- Confirm file correctness
+Option 3:
+- Corrupt DATA with probability p
+- Confirm receiver discards corrupted packet
+- Confirm retransmission occurs
 
 ### 8.3 Test Artifacts
-- 
 
+- Console logs saved to `results/logs/`
+- Output files from tests in `results/`
+- Test scripts in `tests/`
+
+### 8.4 FSM Validation
+Ensure sender states match textbook FSM 
+
+Sender states:
+- Wait for call from above
+- Wait for ACK 0
+- Wait for call 1 from above
+- Wait for ACK 1
+
+Receiver states:
+- Wait for 0
+- Wait for 1
+
+Each transition must match the RDT 2.2 diagram.
 ---
 
 ## 9 Repository Structure and Reproducibility
@@ -991,9 +1064,9 @@ project/
 | Implement RDT 2.2 sender loop | Olivia Pham | 2/20/26 | Sender transmits DATA packets with alternating-bit seq, waits for ACK before advancing, and supports configurable timeout. |
 | Implement ACK validation + retransmission logic | Olivia Pham | 2/20/26 | Sender correctly detects corrupt/wrong-seq ACKs and retransmits the last DATA packet until a valid ACK is received. |
 | Implement RDT 2.2 receiver accept/duplicate/corrupt handling | Olivia Pham | 2/20/26 | Receiver validates checksum, delivers only expected seq packets, discards corrupt/duplicate packets, and responds with correct ACK or last ACK. |
-|  |  | 2/20/26 |  |
-|  |  | 2/20/26 |  |
-|  |  | 2/20/26 |  |
+| Implement ACK bit-error injection | Cody Nguyen | 2/20/26 | ACK corruption is applied; sender detects corruption and retransmits; transfer still completes with correct output file. |
+| Implement DATA bit-error injection | Cody Nguyen | 2/20/26 | DATA corruption is applied, receiver discards corrupted packets, re-sends last ACK, and file transfer completes correctly. |
+| Implement end-to-end correctness | Cody Nguyen | 2/20/26 | verifies received BMP matches the original for Options 1–3 across multiple runs. |
 | Collect completion time measurements in 5% increments | Ian Khoo | 2/20/26 | Measurements are collected |
 | Generate plot of collected data | Ian Khoo | 2/20/26 | Plot is generated and sharable |
 
