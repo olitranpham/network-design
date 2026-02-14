@@ -982,7 +982,7 @@ Data packet bit error - Data packet will be intentionally changed at the receive
 
 ## 7 Experiments and Metrics Plan
 
-Phase 1 does not require performance metrics, timing measurements, or plots.
+This will be filled out once code for Phase 2 is complete. 
 
 **Output Artifacts:**
 - Console logs showing packet transmission progress
