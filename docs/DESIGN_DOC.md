@@ -64,25 +64,22 @@
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-| 1 |  |  |
-| 2 |  |  |
-| 3 |  |  |
+| 1 | File Transfer using RDT 2.2 | A file will be sent over with the code checking for errors or duplicates | Video will show file being sent with terminal showing sequence numbers, and errors (when applicable), then file will be opened for validation |
 
 **Phase 2(b) - Error Injection and Recovery**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-| 1 |  |  |
-| 2 |  |  |
-| 3 |  |  |
+| 1 | File transfer with Option 1 | File will be transferred and received with no errors | Video will show file being sent over, received, and then opened for validation |
+| 2 | File transfer with Option 2 | File will be transfered but ACK error is injected, then detected and fixed | Video will show the file being sent over, the ACK being corrupted, then the sender will identify the error and fix it, then the file will be opened for validation |
+| 3 | File transfer with Option 3 | File will be transfered but the data error is injected, then detected and fixed | Video will show the file being sent over, the data will be corrupted, then the receiver will detect the error, fix it, and then the file will be opened for validation. |
 
 **Phase 2(c) - Performance Evaluation**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-| 1 |  |  |
-| 2 |  |  |
-| 3 |  |  |
+| 1 | Test Completion time for each impairment rate | completion time will be tested | The video will show various tests running |
+|The test above will be replicated for each impairment rate from 0% to 95% in 5% increments. Each impairment rate has 5 independent tests, and the results are averaged. So to keep this section from being 20 lines long, this note was added |
 
 ### 1.3 Required Figures/Plots
 
