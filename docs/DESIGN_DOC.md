@@ -498,15 +498,15 @@ Receiver State Diagram (MODIFIED FOR OPTION 3):
     |------------- DATA(seq=0, "chunk0") -------------->|
     |              [Type='D', Seq=0, Len=1024]          |
     |              [Payload=chunk0, Checksum=0xAB12]    |
-    |                                                   | Validate checksum ✓
-    |                                                   | expected_seq == 0 ✓
+    |                                                   | Validate checksum 
+    |                                                   | expected_seq == 0 
     |                                                   | Deliver chunk0 to buffer[0]
     |                                                   | expected_seq = 1
     |                                                   |
     |<------------- ACK(ack_num=0) ---------------------|
     |              [Type='A', ACK=0, Checksum=0x1234]   |
-    | Validate checksum ✓                               |
-    | ACK matches seq ✓                                 |
+    | Validate checksum                                 |
+    | ACK matches seq                                   |
     | seq = 1                                           |
     |                                                   |
     |                                                   |
@@ -516,62 +516,28 @@ Receiver State Diagram (MODIFIED FOR OPTION 3):
     |------------- DATA(seq=1, "chunk1") -------------->|
     |              [Type='D', Seq=1, Len=1024]          |
     |              [Payload=chunk1, Checksum=0xCD34]    |
-    |                                                   | Validate checksum ✓
-    |                                                   | expected_seq == 1 ✓
+    |                                                   | Validate checksum 
+    |                                                   | expected_seq == 1 
     |                                                   | Deliver chunk1 to buffer[1]
     |                                                   | expected_seq = 0
     |                                                   |
     |<------------- ACK(ack_num=1) ---------------------|
     |              [Type='A', ACK=1, Checksum=0x5678]   |
-    | Validate checksum ✓                               |
-    | ACK matches seq ✓                                 |
+    | Validate checksum                                 |
+    | ACK matches seq                                   |
     | seq = 0                                           |
-    |                                                   |
-    |                                                   |
-    | Create pkt0                                       |
-    | Checksum: 0xEF56                                  |
-    |                                                   |
-    |------------- DATA(seq=0, "chunk2") -------------->|
-    |              [Type='D', Seq=0, Len=1024]          |
-    |              [Payload=chunk2, Checksum=0xEF56]    |
-    |                                                   | Validate checksum ✓
-    |                                                   | expected_seq == 0 ✓
-    |                                                   | Deliver chunk2 to buffer[2]
-    |                                                   | expected_seq = 1
-    |                                                   |
-    |<------------- ACK(ack_num=0) ---------------------|
-    |              [Type='A', ACK=0, Checksum=0x9ABC]   |
-    | Validate checksum ✓                               |
-    | ACK matches seq ✓                                 |
-    | seq = 1                                           |
-    |                                                   |
-    |                                                   |
-    | Create pkt1                                       |
-    | Checksum: 0x7890                                  |
-    |                                                   |
-    |------------- DATA(seq=1, "chunk3") -------------->|
-    |              [Type='D', Seq=1, Len=1024]          |
-    |              [Payload=chunk3, Checksum=0x7890]    |
-    |                                                   | Validate checksum ✓
-    |                                                   | expected_seq == 1 ✓
-    |                                                   | Deliver chunk3 to buffer[3]
-    |                                                   | expected_seq = 0
-    |                                                   |
-    |<------------- ACK(ack_num=1) ---------------------|
-    |              [Type='A', ACK=1, Checksum=0xDEF0]   |
-    | Validate checksum ✓                               |
-    | ACK matches seq ✓                                 |
-    | seq = 0                                           |
-    |                                                   |
-    | Transfer complete!                                | File reconstruction complete!
-    | 4 packets sent                                    | 4 packets received
-    | 0 retransmissions                                 | Write output.bmp
+    | -------------- Continue until all data sent ----- |
+    | Transfer complete                                 | File reconstruction complete
+    | n packets sent                                    | n packets received
+    | x retransmission(s)                               | Write output.bmp
 
 ```
 
 #### Phase 2(b): Error Injection and Recovery
 
 ```
+Option 1 No Error / Data Loss is the same diagram as Phase 2(a)
+
 Option 2 Corrupt ACK Packet w/ example data: 
     SENDER                                              RECEIVER
     ======                                              ========
@@ -582,13 +548,13 @@ Option 2 Corrupt ACK Packet w/ example data:
     |                                                   |
     |------------- DATA(seq=0, "chunk0") -------------->|
     |              Checksum=0xAB12                      |
-    |                                                   | Validate checksum ✓
+    |                                                   | Validate checksum 
     |                                                   | Deliver chunk0
     |                                                   | expected_seq = 1
     |                                                   |
     |<------------- ACK(ack_num=0) ---------------------|
     |              Checksum=0x1234                      |
-    | Validate checksum ✓                               |
+    | Validate checksum                                 |
     | seq = 1                                           |
     |                                                   |
     |                                                   |
@@ -596,7 +562,7 @@ Option 2 Corrupt ACK Packet w/ example data:
     |                                                   |
     |------------- DATA(seq=1, "chunk1") -------------->|
     |              Checksum=0xCD34                      |
-    |                                                   | Validate checksum ✓
+    |                                                   | Validate checksum 
     |                                                   | Deliver chunk1
     |                                                   | expected_seq = 0
     |                                                   |
@@ -609,41 +575,29 @@ Option 2 Corrupt ACK Packet w/ example data:
     | │ ACK corrupted: 0x5678 → 0x56FF          │       |
     | └─────────────────────────────────────────┘       |
     |                                                   |
-    | Validate checksum ✗ FAIL!                         |
-    | Corrupt ACK detected                              |
+    | Validate checksum: FAIL                           |
+    | Check ACK: Corrupt ACK detected                   |
     | Retransmit packet 1                               |
     |                                                   |
     |                                                   |
     |------------- DATA(seq=1, "chunk1") -------------->|
     |              [RETRANSMISSION]                     |
     |              Checksum=0xCD34                      |
-    |                                                   | Validate checksum ✓
-    |                                                   | seq == expected_seq? NO (dup)
+    |                                                   | Validate checksum 
+    |                                                   | seq == expected_seq? if no, dupe
     |                                                   | Already have chunk1
     |                                                   | Resend ACK1
     |                                                   |
     |<------------- ACK(ack_num=1) ---------------------|
     |              Checksum=0x5678                      |
-    | Validate checksum ✓                               |
-    | ACK matches seq ✓                                 |
+    | Validate checksum                                 |
+    | ACK matches seq                                   |
     | seq = 0                                           |
     |                                                   |
-    |                                                   |
-    | Create pkt0                                       |
-    |                                                   |
-    |------------- DATA(seq=0, "chunk2") -------------->|
-    |              Checksum=0xEF56                      |
-    |                                                   | Validate checksum ✓
-    |                                                   | Deliver chunk2
-    |                                                   | expected_seq = 1
-    |                                                   |
-    |<------------- ACK(ack_num=0) ---------------------|
-    | Validate checksum ✓                               |
-    | seq = 1                                           |
-    |                                                   |
-    | Transfer complete!                                | File reconstruction complete!
-    | 3 packets sent                                    | 3 unique packets received
-    | 1 retransmission                                  |
+    | -------------- Continue until all data sent ----- |
+    | Transfer complete                                 | File reconstruction complete
+    | n packets sent                                    | n packets received
+    | x retransmission(s)                               |
 
 Option 3 Data bit-Error w/ example data:
     SENDER                                              RECEIVER
@@ -655,13 +609,13 @@ Option 3 Data bit-Error w/ example data:
     |                                                   |
     |------------- DATA(seq=0, "chunk0") -------------->|
     |              Checksum=0xAB12                      |
-    |                                                   | Validate checksum ✓
+    |                                                   | Validate checksum 
     |                                                   | Deliver chunk0
     |                                                   | expected_seq = 1
     |                                                   | last_ack = 0
     |                                                   |
     |<------------- ACK(ack_num=0) ---------------------|
-    | Validate checksum ✓                               |
+    | Validate checksum                                 |
     | seq = 1                                           |
     |                                                   |
     |                                                   |
@@ -676,7 +630,7 @@ Option 3 Data bit-Error w/ example data:
     |                                                   | │ 0xCD34 → 0xCDFF            │
     |                                                   | └────────────────────────────┘
     |                                                   |
-    |                                                   | Validate checksum ✗ FAIL!
+    |                                                   | Validate checksum: FAIL
     |                                                   | Corrupt DATA detected
     |                                                   | Send last valid ACK (ACK0)
     |                                                   | Do NOT deliver data
@@ -684,41 +638,28 @@ Option 3 Data bit-Error w/ example data:
     |                                                   |
     |<------------- ACK(ack_num=0) ---------------------|
     |              [Last valid ACK]                     |
-    | Validate checksum ✓                               |
-    | Wrong ACK! (Expected ACK1, got ACK0)              |
+    | Validate checksum                                 |
+    | Check ACK (Expected ACK1, got ACK0)               |
     | Retransmit packet 1                               |
     |                                                   |
     |                                                   |
     |------------- DATA(seq=1, "chunk1") -------------->|
     |              [RETRANSMISSION]                     |
     |              Checksum=0xCD34                      |
-    |                                                   | Validate checksum ✓
-    |                                                   | expected_seq == 1 ✓
+    |                                                   | Validate checksum 
+    |                                                   | expected_seq == 1 
     |                                                   | Deliver chunk1
     |                                                   | expected_seq = 0
     |                                                   | last_ack = 1
     |                                                   |
     |<------------- ACK(ack_num=1) ---------------------|
-    | Validate checksum ✓                               |
-    | ACK matches seq ✓                                 |
+    | Validate checksum                                 |
+    | ACK matches seq                                   |
     | seq = 0                                           |
-    |                                                   |
-    |                                                   |
-    | Create pkt0                                       |
-    |                                                   |
-    |------------- DATA(seq=0, "chunk2") -------------->|
-    |              Checksum=0xEF56                      |
-    |                                                   | Validate checksum ✓
-    |                                                   | Deliver chunk2
-    |                                                   | expected_seq = 1
-    |                                                   |
-    |<------------- ACK(ack_num=0) ---------------------|
-    | Validate checksum ✓                               |
-    | seq = 1                                           |
-    |                                                   |
+    | -------------- Continue until all data sent ----- |
     | Transfer complete!                                | File reconstruction complete!
-    | 3 packets sent                                    | 3 unique packets received
-    | 1 retransmission                                  |
+    | n packets sent                                    | n unique packets received
+    | x retransmission(s)                               |
 
 ```
 
