@@ -39,4 +39,3 @@
 | Section 8 | Authored | 02/13/2026 |
 | Section 9 | Authored | 02/13/2026 |
 | Section 10 | Co-authored | 02/13/2026 |
-| Phase 2(b) | Error injection testing (loss, corruption, duplication) | 02/13/2026 |
