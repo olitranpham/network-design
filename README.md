@@ -57,17 +57,10 @@ project/
 ## Standard CLI Interface 
 
 ### Sender
-- `--port <int>`: UDP port to bind
-- `--out <path>`: output file path to write received bytes
-- `--seed <int>`: RNG seed (default: 0)
-- `--log-level <debug|info|warning|error>` (default: info)
+- 
 
 ### Receiver 
-- `--host <ip/hostname>`: receiver host
-- `--port <int>`: receiver port
-- `--file <path>`: input file to send
-- `--seed <int>`: RNG seed (default: 0)
-- `--log-level <debug|info|warning|error>` (default: info)
+- 
 
 ### Injection Flags
 
