@@ -5,23 +5,22 @@
 ## Team
 | Name | Email | Primary responsibility |
 |---|---|---|
-| Olivia Pham | olivia_pham@student.uml.edu | Entire project |
+| Cody Nguyen | cody_nguyen@student.uml.edu | Phase 2(b) | 
+| Olivia Pham | olivia_pham@student.uml.edu | Phase 2(a) |
+| Ian Khoo | ian_khoo@student.uml.edu | Phase 2(c)
+
 
 ## Demo Video
 
-- **Private YouTube link - Phase 1(a)** 
-	- Link: https://youtu.be/g8XUVhSGN4Q
+- **Private YouTube link - Phase 2(a)** 
+	- Link: 
 		- Timestamped outline:
-			- 0:00-0:04 -> UDP server initialized and waiting for incoming message
-			- 0:04-0:11 -> UDP client sends "HELLO" to server, server receives message and echoes back to client
+			- 
 
-- **Private YouTube link - Phase 1(b)** 
-	- Link: https://youtu.be/gzKlD03q-Sw
+- **Private YouTube link - Phase 2(b)** 
+	- Link: 
 		- Timestamped outline:
-			- 0:00-0:02 -> Showing original BMP image file in folder  
-			- 0:02-0:05 -> Initializing receiver.py
-			- 0:05-0:11 -> Sender (right) sending 1024-byte packets sequentially, and receiver (left) receives and reassembles all 157 packets successfully
-			- 0:11-0:32 -> comparing original BMP file with received/new file
+			- 
 
 ---
 
@@ -30,17 +29,13 @@
 ```
 project/
 |-- src/
-|   |-- client.py          # Phase 1(a): UDP echo client
-|   |-- server.py          # Phase 1(a): UDP echo server
-|   |-- sender.py          # Phase 1(b): RDT 1.0 sender
-|   |-- receiver.py        # Phase 1(b): RDT 1.0 receiver
-|   |-- make_packet.py     # Packet encode/decode
+|   |-- 
 |
 |-- scripts/
 |   |-- run_demo.sh        # Demo script
 |
 |-- test_files/
-|   |-- test.bmp           # Test input file
+|   |-- 
 |
 |-- results/
 |   |-- (output files)
@@ -61,13 +56,13 @@ project/
 
 ## Standard CLI Interface 
 
-### Receiver
+### Sender
 - `--port <int>`: UDP port to bind
 - `--out <path>`: output file path to write received bytes
 - `--seed <int>`: RNG seed (default: 0)
 - `--log-level <debug|info|warning|error>` (default: info)
 
-### Sender 
+### Receiver 
 - `--host <ip/hostname>`: receiver host
 - `--port <int>`: receiver port
 - `--file <path>`: input file to send
@@ -76,76 +71,63 @@ project/
 
 ### Injection Flags
 
-N/A for Phase 1. 
+
 
 ### Timing / Windowing Flags
 
-N/A for Phase 1.
+
 
 ---
 
 ## Quick Start (Run Locally)
 
 ```
-:: Terminal 1 – Start receiver
-python receiver.py --port 9000 --output received.bmp
 
-:: Terminal 2 – Start sender
-python sender.py --host 127.0.0.1 --port 9000 --file image.bmp
 ```
 
 ---
 
 ## Required Demo Scenarios
 
-### Scenario 1: Phase 1(a) - UDP Echo
+### Scenario 1: Phase 2(a) - RDT 2.2 File Transfer
 
 Server:
 ```cmd
-python server.py
+
 ```
 
 Client:
-python `client.py`
 
 Expected behavior:
-- Server starts and listens on the configured UDP port
-- Client sends the message "HELLO" to the server
-- Server receives and echoes "HELLO" back to the client
-- Client prints the echoed message and exits successfully
+- 
 
-### Scenario 2: Phase 1(b) - RDT 1.0 File Transfer
+### Scenario 2: Phase 1(b) - Error Injection and Recovery
 
 Receiver:
 ```cmd
-python receiver.py --port 9000 --output received.bmp
+
 ```
 
 Sender:
 ```cmd
-python sender.py --host 127.0.0.1 --port 9000 --file image.bmp
+
 ```
 
 Expected behavior:
-- Receiver starts and listens on the specified UDP port
-- Sender reads the input file and packetizes it into 1024-byte chunks
-- Packets are sent sequentially over UDP using RDT 1.0 
-- Receiver receives all packets, reassembles them in order, and writes the output file
-- Transfer completes when all packets are received
-- The reconstructed file (`received.bmp`) matches the original file (`image.bmp`)
+-
 
 ## Figures / Plots 
 
-N/A for Phase 1. 
+
 
 ### Results files
-- `results/output.bmp`
+- 
 
 ---
 
 ## Known Issues / Limitations
 
-N/A for Phase 1.
+
 
 ---
 
