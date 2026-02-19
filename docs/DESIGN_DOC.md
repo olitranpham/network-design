@@ -113,8 +113,8 @@ Will be submitted once code is completed.
 ### 2.2 Acceptance Criteria 
 
 **Phase 2(a):**
-- [ ] Sender uses alternating-bit sequence numbers `(0,1)`, checksum validation, and waits for correct ACK before sending next DATA packet
-- [ ] Receiver validates checksum and sequence number, delivers only the expected pacet, and responds with the appropriate ACK as per RDT 2.2 behavior
+- [X] Sender uses alternating-bit sequence numbers `(0,1)`, checksum validation, and waits for correct ACK before sending next DATA packet
+- [X] Receiver validates checksum and sequence number, delivers only the expected pacet, and responds with the appropriate ACK as per RDT 2.2 behavior
 
 **Phase 2(b):**
 - [ ] Option 1: Completes successfully with no bit errors or retransmissions
@@ -127,9 +127,9 @@ Will be submitted once code is completed.
 - [ ] Plot is generated and included in Section 1.3
 
 **General:**
-- [ ] README.md is complete
-- [ ] Invite instructor(s) to GitHub repo and include GitHub link
-- [ ] Record demo and upload to YouTube 
+- [X] README.md is complete
+- [X] Invite instructor(s) to GitHub repo and include GitHub link
+- [X] Record demo and upload to YouTube 
 
 ### 2.3 Work Breakdown
 
@@ -449,7 +449,7 @@ Receiver State Diagram (MODIFIED FOR OPTION 3):
 
 ### 3.2 Component Responsibilities
 
-**Sender Components**
+**Phase 2(a) - Sender Components**
 
 `sender.py` Main Responsibilities:
 - Read BMP into memory
@@ -462,7 +462,7 @@ Receiver State Diagram (MODIFIED FOR OPTION 3):
 - Print transmission progress into console
 - Phase 2(b) option 2: intentionally corrupt received ACK bits before validation
 
-**Receiver Components**
+**Phase 2(a) - Receiver Components**
 
 `receiver.py` Main Responsibilities:
 - Create and bind UDP socket to the specified port
@@ -474,6 +474,9 @@ Receiver State Diagram (MODIFIED FOR OPTION 3):
 - On corrupt/duplicate DATA: re-send last ACK
 - Phase 2(b) option 3: intentionally corrupt received DATA bits before checksum validation
 - Write the reconstructed file to disk
+
+**Phase 2(b) - Sender Components**
+**Phase 2(b) - Receiver Components**
 
 **Shared Modules**
 - `packet.py` - Packet encoding/decoding utilities
@@ -1029,28 +1032,39 @@ WILL BE MORE UP-TO-DATE AFTER CODE
 ```
 project/
 |-- src/
-|	|--
+|	|-- sender.py
+|   |-- receiver.py
+|   |-- packet.py 
 |
 |-- tests/
 |	|--
 |
 |-- scripts/
-|	|--
+|	|-- run-demo.sh
 |
 |-- test_files/
-|	|--
+|	|-- test.txt
+|	|-- received_output.txt
 |
 |-- results/
-|	|--
+|	|-- 
 |
 |-- docs/
 |   |-- DESIGN_DOC.md      # This document
+|	|-- contributions.md
 |
 |-- README.md
 ```
 
 **To reproduce:**
 ```
+## Phase 2(a) - RDT 2.2 File Transfer
+
+Terminal 1 (receiver):
+`python receiver.py --port 9000 --out received_output.txt`
+
+Terminal 2 (sender):
+`python sender.py --host 127.0.0.1 --port 9000 --file test.txt`
 
 ```
 
@@ -1088,7 +1102,7 @@ project/
 ### Pre-Recording Checklist
 
 **Phase 2(a):**
-- [ ] Both terminal windows visible side-by-side
+- [X] Both terminal windows visible side-by-side
 
 **Phase 2(b):**
 - [ ] Both terminal windows visible side-by-side
