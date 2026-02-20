@@ -51,6 +51,7 @@ test-files/
 - OS tested: Windows
 - Dependencies:
   - Python: `pip install -r requirements.txt`
+  - gnuplot: `sudo apt-get install gnuplot`
 
 ---
 
