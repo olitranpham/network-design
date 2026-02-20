@@ -12,15 +12,14 @@
 
 ## Demo Video
 
-- **Private YouTube link - Phase 2(a)** 
+- **Private YouTube link **
 	- Link: https://youtu.be/vRdP3Vdgl78
 		- Timestamped outline:
-			- 
+			- Phase 2(a)/Phase 2(b) Option 1 ==> 0:00 - 0:23
+     		- Phase 2(b) Option 2 ==> 0:23 - 0:58
+     		- Phase 2(b) Option 3 ==> 0:58 - 1:30
+     		- Phase 2(c/d) Plot ==> 1:30 - 1:49
 
-- **Private YouTube link - Phase 2(b)** 
-	- Link: https://youtu.be/vRdP3Vdgl78
-		- Timestamped outline:
-			- 
 
 ---
 
@@ -181,6 +180,7 @@ python3 -u scripts/phase2d_experiments.py \
 
 
 ## Figures / Plots
+results/phase2d_plot.png
 
 ### Results files
 - 
@@ -190,7 +190,7 @@ results/phase2d_plot.png
 ---
 
 ## Known Issues / Limitations
-
+The program that runs the incremental tests for error percentage notably runs faster on machines with higher technical specifications.
 
 
 ---
