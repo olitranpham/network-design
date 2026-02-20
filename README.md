@@ -28,22 +28,22 @@
 
 ```
 project/
-|-- src/
-|   |-- 
-|
-|-- scripts/
-|   |-- run_demo.sh        # Demo script
-|
-|-- test-files/
-|   |-- 
-|
-|-- results/
-|   |-- (output files)
-|
-|-- docs/
-|   |-- DESIGN_DOC.md      # This document
-|
-|-- README.md
+src/
+  sender.py
+  receiver.py
+  packet.py
+  channel.py
+
+scripts/
+  phase2d_experiments.py
+
+results/
+  phase2d_avg.csv
+  phase2d_raw.csv
+  phase2d_plot.png
+
+test-files/
+  sample1.bmp
 ```
 
 ## Requirements
