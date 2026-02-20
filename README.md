@@ -58,7 +58,7 @@ test-files/
 ## Standard CLI Interface 
 
 ### Sender
-`python src/sender.py \
+`python3 src/sender.py \
   --host 127.0.0.1 \
   --port 9000 \
   --file test-files/sample1.bmp \
@@ -73,7 +73,7 @@ flags:
 - (--ack-biterr) ACK corruption probability (option 2)
 
 ### Receiver 
-`python src/receiver.py \
+`python3 src/receiver.py \
   --port 9000 \
   --out results/out.bmp \
   --data-biterr <prob>`
@@ -104,13 +104,13 @@ Run receiver in one terminal and sender in another using the commands below.
 
 Server:
 ```
-python src/receiver.py --port 9000 --out results/out.bmp --data-biterr 0.0
+python3 src/receiver.py --port 9000 --out results/out.bmp --data-biterr 0.0
 
 ```
 
 Client:
 ```
-python src/sender.py --host 127.0.0.1 --port 9000 --file test-files/sample1.bmp --ack-biterr 0.0
+python3 src/sender.py --host 127.0.0.1 --port 9000 --file test-files/sample1.bmp --ack-biterr 0.0
 
 ```
 
@@ -127,12 +127,12 @@ Expected behavior:
 
 Receiver:
 ```
-python src/receiver.py --port 9000 --out results/out.bmp --data-biterr 0.0
+python3 src/receiver.py --port 9000 --out results/out.bmp --data-biterr 0.0
 ```
 
 Sender:
 ```
-python src/sender.py --host 127.0.0.1 --port 9000 --file test-files/sample1.bmp --ack-biterr 0.2
+python3 src/sender.py --host 127.0.0.1 --port 9000 --file test-files/sample1.bmp --ack-biterr 0.2
 ```
 
 File verification:
@@ -149,12 +149,12 @@ Expected behavior:
 
 Receiver:
 ```
-python src/receiver.py --port 9000 --out results/out.bmp --data-biterr 0.2
+python3 src/receiver.py --port 9000 --out results/out.bmp --data-biterr 0.2
 ```
 
 Sender:
 ```
-python src/sender.py --host 127.0.0.1 --port 9000 --file test-files/sample1.bmp --ack-biterr 0.0
+python3 src/sender.py --host 127.0.0.1 --port 9000 --file test-files/sample1.bmp --ack-biterr 0.0
 ```
 
 File verification:
