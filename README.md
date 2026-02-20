@@ -1,4 +1,4 @@
-# Network Design Project – Olivia Pham
+# Network Design Project – Don't Be COI
 
 ## Overview
 
@@ -34,7 +34,7 @@ project/
 |-- scripts/
 |   |-- run_demo.sh        # Demo script
 |
-|-- test_files/
+|-- test-files/
 |   |-- 
 |
 |-- results/
@@ -57,13 +57,32 @@ project/
 ## Standard CLI Interface 
 
 ### Sender
-- 
+`python src/sender.py \
+  --host 127.0.0.1 \
+  --port 9000 \
+  --file test-files/sample1.bmp \
+  --timeout 0.2 \
+  --ack-biterr <prob>`
+
+flags:
+- (--host) receiver address
+- (--port) receiver port)
+- (--file) input file
+- (--timeout) retransmission timeout
+- (--ack-biterr) ACK corruption probability (option 2)
 
 ### Receiver 
-- 
+`python src/receiver.py \
+  --port 9000 \
+  --out results/out.bmp \
+  --data-biterr <prob>`
+
+flags:
+- (--port) listen port
+- (--out) output file
+- (--data-biterr) DATA corruption probability (option 3)
 
 ### Injection Flags
-
 
 
 ### Timing / Windowing Flags
@@ -74,48 +93,99 @@ project/
 
 ## Quick Start (Run Locally)
 
-```
-
-```
+Run receiver in one terminal and sender in another using the commands below.
 
 ---
 
 ## Required Demo Scenarios
 
-### Scenario 1: Phase 2(a) - RDT 2.2 File Transfer
+### option 1 - RDT 2.2 File Transfer 
 
 Server:
-```cmd
+```
+python src/receiver.py --port 9000 --out results/out.bmp --data-biterr 0.0
 
 ```
 
 Client:
+```
+python src/sender.py --host 127.0.0.1 --port 9000 --file test-files/sample1.bmp --ack-biterr 0.0
+
+```
+
+File verification:
+```
+cmp test-files/sample1.bmp results/received.bmp && echo "MATCH"
+```
 
 Expected behavior:
-- 
+- No retransmissions 
+- File matches exactly
 
-### Scenario 2: Phase 1(b) - Error Injection and Recovery
+### option 2: ACK bit errors
 
 Receiver:
-```cmd
-
+```
+python src/receiver.py --port 9000 --out results/out.bmp --data-biterr 0.0
 ```
 
 Sender:
-```cmd
+```
+python src/sender.py --host 127.0.0.1 --port 9000 --file test-files/sample1.bmp --ack-biterr 0.2
+```
 
+File verification:
+```
+cmp test-files/sample1.bmp results/received.bmp && echo "MATCH"
 ```
 
 Expected behavior:
--
+- Corrupt ACK detected 
+- Retransmissions occur 
+- File still correct
 
-## Figures / Plots 
+### option 3: DATA bit errors
+
+Receiver:
+```
+python src/receiver.py --port 9000 --out results/out.bmp --data-biterr 0.2
+```
+
+Sender:
+```
+python src/sender.py --host 127.0.0.1 --port 9000 --file test-files/sample1.bmp --ack-biterr 0.0
+```
+
+File verification:
+```
+cmp test-files/sample1.bmp results/received.bmp && echo "MATCH"
+```
+
+Expected behavior:
+- Receiver rejects corrupt packets 
+- Duplicate ACKs 
+- Sender retransmits
+
+### Phase 2(d): Performance Evaluation
+Run:
+```
+python3 -u scripts/phase2d_experiments.py \
+  --file test-files/sample1.bmp \
+  --runs 5 \
+  --timeout 0.2 \
+  --hard-timeout 15 \
+  --max-attempts 30 \
+  --plot
+  ```
 
 
+## Figures / Plots
 
 ### Results files
 - 
-
+results/phase2d_raw.csv
+results/phase2d_avg.csv
+results/phase2d_plot.png
 ---
 
 ## Known Issues / Limitations

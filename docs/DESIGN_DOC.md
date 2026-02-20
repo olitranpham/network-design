@@ -84,7 +84,7 @@
 
 ### 1.3 Required Figures/Plots
 
-Will be submitted once code is completed.
+Plot generated and included. 
 
 ---
 
@@ -117,14 +117,14 @@ Will be submitted once code is completed.
 - [X] Receiver validates checksum and sequence number, delivers only the expected pacet, and responds with the appropriate ACK as per RDT 2.2 behavior
 
 **Phase 2(b):**
-- [ ] Option 1: Completes successfully with no bit errors or retransmissions
-- [ ] Option 2: Detected by sender and triggers retranmission of last DATA packet
-- [ ] Option 3: Detected by receiver and sends a duplicate ACK to prevent corrupted data delivery
+- [X] Option 1: Completes successfully with no bit errors or retransmissions
+- [X] Option 2: Detected by sender and triggers retranmission of last DATA packet
+- [X] Option 3: Detected by receiver and sends a duplicate ACK to prevent corrupted data delivery
 
 **Phase 2(c):**
-- [ ] Completion-time measurements are collected for impairment rates from 0% to 95% in 5% increments
-- [ ] Each impairment rate is tested with 5 independent runs; results are averaged
-- [ ] Plot is generated and included in Section 1.3
+- [X] Completion-time measurements are collected for impairment rates from 0% to 95% in 5% increments
+- [X] Each impairment rate is tested with 5 independent runs; results are averaged
+- [X] Plot is generated and included in Section 1.3
 
 **General:**
 - [X] README.md is complete
@@ -671,7 +671,6 @@ Option 3 Data bit-Error w/ example data:
 ### 4.1 Packet Types
 - DATA: carries file chunk with seq (0/1)
 - ACK: acknowledges DATA seq (0/1)
-- END: indicates end of file transfer
 
 ### 4.2 Header Fields
 
@@ -918,7 +917,7 @@ During Phase 2(b):
 ACK packet Bit error - ACK packet will be intentionally changed at the sender 
 	-ACK will be changed randomly.
 Data packet bit error - Data packet will be intentionally changed at the receiver
-	-Bits will be shuffled, flipped, or randomized.
+	-Bits will flipped randomly 
 
 ---
 
@@ -965,9 +964,10 @@ For every run:
 
 
 **Output Artifacts:**
-- Console logs showing packet transmission progress
-- Transferred file saved to `results/` directory
-- Plot saved to `results/plots/`
+- `results/phase2d_raw.csv` (timing + status per attempt)
+- `results/phase2d_avg.csv` (average completion time per rate per option)
+- `results/phase2d_plot.gp` (gnuplot script)
+- `results/phase2d_plot.png` (plot image, if gnuplot is installed)
 
 ---
 
@@ -1028,45 +1028,27 @@ Each transition must match the RDT 2.2 diagram.
 ---
 
 ## 9 Repository Structure and Reproducibility
-WILL BE MORE UP-TO-DATE AFTER CODE
 ```
-project/
-|-- src/
-|	|-- sender.py
-|   |-- receiver.py
-|   |-- packet.py 
-|
-|-- tests/
-|	|--
-|
-|-- scripts/
-|	|-- run-demo.sh
-|
-|-- test_files/
-|	|-- test.txt
-|	|-- received_output.txt
-|
-|-- results/
-|	|-- 
-|
-|-- docs/
-|   |-- DESIGN_DOC.md      # This document
-|	|-- contributions.md
-|
-|-- README.md
+src/
+  sender.py
+  receiver.py
+  packet.py
+  channel.py
+
+scripts/
+  phase2d_experiments.py
+
+results/
+  phase2d_avg.csv
+  phase2d_raw.csv
+  phase2d_plot.png
+
+test-files/
+  sample1.bmp
 ```
 
 **To reproduce:**
-```
-## Phase 2(a) - RDT 2.2 File Transfer
-
-Terminal 1 (receiver):
-`python receiver.py --port 9000 --out received_output.txt`
-
-Terminal 2 (sender):
-`python sender.py --host 127.0.0.1 --port 9000 --file test.txt`
-
-```
+Refer to README
 
 ---
 
