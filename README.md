@@ -13,12 +13,12 @@
 ## Demo Video
 
 - **Private YouTube link - Phase 2(a)** 
-	- Link: 
+	- Link: https://youtu.be/vRdP3Vdgl78
 		- Timestamped outline:
 			- 
 
 - **Private YouTube link - Phase 2(b)** 
-	- Link: 
+	- Link: https://youtu.be/vRdP3Vdgl78
 		- Timestamped outline:
 			- 
 
