@@ -53,10 +53,12 @@
 ### 1.1 Demo Deliverable
 
 - **Private YouTube link** 
-	- Link: TBD
-		- Timestamped outline:
-			- 
-			- 
+Link: https://youtu.be/vRdP3Vdgl78
+	Timestamped outline:
+		Phase 2(a)/Phase 2(b) Option 1 ==> 0:00 - 0:23
+		Phase 2(b) Option 2 ==> 0:23 - 0:58
+		Phase 2(b) Option 3 ==> 0:58 - 1:30
+		Phase 2(c/d) Plot ==> 1:30 - 1:49
 
 ### 1.2 Required Demo Scenarios
 
