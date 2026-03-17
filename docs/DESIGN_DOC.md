@@ -1,5 +1,5 @@
 # Network Design Project – Phase Proposal & Design Document 
-## (Phase 2 of 5)
+## (Phase 3 of 5)
 
 **Team Name:**  Don't Be COI
 
@@ -10,11 +10,11 @@
 
 **GitHub Repo URL (with GitHub usernames):** https://github.com/olitranpham/network-design, olitranpham 
 
-**Phase:** 2
+**Phase:** 3
 
-**Submission Date:**  2/13/26
+**Submission Date:**  3/13/26
 
-**Version:** v3
+**Version:** v4
 
 ---
 
@@ -37,14 +37,18 @@
 
 ## 0 Executive summary
 
-**Phase 2(a):** Implement RDT2.2 over UDP for reliable delivery under bit errors. The protocol will use sequence numbers, checksums, and ACK packets so the sender only moves on after receiving a valid ACK from the current sequence number.
+**Phase 3(a):** Implement RDT2.2 over UDP for reliable delivery under bit errors. The protocol will use sequence numbers, checksums, and ACK packets so the sender only moves on after receiving a valid ACK from the current sequence number.
 
-**Phase 2(b):** Add required bit-error injection scenarios to demonstrate order under corruption.
+**Phase 3(b):** Add required bit-error injection scenarios to demonstrate order under corruption.
 	- Option 1: No loss/bit-errors.
 	- Option 2: Corrupt ACK packets where sender can detect invalid ACK and retransmits the last DATA packet.
 	- Option 3: DATA bit-error where receiver detcts corruption and sends the last valid ACK, allowing for sender retransmission. 
 
-**Phase 2(c):** Run a performance evaluation by measuring completion time over impairment rate from 0% to 95% in 5% increments, taking the average of 5 runs per impairment level, and generating the required plots. 
+**Phase 3(c):** Run a performance evaluation by measuring completion time over impairment rate from 0% to 95% in 5% increments, taking the average of 5 runs per impairment level, and generating the required plots. 
+
+**Phase 3(d):** 
+
+**Phase 3(e):** 
 
 ---
 
@@ -55,21 +59,18 @@
 - **Private YouTube link** 
 Link: https://youtu.be/vRdP3Vdgl78
 	Timestamped outline:
-		Phase 2(a)/Phase 2(b) Option 1 ==> 0:00 - 0:23
-		Phase 2(b) Option 2 ==> 0:23 - 0:58
-		Phase 2(b) Option 3 ==> 0:58 - 1:30
-		Phase 2(c/d) Plot ==> 1:30 - 1:49
+		- 
 
 ### 1.2 Required Demo Scenarios
 
-**Phase 2(a) - RDT 2.2 File Transfer**
+**Phase 3(a) - RDT 2.2 File Transfer**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
 | 1 | File Transfer using RDT 2.2 | A file will be sent over with the code checking for errors or duplicates | Video will show file being sent with terminal showing sequence numbers, and errors (when applicable), then file will be opened for validation |
 | The video above will be the same video as Phase 2(b) Option 1 |
 
-**Phase 2(b) - Error Injection and Recovery**
+**Phase 3(b) - Error Injection and Recovery**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
@@ -77,12 +78,22 @@ Link: https://youtu.be/vRdP3Vdgl78
 | 2 | File transfer with Option 2 | File will be transfered but ACK error is injected, then detected and fixed | Video will show the file being sent over, the ACK being corrupted, then the sender will identify the error and fix it, then the file will be opened for validation |
 | 3 | File transfer with Option 3 | File will be transfered but the data error is injected, then detected and fixed | Video will show the file being sent over, the data will be corrupted, then the receiver will detect the error, fix it, and then the file will be opened for validation. |
 
-**Phase 2(c) - Performance Evaluation**
+**Phase 3(c) - Performance Evaluation**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
 | 1 | Test Completion time for each impairment rate | completion time will be tested | The video will show various plots |
 |The test above will be replicated for each impairment rate from 0% to 95% in 5% increments. Each impairment rate has 5 independent tests, and the results are averaged. So to keep this section from being 20 lines long, this note was added |
+
+**Phase 3(d) - **
+
+| Scenario | Configuration | Expected Behavior | What Video Will Show |
+|---|---|---|---|
+
+**Phase 3(e) - **
+
+| Scenario | Configuration | Expected Behavior | What Video Will Show |
+|---|---|---|---|
 
 ### 1.3 Required Figures/Plots
 
@@ -95,14 +106,11 @@ Plot generated and included.
 ### 2.1 Scope
 
 **New behaviors added:** 
-- Implement RDT 2.2
-- Add checksum field and validation
-- Add ACK packets
-- Add timeouts and retransmissions at sender phase
-- Add bit-error injection hooks
-	- ACK corruption injection (option 2)
- 	- DATA corruption injection (option 3)
-- Generate plots for all 3 bit-error injection options
+- Implement timeout mechanims in sender (RDT 3.0)
+- Handle ACK packet loss using timeout and retransmission
+- Handle DATA packet loss using timeout and retransmission
+- Introduce packet loss injection mechanisms
+- Extend loss scenarios (Options 4 and 5_
 
 **Behaviors unchanged from previous phase:** 
 - UDP sockets from Phase 1 used for data file transport
