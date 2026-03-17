@@ -1,4 +1,4 @@
-## Phase 2(a) - RDT 2.2 File Transfer
+## Phase 3 - RDT 3.0 File Transfer
 
 Terminal 1 (receiver):
 `python receiver.py --port 9000 --out received_output.txt`
