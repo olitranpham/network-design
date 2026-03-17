@@ -6,15 +6,16 @@
 
 | Task / Section | Description | Date Completed |
 |----------------|-------------|----------------|
-| README.md | Organized `README.md` and `Contributions.md` | 02/17/2026 |
-| Phase 2(a) | Implemented RDT 2.2 sender and receiver logic | 02/17/2026 |
-| Phase 2(a) Handoff | Handed off codebase to Cody for Phase 2(b) error injection | 02/17/2026 |
-| Section 1 | Co-authored | 02/13/2026 |
-| Section 2 | Authored | 02/13/2026 |
-| Section 4 | Authored | 02/13/2026 |
-| Section 5 | Co-authored | 02/13/2026 |
-| Section 10 | Co-authored | 02/13/2026 |
-| Section 11 | Co-authored | 02/13/2026 |
+| README.md | Organized `README.md` and `Contributions.md` | 03/17/2026 |
+| Phase 3 | Implemented RDT 3.0 sender logic | 03/17/2026 |
+| Phase 3 Handoff | Handed off codebase to Cody for Phase 3(d) error injection | 03/17/2026 |
+| Phase 3 Handoff | Handed off codebase to Cody for Phase 3(e) error injection | 03/17/2026 |
+| Section 1 | Co-authored | 03/17/2026 |
+| Section 2 | Authored | 03/17/2026 |
+| Section 4 | Authored | 03/17/2026 |
+| Section 5 | Co-authored | 03/17/2026 |
+| Section 10 | Co-authored | 03/17/2026 |
+| Section 11 | Co-authored | 03/17/2026 |
 
 ---
 
