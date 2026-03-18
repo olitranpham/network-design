@@ -13,14 +13,14 @@
 ## Demo Video
 
 - **Private YouTube link **
-	- Link: [https://youtu.be/vRdP3Vdgl78](https://youtu.be/w6dEdgzKcrY)
+	- Link: https://youtu.be/w6dEdgzKcrY
 		- Timestamped outline:
-			- Phase 3 Option 1 ==> 0:00 - 0:23
-     		- Phase 3 Option 2 ==> 0:00 - 0:23
-     		- Phase 3 Option 3 ==> 0:00 - 0:23
-     		- Phase 3 Option 4 ==> 0:00 - 0:23
-       		- Phase 3 Option 5 ==> 0:00 - 0:23
-            - Phase 3 Generated Plot ==> 0:00 - 0:00
+			- Phase 3 Option 1 ==> 0:00 - 0:18
+     		- Phase 3 Option 2 ==> 0:18 - 2:15
+     		- Phase 3 Option 3 ==> 2:15 - 4:20
+     		- Phase 3 Option 4 ==> 4:20 - 6:29
+       		- Phase 3 Option 5 ==> 6:29 - 8:35
+            - Phase 3 Generated Plot ==> 8:35 - 8:48
 
 
 ---
