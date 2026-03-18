@@ -8,11 +8,11 @@
 - Olivia Pham: olivia_pham@student.uml.edu
 - Ian Khoo: ian_khoo@student.uml.edu
 
-**GitHub Repo URL (with GitHub usernames):** https://github.com/olitranpham/network-design, olitranpham 
+**GitHub Repo URL (with GitHub usernames):** https://github.com/olitranpham/network-design, olitranpham, iantkhoo1488
 
 **Phase:** 3
 
-**Submission Date:**  3/13/26
+**Submission Date:**  3/19/2026
 
 **Version:** v4
 
@@ -59,9 +59,15 @@
 ### 1.1 Demo Deliverable
 
 - **Private YouTube link** 
-Link: https://youtu.be/vRdP3Vdgl78
-	Timestamped outline:
-		- 
+	- Link: https://youtu.be/w6dEdgzKcrY
+		- Timestamped outline:
+			- Phase 3 Option 1 ==> 0:00 - 0:18
+     		- Phase 3 Option 2 ==> 0:18 - 2:15
+     		- Phase 3 Option 3 ==> 2:15 - 4:20
+     		- Phase 3 Option 4 ==> 4:20 - 6:29
+       		- Phase 3 Option 5 ==> 6:29 - 8:35
+            - Phase 3 Generated Plot ==> 8:35 - 8:48
+
 
 ### 1.2 Required Demo Scenarios
 
@@ -69,7 +75,7 @@ Link: https://youtu.be/vRdP3Vdgl78
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-| 1 | File Transfer using RDT 2.2 | A file will be sent over with the code checking for errors or duplicates | Video will show file being sent with terminal showing sequence numbers, and errors (when applicable), then file will be opened for validation |
+| 1 | File Transfer using RDT 3.0 | A file will be sent over with the code checking for errors or duplicates | Video will show file being sent with terminal showing sequence numbers, and errors (when applicable), then file will be opened for validation |
 | The video above will be the same video as Phase 2(b) Option 1 |
 
 **Phase 3(b) - Error Injection and Recovery**
@@ -92,12 +98,12 @@ Link: https://youtu.be/vRdP3Vdgl78
 **Phase 3(d) - **
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
-|---|---|---|---|
+|show graph made |graph will be of completion times| Graph opens |The created graph|
 
 **Phase 3(e) - **
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
-|---|---|---|---|
+|Files opened to show correctness|files will be the same as input|The picture will be the same|the opening of the output file|
 
 ### 1.3 Required Figures/Plots
 
@@ -152,13 +158,14 @@ Plot generated and included.
 - Phase 3(b) option 5: intentionally drop received DATA packets
 
 **Workstream A: Cody Nguyen**
-- Integrate and validate all three Phase 2(b)  scenarios (Options 1, 2, and 3) within the protocol logic.
+- Integrate and validate all three Phase 3 scenarios (Options 1, 2, 3, 4 and 5) within the protocol logic.
 
 **Workstream B: Olivia Pham**
-- Design and implement the updated RDT 2.2 sender and receiver logic, including checksum validation, ACK handling, and retransmission behavior.
+- Design and implement the updated RDT 3.0 sender and receiver logic, including checksum validation, ACK handling, retransmission behavior, and timer/timeout.
 
 **Workstream C: Ian Khoo**
 - Conduct performance evaluation experiments across all impairment levels.
+- Test and verify all phase 3 scenarios (Options 1, 2, 3, 4, and 5)
 - Generate completion-time plots and record demonstration videos for Phase 2.
 
 ---
@@ -167,7 +174,7 @@ Plot generated and included.
 
 ### 3.1 State Diagram Evolution
 
-#### Phase 2(a): RDT 2.2 File Transfer
+#### Phase 3(a): RDT 3.0 File Transfer
 
 ```
 Sender State Diagram:
@@ -248,11 +255,11 @@ Receiver State Diagram:
 
 ```
 
-#### Phase 2(b): Error Injection and Recovery
+#### Phase 3(b/d): Error Injection and Recovery
 
 ```
-Option 2 Corrupt ACK Packets:
-Sender State Diagram (MODIFIED FOR OPTION 2):
+Option 2/4 Corrupt/loss ACK Packets:
+Sender State Diagram (MODIFIED FOR OPTION 2/4):
                          +-------------------+
                          |   Wait for Call   |
                          |     (seq = 0)     |
@@ -268,9 +275,11 @@ Sender State Diagram (MODIFIED FOR OPTION 2):
               |                    |                     |
               |                    | rcv ACK             |
               |                    | ┌─────────────────────────────────┐
-              |                    | │ [OPTION 2 INJECTION]            │
+              |                    | │ [OPTION 2/4 INJECTION]          │
               |                    | │ if should_corrupt_ack():        │
-              |                    | │   rcvpkt = flip_bits(rcvpkt)    │
+              |                    | │   rcvpkt = flip_bits(rcvpkt)    |
+              │                    | | if should_loss_ack():           |
+              |                    | |   rcvpkt = loss_bits(rcvpkt)    |
               |                    | └─────────────────────────────────┘
               |                    | validate_checksum(rcvpkt)
               |                    | parse_ack_num(rcvpkt)
@@ -294,9 +303,11 @@ Sender State Diagram (MODIFIED FOR OPTION 2):
                                    |                     |
                                    | rcv ACK             |
                                    | ┌─────────────────────────────────┐
-                                   | │ [OPTION 2 INJECTION]            │
+                                   | │ [OPTION 2/4 INJECTION]          │
                                    | │ if should_corrupt_ack():        │
-                                   | │   rcvpkt = flip_bits(rcvpkt)    │
+                                   | │   rcvpkt = flip_bits(rcvpkt)    |
+                                   | | if should_loss_ack():           |
+                                   | |   rcvpkt = loss_bits(rcvpkt)    |
                                    | └─────────────────────────────────┘
                                    | validate_checksum(rcvpkt)
                                    | parse_ack_num(rcvpkt)
@@ -306,7 +317,7 @@ Sender State Diagram (MODIFIED FOR OPTION 2):
                                    |   [move to Wait for Call 0]
                                    v
                          (returns to Wait for Call 0)
-Receiver State Diagram (MODIFIED FOR OPTION 2, though no differences from the original):
+Receiver State Diagram (MODIFIED FOR OPTION 2/4, though no differences from the original):
                          +-------------------+
               +--------->| Wait for Packet 0 |<----------+
               |          | (expected_seq=0)  |           |
@@ -467,7 +478,7 @@ Receiver State Diagram (MODIFIED FOR OPTION 3):
 
 ### 3.2 Component Responsibilities
 
-**Phase 2(a) - Sender Components**
+**Phase 3(a) - Sender Components**
 
 `sender.py` Main Responsibilities:
 - Read BMP into memory
@@ -480,7 +491,7 @@ Receiver State Diagram (MODIFIED FOR OPTION 3):
 - Print transmission progress into console
 - Phase 2(b) option 2: intentionally corrupt received ACK bits before validation
 
-**Phase 2(a) - Receiver Components**
+**Phase 3(a) - Receiver Components**
 
 `receiver.py` Main Responsibilities:
 - Create and bind UDP socket to the specified port
