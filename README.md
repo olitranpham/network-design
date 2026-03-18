@@ -101,7 +101,7 @@ Start receiver first, then run sender with desired flags.
 
 ## Required Demo Scenarios
 
-### option 1 - RDT 2.2 File Transfer 
+### option 1 - RDT 3.0 File Transfer 
 
 Server:
 ```
