@@ -23,18 +23,18 @@
 
 | Section | Role | Date Completed |
 |--------|------|----------------|
-|Phase 2(a)|Tested and verified (debug) code, Confirm code with Olivia|2/18/2026|
-|Phase 2(b)|Tested and verified (debug) code for all 3 options, Confirm code with Cody|2/19/2016|
-|Phase 2(c)|Tested and verified (debug) code for run tests and plot generation, Confirm code with Cody|2/19/2016|
-|Phase 2(d)|run and take video of all 3 options and plot|2/19/2026|
-|DESIGN_DOC.md|Add relevant videos/demos|2/19/2026|
-|README.md|Add relevant videos/demos|2/19/2026|
-| Section 1 | Co-authored | 02/13/2026 |
-| Section 3 | Authored | 02/13/2026 |
-| Section 5 | Co-authored | 02/13/2026 |
-| Section 6 | Authored | 02/13/2026 |
-| Section 10 | Co-authored | 02/13/2026 |
-| Section 11 | Co-authored | 02/13/2026 |
+|Phase 3(a)|Tested and verified (debug) code, Confirm code with Olivia|3/17/2026|
+|Phase 3(b)|Tested and verified (debug) code for all 5 options, Confirm code with Cody|3/18/2016|
+|Phase 3(c)|Tested and verified (debug) code for run tests and plot generation, Confirm code with Cody|3/18/2016|
+|Phase 3(d)|run and take video of all 3 options and plot|3/18/2026|
+|DESIGN_DOC.md|Add relevant videos/demos|3/18/2026|
+|README.md|Add relevant videos/demos|3/18/2026|
+| Section 1 | Co-authored | 3/18/2026 |
+| Section 3 | Authored | 3/18/2026 |
+| Section 5 | Co-authored | 3/18/2026 |
+| Section 6 | Authored | 3/18/2026 |
+| Section 10 | Co-authored | 3/18/2026 |
+| Section 11 | Co-authored | 3/18/2026 |
 
 ---
 
