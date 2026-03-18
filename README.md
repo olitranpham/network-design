@@ -89,6 +89,8 @@ flags:
 
 - --ack-biterr: probability of ACK corruption (Option 2)
 - --data-biterr: probability of DATA corruption (Option 3)
+- --ack-loss: probability of ACK loss (Option 4)
+- --data-loss: probability of DATA loss (Option 5)
 
 ### Timing / Windowing Flags
 
