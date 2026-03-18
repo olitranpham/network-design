@@ -4,10 +4,10 @@
 
 ## Team
 | Name | Email | Primary responsibility |
-|---|---|---|
-| Cody Nguyen | cody_nguyen@student.uml.edu | Phase 2(b) | 
-| Olivia Pham | olivia_pham@student.uml.edu | Phase 2(a) |
-| Ian Khoo | ian_khoo@student.uml.edu | Phase 2(c)
+|---|---|------------------------|
+| Cody Nguyen | cody_nguyen@student.uml.edu | Phase 3(b)             | 
+| Olivia Pham | olivia_pham@student.uml.edu | Phase 3(a)             |
+| Ian Khoo | ian_khoo@student.uml.edu | Phase 3(c)             |
 
 
 ## Demo Video
@@ -34,12 +34,12 @@ src/
   channel.py
 
 scripts/
-  phase2d_experiments.py
+  phase3_experiments.py
 
 results/
-  phase2d_avg.csv
-  phase2d_raw.csv
-  phase2d_plot.png
+  phase3_avg.csv
+  phase3_raw.csv
+  phase3_plot.png
 
 test-files/
   sample1.bmp
@@ -70,6 +70,7 @@ flags:
 - (--file) input file
 - (--timeout) retransmission timeout
 - (--ack-biterr) ACK corruption probability (option 2)
+- (--data-biterr) probability of DATA corruption (Option 3)
 
 ### Receiver 
 `python3 src/receiver.py \
@@ -84,6 +85,8 @@ flags:
 
 ### Injection Flags
 
+- --ack-biterr: probability of ACK corruption (Option 2)
+- --data-biterr: probability of DATA corruption (Option 3)
 
 ### Timing / Windowing Flags
 
@@ -93,8 +96,7 @@ flags:
 
 ## Quick Start (Run Locally)
 
-Run receiver in one terminal and sender in another using the commands below.
-
+Start receiver first, then run sender with desired flags.
 ---
 
 ## Required Demo Scenarios
@@ -166,27 +168,67 @@ Expected behavior:
 - Duplicate ACKs 
 - Sender retransmits
 
-### Phase 2(d): Performance Evaluation
+### option 4: ACK packet loss
+
+Receiver:
+```
+python3 src/receiver.py --port 9000 --out results/out.bmp --data-biterr 0.0
+```
+
+Sender:
+```
+python3 src/sender.py --host 127.0.0.1 --port 9000 --file test-files/sample1.bmp --ack-biterr 0.0
+```
+
+
+Expected behavior:
+- ACK packets are dropped
+- Sender times out
+- Sender retransmits last DATA packet
+- File still correct
+
+---
+
+### option 5: DATA packet loss
+
+Receiver:
+```
+python3 src/receiver.py --port 9000 --out results/out.bmp --data-biterr 0.0
+```
+
+
+Sender:
+```
+python3 src/sender.py --host 127.0.0.1 --port 9000 --file test-files/sample1.bmp --ack-biterr 0.0
+```
+
+Expected behavior:
+- DATA packets are dropped
+- Sender times out
+- Sender retransmits
+- File still correct
+
+### Phase 3(c): Performance Evaluation
 Run:
 ```
-python3 -u scripts/phase2d_experiments.py \
-  --file test-files/sample1.bmp \
+python3 scripts/phase3_experiments.py \
+  --file test-files/bmp_24.bmp \
   --runs 5 \
-  --timeout 0.2 \
-  --hard-timeout 15 \
-  --max-attempts 30 \
+  --max-attempts 60 \
+  --timeout 0.005 \
+  --hard-timeout 60 \
   --plot
   ```
 
 
 ## Figures / Plots
-results/phase2d_plot.png
+results/phase3_plot.png
 
 ### Results files
 - 
-results/phase2d_raw.csv
-results/phase2d_avg.csv
-results/phase2d_plot.png
+results/phase3_raw.csv
+results/phase3_avg.csv
+results/phase3_plot.png
 ---
 
 ## Known Issues / Limitations

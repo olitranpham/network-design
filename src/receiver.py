@@ -15,12 +15,17 @@ from packet import (
 def toggle(bit: int) -> int:
     return 1 if bit == 0 else 0
 
+def maybe_drop_packet(prob: float, rng: random.Random) -> bool:
+    if prob <= 0.0:
+        return False
+    return rng.random() < prob
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=9000)
     ap.add_argument("--out", required=True, help="output file path")
     ap.add_argument("--data-biterr", type=float, default=0.0)
+    ap.add_argument("--data-loss", type=float, default=0.0)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--linger", type=float, default=1.0,
                     help="Seconds to keep replying with last ACK after file complete")
@@ -44,6 +49,11 @@ def main():
 
     while True:
         data, sender_addr = sock.recvfrom(HEADER_SIZE + MAX_PAYLOAD)
+
+        if maybe_drop_packet(args.data_loss, rng):
+            log("Intentionally dropped received DATA packet")
+            continue
+
         data = maybe_flip_bits(data, args.data_biterr, rng)
 
         try:

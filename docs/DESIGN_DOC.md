@@ -37,18 +37,20 @@
 
 ## 0 Executive summary
 
-**Phase 3(a):** Implement RDT2.2 over UDP for reliable delivery under bit errors. The protocol will use sequence numbers, checksums, and ACK packets so the sender only moves on after receiving a valid ACK from the current sequence number.
+**Phase 3(a):** Implement RDT 3.0 over UDP for reliable file delivery under both bit errors and packet loss. The protocol uses alternating-bit sequence numbers, checksums, ACK packets, and sender-side timeout/retransmission behavior.
 
-**Phase 3(b):** Add required bit-error injection scenarios to demonstrate order under corruption.
-	- Option 1: No loss/bit-errors.
-	- Option 2: Corrupt ACK packets where sender can detect invalid ACK and retransmits the last DATA packet.
-	- Option 3: DATA bit-error where receiver detcts corruption and sends the last valid ACK, allowing for sender retransmission. 
+**Phase 3(b):** Extend the sender to support countdown-timer based recovery from lost DATA packets and lost ACK packets. The receiver behavior remains consistent with the RDT 2.2 receiver model: it accepts only the expected sequence number, discards corrupt or duplicate packets, and re-sends the last valid ACK when needed.
 
-**Phase 3(c):** Run a performance evaluation by measuring completion time over impairment rate from 0% to 95% in 5% increments, taking the average of 5 runs per impairment level, and generating the required plots. 
+**Phase 3(c):** Demonstrate the required five scenarios 
+    - Option 1: No loss / no bit-errors
+    - Option 2: ACK packet bit-error
+    - Option 3: DATA packet bit-error
+    - Option 4: ACK packet loss
+    - Option 5: DATA packet loss
 
-**Phase 3(d):** 
+  **Phase 3(d):** Run a performance evaluation by measuring completion time over impairment rate from 0% to 95% in 5% increments, taking the average of 5 runs per impairment level, and generating the required plots. 
 
-**Phase 3(e):** 
+**Phase 3(e):** Validate correctness by ensuring the received output file matches the original input file
 
 ---
 
@@ -63,7 +65,7 @@ Link: https://youtu.be/vRdP3Vdgl78
 
 ### 1.2 Required Demo Scenarios
 
-**Phase 3(a) - RDT 2.2 File Transfer**
+**Phase 3(a) - RDT 3.0 File Transfer**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
@@ -72,11 +74,13 @@ Link: https://youtu.be/vRdP3Vdgl78
 
 **Phase 3(b) - Error Injection and Recovery**
 
-| Scenario | Configuration | Expected Behavior | What Video Will Show |
-|---|---|---|---|
-| 1 | File transfer with Option 1 | File will be transferred and received with no errors | Video will show file being sent over, received, and then opened for validation |
-| 2 | File transfer with Option 2 | File will be transfered but ACK error is injected, then detected and fixed | Video will show the file being sent over, the ACK being corrupted, then the sender will identify the error and fix it, then the file will be opened for validation |
-| 3 | File transfer with Option 3 | File will be transfered but the data error is injected, then detected and fixed | Video will show the file being sent over, the data will be corrupted, then the receiver will detect the error, fix it, and then the file will be opened for validation. |
+| Scenario | Configuration                                                                                      | Expected Behavior                                                              | What Video Will Show |
+|----------|----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|---|
+| 1        | File transfer with Option 1                                                                        | File will be transferred and received with no errors                           | Video will show file being sent over, received, and then opened for validation |
+| 2        | File transfer with Option 2                                                                        | File will be transfered but ACK error is injected, then detected and fixed     | Video will show the file being sent over, the ACK being corrupted, then the sender will identify the error and fix it, then the file will be opened for validation |
+| 3        | File transfer with Option 3                                                                        | File will be transfered but the data error is injected, then detected and fixed | Video will show the file being sent over, the data will be corrupted, then the receiver will detect the error, fix it, and then the file will be opened for validation. |
+| 4        | File transfer with Option 4                                                                        | File will be transfered but ACK loss is injected, then detected and fixed using timeout and retransmission | Video will show the ACK being dropped, the sender timing out, retransmitting the last packet, and then the file will be opened for validation |
+| 5        | File transfer with Option 5                                                                        | File will be transfered but DATA loss is injected, then detected and fixed using timeout and retransmission | Video will show the DATA packet being dropped, the sender timing out, retransmitting, and then the file will be opened for validation |
 
 **Phase 3(c) - Performance Evaluation**
 
@@ -122,16 +126,16 @@ Plot generated and included.
 
 ### 2.2 Acceptance Criteria 
 
-**Phase 2(a):**
+**Phase 3(a):**
 - [X] Sender uses alternating-bit sequence numbers `(0,1)`, checksum validation, and waits for correct ACK before sending next DATA packet
 - [X] Receiver validates checksum and sequence number, delivers only the expected pacet, and responds with the appropriate ACK as per RDT 2.2 behavior
 
-**Phase 2(b):**
+**Phase 3(b):**
 - [X] Option 1: Completes successfully with no bit errors or retransmissions
 - [X] Option 2: Detected by sender and triggers retranmission of last DATA packet
 - [X] Option 3: Detected by receiver and sends a duplicate ACK to prevent corrupted data delivery
 
-**Phase 2(c):**
+**Phase 3(c):**
 - [X] Completion-time measurements are collected for impairment rates from 0% to 95% in 5% increments
 - [X] Each impairment rate is tested with 5 independent runs; results are averaged
 - [X] Plot is generated and included in Section 1.3
@@ -142,6 +146,10 @@ Plot generated and included.
 - [X] Record demo and upload to YouTube 
 
 ### 2.3 Work Breakdown
+*new*
+- Implement retransmit on corrupt/wrong ACK or timeout
+- Phase 3(b) option 4: intentionally drop received ACK packets
+- Phase 3(b) option 5: intentionally drop received DATA packets
 
 **Workstream A: Cody Nguyen**
 - Integrate and validate all three Phase 2(b)  scenarios (Options 1, 2, and 3) within the protocol logic.
@@ -781,7 +789,7 @@ experiments.py  -> subprocess, time, csv, matplotlib
 
 ### 6.1 Sender Behavior
 
-**Phase 2(a) - RDT 2.2 File Transfer**
+**Phase 3(a) - RDT 3.0 File Transfer**
 
 Steps:
 1. Open BMP file
@@ -796,7 +804,7 @@ Steps:
    	b. If the ACK is valid and matches the current sequence number, stop the timer and toggle the sequence number
 6. Continue until all file chunks are transmitted 
 
-**Phase 2(a) Sender Pseudocode:**
+**Phase 3(a) Sender Pseudocode:**
 
 ```
 initialize seq = 0
@@ -817,7 +825,7 @@ for each chunk in file do
 end for
 ```
 
-**Phase 2(b) - Error Injection and Recovery**
+**Phase 3(b) - Error Injection and Recovery**
 
 Steps:
 1. Enable error injection based on option 1, 2, or 3 (ACK/DATA corruption)
@@ -827,7 +835,7 @@ Steps:
 4. Continue retransmission until a valid ACK is received
 5. Only advance the sequence number after successful ACK validation
 	
-**Phase 2(b) Pseudocode:**
+**Phase 3(b) Pseudocode:**
 
 ```
 initialize seq = 0
@@ -854,7 +862,7 @@ end for
 
 ### 6.2 Receiver Behavior
 
-**Phase 2(a) - RDT 2.2 File Transfer**
+**Phase 3(a) - RDT 3.0 File Transfer**
 Steps:
 1. Bind UDP socket to the receiver port
 2. Initialize the expected sequence number
@@ -868,7 +876,7 @@ Steps:
 		iii. Toggle the expected sequence number
 	d. Otherwise, resend the last valid ACK
 
-**Phase 2(a) Receiver Pseudocode:**
+**Phase 3(b) Receiver Pseudocode:**
 
 ```
 initialize expected_seq = 0
@@ -894,7 +902,7 @@ reassemble file and write to disk
 close socket
 ```
 
-**Phase 2(b) - Error Injection and Recovery**
+**Phase 3(b) - Error Injection and Recovery**
 Steps:
 1. Enable DATA bit-error injection if configured
 2. Once receiving corrupted DATA packet:
@@ -905,7 +913,7 @@ Steps:
 	b. Send the last valid ACK
 4. Continue as normal once a valid packet is received
 
-**Phase 2(b) Receiver Pseudocode:**
+**Phase 3(b) Receiver Pseudocode:**
 
 ```
 if received DATA packet is corrupt then
@@ -923,7 +931,7 @@ end if
 ```
 
 ### 6.3 Error / Loss Injection Specification
-During Phase 2(b):
+During Phase 3(b):
 ACK packet Bit error - ACK packet will be intentionally changed at the sender 
 	-ACK will be changed randomly.
 Data packet bit error - Data packet will be intentionally changed at the receiver
@@ -933,18 +941,20 @@ Data packet bit error - Data packet will be intentionally changed at the receive
 
 ## 7 Experiments and Metrics Plan
 
-Phase 2 evaluates performance and correctness of RDT 2.2 under unreliable channel conditions
+Phase 3 evaluates performance and correctness of RDT 3.0 under unreliable channel conditions
 
 The same BMP file is transferred under three scenarios
 - Option 1: No bit-errors: Baseline performance
 - Option 2: ACK packet bit-error injection: Bit errors are intentionally introduced into ACK packets at the sender’s receive path
 - Option 3: DATA packet bit-error injection: Bit errors are intentionally introduced into DATA packets at the receiver’s receive path
+- Option 4: ACK packet loss: ACK packets are intentionally dropped at the sender receive path
+- Option 5: DATA packet loss: DATA packets are intentionally dropped at the receiver
 
 ### 7.1 Setup
 - Payload size: 1024 bytes
 - Non-pipelined stop-and-wait behavior
 - Sequence numbers: alternating bit (0/1)
-- Checksum: 16-bit additive checksum
+- Checksum: CRC32
 - Loss/error rates: Transfers are executed across error rates from 0% to 95% in increments of 5%
 
 Each rate is tested:
@@ -963,8 +973,8 @@ It ends when the final packet is acknowledged.
 A single plot is generated with:
 - X-axis: error rate (%)
 - Y-axis: average completion time (seconds)
-- Three lines representing Options 1, 2, and 3
-Completion time is expected to increase as error rate rises
+- Five lines representing Options 1, 2, 3, 4, and 5
+- Completion time is expected to increase as error rate rises
 
 ### 7.4 Correctness Validation
 For every run:
@@ -974,10 +984,10 @@ For every run:
 
 
 **Output Artifacts:**
-- `results/phase2d_raw.csv` (timing + status per attempt)
-- `results/phase2d_avg.csv` (average completion time per rate per option)
-- `results/phase2d_plot.gp` (gnuplot script)
-- `results/phase2d_plot.png` (plot image, if gnuplot is installed)
+- `results/phase3_raw.csv` (timing + status per attempt)
+- `results/phase3_avg.csv` (average completion time per rate per option)
+- `results/phase3_plot.gp` (gnuplot script)
+- `results/phase3_plot.png` (plot image, if gnuplot is installed)
 
 ---
 
@@ -993,6 +1003,8 @@ Phase 2 must validate RDT 2.2.
 | Duplicate DATA/ACK packet | Caused by lost ACK or retransmission | Receiver resends ACK but does not deliver duplicate, or sender ignores if incorrect seq|
 | High error rate (≥80%) | Stress test | Transfer completes eventually |
 | Wrong seq ACK | Protocol correctness | sender ignores ACK and retransmits last DATA packet after timeout |
+| Lost DATA packet | No ACK received | sender times out and retransmits |
+| Lost ACK packet | Sender never sees ACK | sender times out and retransmits |
 
 ### 8.2 Tests
 - `test_make_parse_roundtrip`: `make_packet(seq, payload, total)` then `parse_packet()` returns the same fields
@@ -1046,12 +1058,13 @@ src/
   channel.py
 
 scripts/
-  phase2d_experiments.py
+  phase3_experiments.py
 
 results/
-  phase2d_avg.csv
-  phase2d_raw.csv
-  phase2d_plot.png
+ phase3_raw.csv  
+ phase3_avg.csv  
+ phase3_plot.gp  
+ phase3_plot.png  
 
 test-files/
   sample1.bmp
@@ -1076,6 +1089,8 @@ Refer to README
 | Implement end-to-end correctness | Cody Nguyen | 2/20/26 | verifies received BMP matches the original for Options 1–3 across multiple runs. |
 | Collect completion time measurements in 5% increments | Ian Khoo | 2/20/26 | Measurements are collected |
 | Generate plot of collected data | Ian Khoo | 2/20/26 | Plot is generated and sharable |
+| Implement ACK packet loss | Cody Nguyen | 3/13/26 | ACK loss is injected and sender retransmits correctly |
+| Implement DATA packet loss | Cody Nguyen | 3/13/26 | DATA loss is injected and sender retransmits correctly |
 
 ### 10.2 Milestones
 
@@ -1093,14 +1108,14 @@ Refer to README
 
 ### Pre-Recording Checklist
 
-**Phase 2(a):**
+**Phase 3(a):**
 - [X] Both terminal windows visible side-by-side
 
-**Phase 2(b):**
+**Phase 3(b):**
 - [ ] Both terminal windows visible side-by-side
 - [ ] Terminal that shows error injection open
 
-**Phase 2(c):**
+**Phase 3(c):**
 - [ ] Both terminal windows visible side-by-side
 
 **Video Quality:**
