@@ -172,12 +172,12 @@ Expected behavior:
 
 Receiver:
 ```
-python3 src/receiver.py --port 9000 --out results/out.bmp --data-biterr 0.0
+python3 src/receiver.py --port 9000 --out results/out.bmp --data-loss 0.0
 ```
 
 Sender:
 ```
-python3 src/sender.py --host 127.0.0.1 --port 9000 --file test-files/sample1.bmp --ack-biterr 0.0
+python3 src/sender.py --host 127.0.0.1 --port 9000 --file test-files/sample1.bmp --ack-loss 0.2
 ```
 
 
@@ -193,13 +193,13 @@ Expected behavior:
 
 Receiver:
 ```
-python3 src/receiver.py --port 9000 --out results/out.bmp --data-biterr 0.0
+python3 src/receiver.py --port 9000 --out results/out.bmp --data-loss 0.2
 ```
 
 
 Sender:
 ```
-python3 src/sender.py --host 127.0.0.1 --port 9000 --file test-files/sample1.bmp --ack-biterr 0.0
+python3 src/sender.py --host 127.0.0.1 --port 9000 --file test-files/sample1.bmp --ack-loss 0.0
 ```
 
 Expected behavior:
