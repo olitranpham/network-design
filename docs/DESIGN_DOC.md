@@ -120,7 +120,7 @@ Plot generated and included.
 - Handle ACK packet loss using timeout and retransmission
 - Handle DATA packet loss using timeout and retransmission
 - Introduce packet loss injection mechanisms
-- Extend loss scenarios (Options 4 and 5_
+- Extend loss scenarios (Options 4 and 5)
 
 **Behaviors unchanged from previous phase:** 
 - UDP sockets from Phase 1 used for data file transport
@@ -134,7 +134,7 @@ Plot generated and included.
 
 **Phase 3(a):**
 - [X] Sender uses alternating-bit sequence numbers `(0,1)`, checksum validation, and waits for correct ACK before sending next DATA packet
-- [X] Receiver validates checksum and sequence number, delivers only the expected pacet, and responds with the appropriate ACK as per RDT 2.2 behavior
+- [X] Receiver validates checksum and sequence number, while upholding the timer and timeout, delivers only the expected packet, and responds with the appropriate ACK as per RDT 3.0 behavior
 
 **Phase 3(b):**
 - [X] Option 1: Completes successfully with no bit errors or retransmissions
@@ -174,7 +174,7 @@ Plot generated and included.
 
 ### 3.1 State Diagram Evolution
 
-#### Phase 3(a): RDT 3.0 File Transfer CHANGE THESE FOR PPHASE 3
+#### Phase 3(a): RDT 3.0 File Transfer 
 
 ```
 Sender State Diagram:
@@ -189,6 +189,8 @@ Sender State Diagram:
                                    v
                          +-------------------+
               +--------->|  Wait for ACK 0   |<----------+
+			  |          |if timeout runs out|           |
+              |          |   Retransmit pkt  |           |
               |          +-------------------+           |
               |                    |                     |
               |                    | rcv valid ACK0      |
@@ -205,6 +207,8 @@ Sender State Diagram:
               |                    v                     |
               |          +-------------------+           |
               +----------|  Wait for ACK 1   |-----------+
+			             |if timeout runs out|           
+                         |   Retransmit pkt  |           
                          +-------------------+
                                    |
                                    | rcv valid ACK1
@@ -271,6 +275,8 @@ Sender State Diagram (MODIFIED FOR OPTION 2/4):
                                    v
                          +-------------------+
               +--------->|  Wait for ACK 0   |<----------+
+			  |          |if timeout runs out|           |
+              |          |   Retransmit pkt  |           |
               |          +-------------------+           |
               |                    |                     |
               |                    | rcv ACK             |
@@ -299,6 +305,8 @@ Sender State Diagram (MODIFIED FOR OPTION 2/4):
               |                    v
               |          +-------------------+
               +----------|  Wait for ACK 1   |-----------+
+			             |if timeout runs out|           |
+                         |   Retransmit pkt  |           |
                          +-------------------+           |
                                    |                     |
                                    | rcv ACK             |
@@ -324,8 +332,8 @@ Receiver State Diagram (MODIFIED FOR OPTION 2/4, though no differences from the 
               |          +-------------------+           |
               |               |           |               |
               |               |           +---------------+
-              |               |           rcv corrupt pkt OR
-              |               |           rcv pkt1
+              |               |           rcv corrupt pkt OR rcv loss pkt
+              |               |           rcv pkt1        
               |               |           sndpkt = make_pkt(ACK1, checksum)
               |               |           udt_send(sndpkt)
               |               |           [Stay in Wait for Packet 0]
@@ -343,7 +351,7 @@ Receiver State Diagram (MODIFIED FOR OPTION 2/4, though no differences from the 
                          +-------------------+           |
                                   |       |              |
                                   |       +--------------+
-                                  |                      rcv corrupt pkt OR
+                                  |                      rcv corrupt pkt OR rcv loss pkt
                                   |                      rcv pkt0
                                   |                      sndpkt = make_pkt(ACK0, checksum)
                                   |                      udt_send(sndpkt)
@@ -359,7 +367,7 @@ Receiver State Diagram (MODIFIED FOR OPTION 2/4, though no differences from the 
                          (returns to Wait for Packet 0)
 
 Option 3 Data bit-error:
-Sender State Diagram (MODIFIED FOR OPTION 3, though no differences from the original):
+Sender State Diagram (MODIFIED FOR OPTION 3/5, though no differences from the original):
                          +-------------------+
                          |   Wait for Call   |
                          |     (seq = 0)     |
@@ -371,6 +379,8 @@ Sender State Diagram (MODIFIED FOR OPTION 3, though no differences from the orig
                                    v
                          +-------------------+
               +--------->|  Wait for ACK 0   |<----------+
+			  |          |if timeout runs out|           |
+              |          |   Retransmit pkt  |           |
               |          +-------------------+           |
               |                    |                     |
               |                    | rcv valid ACK0      |
@@ -387,6 +397,8 @@ Sender State Diagram (MODIFIED FOR OPTION 3, though no differences from the orig
               |                    v                     |
               |          +-------------------+           |
               +----------|  Wait for ACK 1   |-----------+
+			             |if timeout runs out|            
+                         |   Retransmit pkt  |           
                          +-------------------+
                                    |
                                    | rcv valid ACK1
@@ -394,7 +406,7 @@ Sender State Diagram (MODIFIED FOR OPTION 3, though no differences from the orig
                                    v
                          (returns to Wait for Call 0)
 
-Receiver State Diagram (MODIFIED FOR OPTION 3):
+Receiver State Diagram (MODIFIED FOR OPTION 3/5):
                          +-------------------+
               +--------->| Wait for Packet 0 |<----------+
               |          | (expected_seq=0)  |           |
@@ -404,14 +416,16 @@ Receiver State Diagram (MODIFIED FOR OPTION 3):
               |               |           +---------------+
               |               |           rcv DATA
               |               |           ┌─────────────────────────────────┐
-              |               |           │ [OPTION 3 INJECTION]            │
+              |               |           │ [OPTION 3/5 INJECTION]          │
               |               |           │ if should_corrupt_data():       │
               |               |           │   rcvpkt = flip_bits(rcvpkt)    │
+              |               |           │ if should_loss_data():     v    │
+              |               |           │   rcvpkt = loss(rcvpkt)         │
               |               |           └─────────────────────────────────┘
               |               |           validate_checksum(rcvpkt)
               |               |           parse_seq_num(rcvpkt)
               |               |           
-              |               |           IF (corrupt OR seq_num == 1):
+              |               |           IF (corrupt OR seq_num == 1 OR loss):
               |               |             sndpkt = make_pkt(ACK, last_ack_num)
               |               |             udt_send(sndpkt)
               |               |             [Send LAST valid ACK = ACK1]
@@ -419,9 +433,11 @@ Receiver State Diagram (MODIFIED FOR OPTION 3):
               |               |
               |               | rcv DATA
               |               | ┌─────────────────────────────────┐
-              |               | │ [OPTION 3 INJECTION]            │
+              |               | │ [OPTION 3/5 INJECTION]          │
               |               | │ if should_corrupt_data():       │
               |               | │   rcvpkt = flip_bits(rcvpkt)    │
+              |               | │ if should_loss_data():          │
+              |               | │   rcvpkt = loss(rcvpkt)         │
               |               | └─────────────────────────────────┘
               |               | validate_checksum(rcvpkt)
               |               | parse_seq_num(rcvpkt)
@@ -443,14 +459,16 @@ Receiver State Diagram (MODIFIED FOR OPTION 3):
                                   |       +--------------+
                                   |                      rcv DATA
                                   |                      ┌─────────────────────────────────┐
-                                  |                      │ [OPTION 3 INJECTION]            │
+                                  |                      │ [OPTION 3/5 INJECTION]          │
                                   |                      │ if should_corrupt_data():       │
                                   |                      │   rcvpkt = flip_bits(rcvpkt)    │
+                                  |                      │ if should_loss_data():       │
+                                  |                      │   rcvpkt = loss(rcvpkt)    │
                                   |                      └─────────────────────────────────┘
                                   |                      validate_checksum(rcvpkt)
                                   |                      parse_seq_num(rcvpkt)
                                   |                      
-                                  |                      IF (corrupt OR seq_num == 0):
+                                  |                      IF (corrupt OR seq_num == 0 OR loss):
                                   |                        sndpkt = make_pkt(ACK, last_ack_num)
                                   |                        udt_send(sndpkt)
                                   |                        [Send LAST valid ACK = ACK0]
@@ -458,9 +476,11 @@ Receiver State Diagram (MODIFIED FOR OPTION 3):
                                   |
                                   | rcv DATA
                                   | ┌─────────────────────────────────┐
-                                  | │ [OPTION 3 INJECTION]            │
+                                  | │ [OPTION 3/5 INJECTION]          │
                                   | │ if should_corrupt_data():       │
                                   | │   rcvpkt = flip_bits(rcvpkt)    │
+                                  | │ if should_loss_data():          │
+                                  | │   rcvpkt = loss(rcvpkt)         │
                                   | └─────────────────────────────────┘
                                   | validate_checksum(rcvpkt)
                                   | parse_seq_num(rcvpkt)
@@ -484,7 +504,7 @@ Receiver State Diagram (MODIFIED FOR OPTION 3):
 - Read BMP into memory
 - Compute the total number of packets using a fixed payload size 
 - Divide BMP file data into chunks of 1024 bytes
-- Packetize file and send via RDT 2.2
+- Packetize file and send via RDT 3.0
 - Maintain `seq` and last sent packet
 - Validate ACK checksum adn ACK number
 - Implement retransmit on corrupt/wrong ACK or timeout
@@ -514,7 +534,7 @@ Receiver State Diagram (MODIFIED FOR OPTION 3):
 
 ### 3.3 Message Flow Overview
 
-#### Phase 2(a): RDT 2.2 File Transfer CHANGE THIS FOR PHASE3
+#### Phase 3(a): RDT 3.0 File Transfer CHANGE THIS FOR PHASE3
 
 ```
     SENDER                                              RECEIVER
@@ -524,13 +544,13 @@ Receiver State Diagram (MODIFIED FOR OPTION 3):
     |                                                   |
     | Create pkt0                                       |
     | Checksum: 0xAB12                                  |
-    |                                                   |
+    | Start timer                                       |
     |------------- DATA(seq=0, "chunk0") -------------->|
     |              [Type='D', Seq=0, Len=1024]          |
     |              [Payload=chunk0, Checksum=0xAB12]    |
     |                                                   | Validate checksum 
     |                                                   | expected_seq == 0 
-    |                                                   | Deliver chunk0 to buffer[0]
+    | retransmit pkt if timer runs out                  | Deliver chunk0 to buffer[0]
     |                                                   | expected_seq = 1
     |                                                   |
     |<------------- ACK(ack_num=0) ---------------------|
@@ -563,24 +583,44 @@ Receiver State Diagram (MODIFIED FOR OPTION 3):
 
 ```
 
-#### Phase 2(b): Error Injection and Recovery
+#### Phase 3(b): Error Injection and Recovery
 
 ```
 Option 1 No Error / Data Loss is the same diagram as Phase 2(a)
 
-Option 2 Corrupt ACK Packet w/ example data: 
+Option 2 Corrupt ACK Packet OR Loss ACK Packet w/ example data: 
     SENDER                                              RECEIVER
     ======                                              ========
     
     seq = 0                                             expected_seq = 0
     |                                                   |
     | Create pkt0                                       |
+    | Start timer                                       |
+    |------------- DATA(seq=0, "chunk0") -------------->|
+    |              Checksum=0xAB12                      |
+    | ┌─────────────────────────────────────────┐       |
+    | │ ERROR INJECTION (Option 4)              │       |
+    | │ Lost ACK before validation              │       |
+    | │ ACK corrupted: 0x5678 → nothing         │       |
+    | └─────────────────────────────────────────┘       |
+    |                                                   | Validate checksum 
+    |                                                   | Deliver chunk0
+    |                                                   | expected_seq = 1
     |                                                   |
+    |                                                   |
+    |        X----- ACK LOST----------------------------|
+    |              Checksum=0x1234                      |
+    | Timer ends - No ACK received, retransmit          |
+    | Retransmit packet 0                               |
     |------------- DATA(seq=0, "chunk0") -------------->|
     |              Checksum=0xAB12                      |
     |                                                   | Validate checksum 
     |                                                   | Deliver chunk0
     |                                                   | expected_seq = 1
+    |                                                   |
+    |                                                   |
+    | Validate checksum                                 |
+    | seq = 1                                           |
     |                                                   |
     |<------------- ACK(ack_num=0) ---------------------|
     |              Checksum=0x1234                      |
@@ -629,16 +669,34 @@ Option 2 Corrupt ACK Packet w/ example data:
     | n packets sent                                    | n packets received
     | x retransmission(s)                               |
 
-Option 3 Data bit-Error w/ example data:
+Option 3/5 Data bit-Error OR Loss data w/ example data:
     SENDER                                              RECEIVER
     ======                                              ========
     
     seq = 0                                             expected_seq = 0
     |                                                   |
     | Create pkt0                                       |
+    | Start timer                                       |
     |                                                   |
+    |------------- DATA(seq=0, "chunk0") --------X      |
+    |              Checksum=0xAB12                      |
+    |                                                   | ┌────────────────────────────┐
+    |                                                   | │ ERROR INJECTION (Option 5) │
+    |                                                   | │ Lost DATA before checksum  │
+    |                                                   | │ 0xCD34 → Nothing           │
+    |                                                   | └────────────────────────────┘
+    |                                                   |
+    |                                                   | Validate checksum: FAIL
+    |                                                   | Corrupt DATA detected
+    |                                                   | Send last valid ACK (ACK0)
+    |                                                   | Do NOT deliver data
+    |                                                   | Do NOT change expected_seq
+    | Timer ends - No ACK received, retransmit          |
+    | Retransmit packet 0                               |
     |------------- DATA(seq=0, "chunk0") -------------->|
     |              Checksum=0xAB12                      |
+    |                                                   |
+    |                                                   |
     |                                                   | Validate checksum 
     |                                                   | Deliver chunk0
     |                                                   | expected_seq = 1
@@ -726,7 +784,7 @@ header_format = "!BBHII"  # type, seq, payload_len, total_packets, checksum
 
 ### 5.1 Key Data Structures
 
-**RDT 2.2 Packet Structure** (in `packet.py`)
+**RDT 3.0 Packet Structure** (in `packet.py`)
 
 - Fields:
   - `pkt_type` (uint8): Packet type identifier (DATA/ACK)
@@ -836,10 +894,10 @@ for each chunk in file do
 end for
 ```
 
-**Phase 3(b) - Error Injection and Recovery**
+**Phase 3(Option 2/4) - Error Injection and Recovery**
 
 Steps:
-1. Enable error injection based on option 1, 2, or 3 (ACK/DATA corruption)
+1. Enable error injection based on option 1, 2, 3, 4, or 5 (ACK/DATA corruption)
 2. After sending a DATA packet, wait for an ACK
 3. If the ACK is corrupted, invalid, or times out:
 	a. Retransmit the previously sent DATA packet
@@ -878,7 +936,8 @@ Steps:
 1. Bind UDP socket to the receiver port
 2. Initialize the expected sequence number
 3. Initialize a buffer for storing received payloads
-4. Loop until all packets are received:
+4. Initialize a timer for packet loss scenarios
+5. Loop until all packets are received:
 	a. Receive a DATA packet
 	b. Validate the checksum and sequence number
 	c. If the packet is valid and matches the expected sequence number:
@@ -895,7 +954,7 @@ initialize last_ack = ACK(1)
 initialize received_count = 0
 
 while received_count < total_packets do
-    receive packet from UDP
+    Receive a packet from UDP
 
     if packet corrupt OR packet.seq != expected_seq then
         send last_ack
@@ -913,16 +972,19 @@ reassemble file and write to disk
 close socket
 ```
 
-**Phase 3(b) - Error Injection and Recovery** CHANGE THS HERE I LEFT OFF HERE ----------------------------------------------------------------
+**Phase 3(Option 3/5) - Error Injection and Recovery** 
 Steps:
-1. Enable DATA bit-error injection if configured
+1. Enable DATA bit-error or loss injection if configured
 2. Once receiving corrupted DATA packet:
 	a. Discard the packet
 	b. Send the last valid ACK
 3. Once receiving a duplicate DATA packet:
 	a. Do not deliver the payload
 	b. Send the last valid ACK
-4. Continue as normal once a valid packet is received
+4. Once receiving the DATA packet, set to be lost:
+	a. Do not deliver the payload
+	b. Do not send ACK 
+6. Continue as normal once a valid packet is received
 
 **Phase 3(b) Receiver Pseudocode:**
 
@@ -946,13 +1008,17 @@ During Phase 3(b):
 ACK packet Bit error - ACK packet will be intentionally changed at the sender 
 	-ACK will be changed randomly.
 Data packet bit error - Data packet will be intentionally changed at the receiver
-	-Bits will flipped randomly 
+	-Bits will be flipped randomly 
+ACK packet Loss error - ACK packet will intentionally be lost at the sender
+	-ACK will not be sent/received
+Data packet Loss error - data packet will intentionally be lost at the receiver
+	-Data will not be sent/received
 
 ---
 
 ## 7 Experiments and Metrics Plan
 
-Phase 3 evaluates performance and correctness of RDT 3.0 under unreliable channel conditions
+Phase 3 evaluates the performance and correctness of RDT 3.0 under unreliable channel conditions
 
 The same BMP file is transferred under three scenarios
 - Option 1: No bit-errors: Baseline performance
@@ -1037,6 +1103,14 @@ Option 3:
 - Corrupt DATA with probability p
 - Confirm receiver discards corrupted packet
 - Confirm retransmission occurs
+Option 4:
+- Lose ACK with probability p
+- Confirm retransmission logic works
+- Confirm file correctness
+Option 5:
+- Lose DATA with probability p
+- Confirm receiver discards corrupted packet
+- Confirm retransmission occurs
 
 ### 8.3 Test Artifacts
 
@@ -1092,26 +1166,29 @@ Refer to README
 
 | Task | Owner | Target Date | Definition of Done |
 |---|---|---|---|
-| Implement RDT 2.2 sender loop | Olivia Pham | 2/20/26 | Sender transmits DATA packets with alternating-bit seq, waits for ACK before advancing, and supports configurable timeout. |
-| Implement ACK validation + retransmission logic | Olivia Pham | 2/20/26 | Sender correctly detects corrupt/wrong-seq ACKs and retransmits the last DATA packet until a valid ACK is received. |
-| Implement RDT 2.2 receiver accept/duplicate/corrupt handling | Olivia Pham | 2/20/26 | Receiver validates checksum, delivers only expected seq packets, discards corrupt/duplicate packets, and responds with correct ACK or last ACK. |
+| Implement RDT 3.0 sender loop | Olivia Pham | 3/17/26 | Sender transmits DATA packets with alternating-bit seq, waits for ACK before advancing, and supports configurable timeout. |
+| Implement ACK validation + retransmission logic | Olivia Pham | 3/17/26 | Sender correctly detects corrupt/wrong-seq ACKs and retransmits the last DATA packet until a valid ACK is received. |
+| Implement RDT 3.0 receiver accept/duplicate/corrupt handling | Olivia Pham | 3/17/26 | Receiver validates checksum, delivers only expected seq packets, discards corrupt/duplicate packets, and responds with correct ACK or last ACK. |
 | Implement ACK bit-error injection | Cody Nguyen | 2/20/26 | ACK corruption is applied; sender detects corruption and retransmits; transfer still completes with correct output file. |
 | Implement DATA bit-error injection | Cody Nguyen | 2/20/26 | DATA corruption is applied, receiver discards corrupted packets, re-sends last ACK, and file transfer completes correctly. |
 | Implement end-to-end correctness | Cody Nguyen | 2/20/26 | verifies received BMP matches the original for Options 1–3 across multiple runs. |
-| Collect completion time measurements in 5% increments | Ian Khoo | 2/20/26 | Measurements are collected |
-| Generate plot of collected data | Ian Khoo | 2/20/26 | Plot is generated and sharable |
-| Implement ACK packet loss | Cody Nguyen | 3/13/26 | ACK loss is injected and sender retransmits correctly |
-| Implement DATA packet loss | Cody Nguyen | 3/13/26 | DATA loss is injected and sender retransmits correctly |
+| Test and ensure all files and scripts can be run, debug, and changed if needed | Ian Khoo | 3/18/26 | tests are run and scripts are updated |
+| Collect completion time measurements in 5% increments | Ian Khoo | 3/19/26 | Measurements are collected |
+| Generate plot of collected data | Ian Khoo | 3/19/26 | Plot is generated and sharable |
+| Implement ACK packet loss | Cody Nguyen | 3/18/26 | ACK loss is injected and sender retransmits correctly |
+| Implement DATA packet loss | Cody Nguyen | 3/18/26 | DATA loss is injected and sender retransmits correctly |
 
 ### 10.2 Milestones
 
 1.  ACK is successfully implemented into the sender/receiver logic
 2.  Receiver/Sender is able to detect and validate errors
-3.  ACK packet bit error is correctly changing the data of ACK
+3.  ACK packet bit error is correctly changing the data of the ACK
 4.  The data packet bit error is correctly changing the data of the data packet
-5.  Completion time measurements are collected, and each impairment rate is tested with 5 independent runs, with results averaged.
-6.  Plot with all data from completion time is generated
-7.  Videos of working code are taken.
+5.  ACK packet loss error is correctly losing the data of the ACK
+6.  The data packet loss error is correctly changing, losing the data of the data packet
+7.  Completion time measurements are collected, and each impairment rate is tested with 5 independent runs, with results averaged.
+8.  Plot with all data from completion time is generated
+9.  Videos of working code are taken.
 
 ---
 
@@ -1119,19 +1196,28 @@ Refer to README
 
 ### Pre-Recording Checklist
 
-**Phase 3(a):**
+**Phase 3(Option 1):**
 - [X] Both terminal windows visible side-by-side
 
-**Phase 3(b):**
-- [ ] Both terminal windows visible side-by-side
-- [ ] Terminal that shows error injection open
+**Phase 3(Option 2):**
+- [X] Both terminal windows visible side-by-side
+- [X] Terminal that shows error injection open
 
-**Phase 3(c):**
-- [ ] Both terminal windows visible side-by-side
+**Phase 3(Option 3):**
+- [X] Both terminal windows visible side-by-side
+- [X] Terminal that shows error injection open
 
+**Phase 3(Option 4):**
+- [X] Both terminal windows visible side-by-side
+- [X] Terminal that shows error injection open
+
+**Phase 3(Option 5):**
+- [X] Both terminal windows visible side-by-side
+- [X] Terminal that shows error injection open
+      
 **Video Quality:**
-- [ ] Both terminal windows visible side-by-side
-- [ ] Clear explanation of steps
-- [ ] Show file comparison/verification
+- [X] Both terminal windows visible side-by-side
+- [X] Clear explanation of steps
+- [X] Show file comparison/verification
 
 
