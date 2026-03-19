@@ -216,7 +216,7 @@ Expected behavior:
 Run:
 ```
 python3 scripts/phase3_experiments.py \
-  --file test-files/bmp_24.bmp \
+  --file test-files/sample1.bmp \
   --runs 5 \
   --max-attempts 60 \
   --timeout 0.005 \
@@ -225,7 +225,7 @@ python3 scripts/phase3_experiments.py \
   ```
 If running in PyCharm (or PowerShell): 
 ```
-python3 scripts/phase3_experiments.py --file test-files/bmp_24.bmp --runs 5 --max-attempts 60 --timeout 0.005 --hard-timeout 60 --plot
+python3 scripts/phase3_experiments.py --file test-files/sample1.bmp --runs 5 --max-attempts 60 --timeout 0.005 --hard-timeout 60 --plot
   ```
 
 ## Figures / Plots
