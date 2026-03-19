@@ -223,7 +223,10 @@ python3 scripts/phase3_experiments.py \
   --hard-timeout 60 \
   --plot
   ```
-
+If running in PyCharm (or PowerShell): 
+```
+python3 scripts/phase3_experiments.py --file test-files/bmp_24.bmp --runs 5 --max-attempts 60 --timeout 0.005 --hard-timeout 60 --plot
+  ```
 
 ## Figures / Plots
 results/phase3_plot.png
