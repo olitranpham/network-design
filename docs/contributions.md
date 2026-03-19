@@ -43,10 +43,11 @@
 
 | Section / Task | Role | Date Completed |
 |----------------|------|----------------|
-| Phase 2(b) | Implemented ACK and DATA corruption into sender and receiver and validated retransmission behavior | 2/19/26 |
-| Phase 2(c) | Ran performance experiments across 0-95% error rates and generated outputs + plot | 2/19/26 |
-| README.md | Updated run commands for reproducibility | 2/19/26 |
-| Section 7 | Authored | 02/13/2026 |
-| Section 8 | Authored | 02/13/2026 |
-| Section 9 | Authored | 02/13/2026 |
-| Section 10 | Co-authored | 02/13/2026 |
+| Phase 3(d) | Implemented error injection experiments and validated protocol behavior under varying conditions | 3/18/26 |
+| Phase 3(e) | Extended testing scenarios and verified retransmission correctness | 3/18/26 |
+| DESIGN_DOC.md and README.md | Updated documentation and experiment instructions for Phase 3 | 3/18/26 |
+| Section 1 | Co-authored | 3/18/2026 |
+| Section 5 | Co-authored | 3/18/2026 |
+| Section 10 | Co-authored | 3/18/2026 |
+
+
