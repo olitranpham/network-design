@@ -174,7 +174,7 @@ Plot generated and included.
 
 ### 3.1 State Diagram Evolution
 
-#### Phase 3(a): RDT 3.0 File Transfer
+#### Phase 3(a): RDT 3.0 File Transfer CHANGE THESE FOR PPHASE 3
 
 ```
 Sender State Diagram:
@@ -489,7 +489,8 @@ Receiver State Diagram (MODIFIED FOR OPTION 3):
 - Validate ACK checksum adn ACK number
 - Implement retransmit on corrupt/wrong ACK or timeout
 - Print transmission progress into console
-- Phase 2(b) option 2: intentionally corrupt received ACK bits before validation
+- Phase 3 option 2: intentionally corrupt received ACK bits before validation
+- Phase 3 option 4: intentionally lose received ACK bits before validation
 
 **Phase 3(a) - Receiver Components**
 
@@ -501,11 +502,10 @@ Receiver State Diagram (MODIFIED FOR OPTION 3):
 - Track the number of packets received
 - Send ACK packets with checksum
 - On corrupt/duplicate DATA: re-send last ACK
-- Phase 2(b) option 3: intentionally corrupt received DATA bits before checksum validation
+- Phase 3 option 3: intentionally corrupt received DATA bits before checksum validation
+- Phase 3 option 5: intentionally lose received DATA bits before checksum validation
 - Write the reconstructed file to disk
 
-**Phase 2(b) - Sender Components**
-**Phase 2(b) - Receiver Components**
 
 **Shared Modules**
 - `packet.py` - Packet encoding/decoding utilities
@@ -514,7 +514,7 @@ Receiver State Diagram (MODIFIED FOR OPTION 3):
 
 ### 3.3 Message Flow Overview
 
-#### Phase 2(a): RDT 2.2 File Transfer
+#### Phase 2(a): RDT 2.2 File Transfer CHANGE THIS FOR PHASE3
 
 ```
     SENDER                                              RECEIVER
@@ -777,11 +777,11 @@ header_format = "!BBHII"  # type, seq, payload_len, total_packets, checksum
 
 ```
 src/
-|-- sender.py       	# Phase 2(a): RDT 2.2 file sender
-|-- receiver.py   	 	# Phase 2(a): RDT 2.2 file receiver
-|-- packet.py  			# Phase 2(a): DATA/ACK packet creation, parsing, and checksum utilities
-|-- channel.py			# Phase 2(b): Bit-error injection and unreliable channel simulation 
-|-- experiments.py		# Phase 2(c): Completion-time experiments and data collection
+|-- sender.py       	# Phase 3(a): RDT 3.0 file sender
+|-- receiver.py   	 	# Phase 3(a): RDT 3.0 file receiver
+|-- packet.py  			# Phase 3(a): DATA/ACK packet creation, parsing, and checksum utilities
+|-- channel.py			# Phase 3(b): Bit-error injection and unreliable channel simulation 
+|-- experiments.py		# Phase 3(c): Completion-time experiments and data collection
 ```
 
 **Dependency Graph:**
@@ -913,7 +913,7 @@ reassemble file and write to disk
 close socket
 ```
 
-**Phase 3(b) - Error Injection and Recovery**
+**Phase 3(b) - Error Injection and Recovery** CHANGE THS HERE I LEFT OFF HERE ----------------------------------------------------------------
 Steps:
 1. Enable DATA bit-error injection if configured
 2. Once receiving corrupted DATA packet:
@@ -1003,7 +1003,7 @@ For every run:
 ---
 
 ## 8 Edge Cases and Test Plan
-Phase 2 must validate RDT 2.2.
+Phase 3 must validate RDT 3.0
 
 ### 8.1 Expected Edge Cases
 
