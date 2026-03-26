@@ -1,5 +1,5 @@
 # Network Design Project – Phase Proposal & Design Document 
-## (Phase 3 of 5)
+## (Phase 4 of 5)
 
 **Team Name:**  Don't Be COI
 
@@ -8,13 +8,13 @@
 - Olivia Pham: olivia_pham@student.uml.edu
 - Ian Khoo: ian_khoo@student.uml.edu
 
-**GitHub Repo URL (with GitHub usernames):** https://github.com/olitranpham/network-design, olitranpham, iantkhoo1488
+**GitHub Repo URL (with GitHub usernames):** https://github.com/olitranpham/network-design, olitranpham, iantkhoo1488, codynguyen-dev
 
-**Phase:** 3
+**Phase:** 4
 
-**Submission Date:**  3/19/2026
+**Submission Date:**  3/21/2026
 
-**Version:** v4
+**Version:** v5
 
 ---
 
@@ -37,20 +37,20 @@
 
 ## 0 Executive summary
 
-**Phase 3(a):** Implement RDT 3.0 over UDP for reliable file delivery under both bit errors and packet loss. The protocol uses alternating-bit sequence numbers, checksums, ACK packets, and sender-side timeout/retransmission behavior.
+**Phase 4(a):** Implement the Go-Back-N (GBN) data transfer protocol over an unreliable UDP channel. Unlike the stop-and-wait model used in Phase 3 (RDT 3.0), the sender will transmit multiple packets without waiting for an ACK for each packet. A sliding window of size N will be used to allow pipelined transmission. 
 
-**Phase 3(b):** Extend the sender to support countdown-timer based recovery from lost DATA packets and lost ACK packets. The receiver behavior remains consistent with the RDT 2.2 receiver model: it accepts only the expected sequence number, discards corrupt or duplicate packets, and re-sends the last valid ACK when needed.
+**Phase 4(b):** The sender maintains a window buffer containing packets that have been sent but not yet acknowledged. If a timeout occurs, the sender will retransmit all unacknowledged packets starting from the base of the window.
 
-**Phase 3(c):** Demonstrate the required five scenarios 
-    - Option 1: No loss / no bit-errors
-    - Option 2: ACK packet bit-error
-    - Option 3: DATA packet bit-error
-    - Option 4: ACK packet loss
-    - Option 5: DATA packet loss
+**Phase 4(c):** The receiver implements the Go-Back-N receiver model, which accepts only the next expected packet in sequence and discards out-of-order packets.
 
-  **Phase 3(d):** Run a performance evaluation by measuring completion time over impairment rate from 0% to 95% in 5% increments, taking the average of 5 runs per impairment level, and generating the required plots. 
+**Phase 4(d):** Test the protocol under the save 5 unreliable network conditions:
+	- Option 1: No loss/no bit errors
+	- Option 2: ACK packet bit-error
+	- Option 3: DATA packet bit-error
+	- Option 4: ACK packet loss
+	- Option 5: DATA packet lott
 
-**Phase 3(e):** Validate correctness by ensuring the received output file matches the original input file
+**Phase 4(e):** Evaluate protocol performance under varying loss/error probabilities and analyze the effect of window size and timeout values on completion time.
 
 ---
 
@@ -59,51 +59,46 @@
 ### 1.1 Demo Deliverable
 
 - **Private YouTube link** 
-	- Link: https://youtu.be/w6dEdgzKcrY
+	- Link: TBD
 		- Timestamped outline:
-			- Phase 3 Option 1 ==> 0:00 - 0:18
-     		- Phase 3 Option 2 ==> 0:18 - 2:15
-     		- Phase 3 Option 3 ==> 2:15 - 4:20
-     		- Phase 3 Option 4 ==> 4:20 - 6:29
-       		- Phase 3 Option 5 ==> 6:29 - 8:35
-            - Phase 3 Generated Plot ==> 8:35 - 8:48
-
+			- TBD
 
 ### 1.2 Required Demo Scenarios
 
-**Phase 3(a) - RDT 3.0 File Transfer**
+**Phase 4(a) - Go-Back-N Sliding Window Implementation**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-| 1 | File Transfer using RDT 3.0 | A file will be sent over with the code checking for errors or duplicates | Video will show file being sent with terminal showing sequence numbers, and errors (when applicable), then file will be opened for validation |
-| The video above will be the same video as Phase 2(b) Option 1 |
+|   |   |   |   |
+|   |   |   |   |
 
-**Phase 3(b) - Error Injection and Recovery**
-
-| Scenario | Configuration                                                                                      | Expected Behavior                                                              | What Video Will Show |
-|----------|----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|---|
-| 1        | File transfer with Option 1                                                                        | File will be transferred and received with no errors                           | Video will show file being sent over, received, and then opened for validation |
-| 2        | File transfer with Option 2                                                                        | File will be transfered but ACK error is injected, then detected and fixed     | Video will show the file being sent over, the ACK being corrupted, then the sender will identify the error and fix it, then the file will be opened for validation |
-| 3        | File transfer with Option 3                                                                        | File will be transfered but the data error is injected, then detected and fixed | Video will show the file being sent over, the data will be corrupted, then the receiver will detect the error, fix it, and then the file will be opened for validation. |
-| 4        | File transfer with Option 4                                                                        | File will be transfered but ACK loss is injected, then detected and fixed using timeout and retransmission | Video will show the ACK being dropped, the sender timing out, retransmitting the last packet, and then the file will be opened for validation |
-| 5        | File transfer with Option 5                                                                        | File will be transfered but DATA loss is injected, then detected and fixed using timeout and retransmission | Video will show the DATA packet being dropped, the sender timing out, retransmitting, and then the file will be opened for validation |
-
-**Phase 3(c) - Performance Evaluation**
+**Phase 4(b) - Timeout and Retransmission Logic**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-| 1 | Test Completion time for each impairment rate | completion time will be tested | The video will show various plots |
-|The test above will be replicated for each impairment rate from 0% to 95% in 5% increments. Each impairment rate has 5 independent tests, and the results are averaged. So to keep this section from being 20 lines long, this note was added |
+|   |   |   |   |
+|   |   |   |   |
 
-**Phase 3(d) - **
-
-| Scenario | Configuration | Expected Behavior | What Video Will Show |
-|show graph made |graph will be of completion times| Graph opens |The created graph|
-
-**Phase 3(e) - **
+**Phase 4(c) - Go-Back-N Receiver Behavior**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
-|Files opened to show correctness|files will be the same as input|The picture will be the same|the opening of the output file|
+|---|---|---|---|
+|   |   |   |   |
+|   |   |   |   |
+
+**Phase 4(d) - Error and Loss Handling**
+
+| Scenario | Configuration | Expected Behavior | What Video Will Show |
+|---|---|---|---|
+|   |   |   |   |
+|   |   |   |   |
+
+**Phase 4(e) - Correctness Verification**
+
+| Scenario | Configuration | Expected Behavior | What Video Will Show |
+|---|---|---|---|
+|   |   |   |   |
+|   |   |   |   |
 
 ### 1.3 Required Figures/Plots
 
@@ -116,57 +111,91 @@ Plot generated and included.
 ### 2.1 Scope
 
 **New behaviors added:** 
-- Implement timeout mechanims in sender (RDT 3.0)
-- Handle ACK packet loss using timeout and retransmission
-- Handle DATA packet loss using timeout and retransmission
-- Introduce packet loss injection mechanisms
-- Extend loss scenarios (Options 4 and 5)
+- Sliding window transmission
+- Sender packet buffer
+- Go-Back-N retransmission logic
+- Cumulative acknowledgements
+- Variable window size testing
 
 **Behaviors unchanged from previous phase:** 
-- UDP sockets from Phase 1 used for data file transport
-- File packetization still fixed into 1024 byte payloads
-- Receiver reassembles file and writes to disk
+- UDP socket communication
+- Packet checksum validation
+- File segmentation into 1024-byte chunks
+- Error injection mechanisms
 
 **Out of scope (explicitly):**
-- 
+- Selective repeat protocol
+- Congestion control
+- Adaptive timeout calculation
 
 ### 2.2 Acceptance Criteria 
 
-**Phase 3(a):**
-- [X] Sender uses alternating-bit sequence numbers `(0,1)`, checksum validation, and waits for correct ACK before sending next DATA packet
-- [X] Receiver validates checksum and sequence number, while upholding the timer and timeout, delivers only the expected packet, and responds with the appropriate ACK as per RDT 3.0 behavior
+**Phase 4(a):**
+- [ ] The sender implements the Go-Back-N sliding window protocol over UDP.
+- [ ] The sender is able to transmit multiple packets without waiting for individual ACKs.
+- [ ] The sender maintains 2 variables:
+      	- `base`: the sequence number of the oldest unacknowledged packet
+      	- `next_seq_num`: the next packet to be transmitted
+- [ ] The sender stores transmitted but unacknowledged packets in a packet buffer.
+- [ ] Sequence numbers are used to identify packets and maintain correct ordering.
+- [ ] The sender is able to transmit packets while `next_seq_num < base + window_size`
 
-**Phase 3(b):**
-- [X] Option 1: Completes successfully with no bit errors or retransmissions
-- [X] Option 2: Detected by sender and triggers retranmission of last DATA packet
-- [X] Option 3: Detected by receiver and sends a duplicate ACK to prevent corrupted data delivery
+**Phase 4(b):**
+- [ ] A single timer is maintained for the oldest unacknowledged packet.
+- [ ] If the timer expires before an ACK is received, the sender retransmits all packets starting from `base` up to `next_seq_num - 1`
+- [ ] The timer is restarted whenever retransmissions occur.
 
-**Phase 3(c):**
-- [X] Completion-time measurements are collected for impairment rates from 0% to 95% in 5% increments
-- [X] Each impairment rate is tested with 5 independent runs; results are averaged
-- [X] Plot is generated and included in Section 1.3
+**Phase 4(c):**
+- [ ] The receiver maintains the variable `expected_sequence_num`
+- [ ] If a packet arrives with the expected sequence number, the receiver accepts the packet, the payload is delivered to the application layer, a cumulative ACK for that packet is sent, and `expected_seq_num` increments.
+- [ ] If a packet arrives out of order, the packet is discarded and the receiver resends the last ACK.
 
+**Phase 4(d):**
+- [ ] Option 1: File transfer completes normally without retransmissions
+- [ ] Option 2: Sender detects corrupted ACK and retransmits packets as needed
+- [ ] Option 3: Receiver detects corruption and resends last ACK
+- [ ] Option 4: Sender times out and retransmits packets
+- [ ] Option 5: Receiver does not acknowledge missing packet, causing sender retransmission
+      
+**Phase 4(e):**
+- [ ] Loss/error probability will range from 0% to 95% in increments of 5%.
+- [ ] Each configuration will be tested five times, and results will be averaged.
+- [ ] Experiments will analyze the impact of window size, timeout values, and network loss/error rates. 
+      
 **General:**
-- [X] README.md is complete
-- [X] Invite instructor(s) to GitHub repo and include GitHub link
-- [X] Record demo and upload to YouTube 
+- [ ] README.md is complete
+- [ ] Invite instructor(s) to GitHub repo and include GitHub link
+- [ ] Record demo and upload to YouTube 
 
 ### 2.3 Work Breakdown
-*new*
-- Implement retransmit on corrupt/wrong ACK or timeout
-- Phase 3(b) option 4: intentionally drop received ACK packets
-- Phase 3(b) option 5: intentionally drop received DATA packets
+
+**New Tasks for Phase 4:**
+- Implement Go-Back-N sliding window protocol
+- Implement sender window buffer for unacknowledged packets
+- Implement `base` and `next_seq_num` tracking in the sender
+- Implement Go-Back-N retransmission behavior on timeout
+- Modify sender logic to support pipelined packet transmission
+- Modify receiver to support cumulative ACK behavior
+- Test protocol under unreliable channel scenarios (Options 1–5)
+- Evaluate protocol performance under different window sizes and loss/error probabilities
 
 **Workstream A: Cody Nguyen**
-- Integrate and validate all three Phase 3 scenarios (Options 1, 2, 3, 4 and 5) within the protocol logic.
+- Integrate Go-Back-N logic into the existing UDP file transfer framework.
+- Implement and validate error injection scenarios (Options 1–5).
+- Ensure sender correctly handles corrupted or lost ACK packets.
+- Verify retransmission behavior under packet loss conditions.
 
 **Workstream B: Olivia Pham**
-- Design and implement the updated RDT 3.0 sender and receiver logic, including checksum validation, ACK handling, retransmission behavior, and timer/timeout.
-
+- Design and implement the Go-Back-N sender architecture.
+- Implement sliding window transmission logic (`base`, `next_seq_num`, window size).
+- Implement packet buffering for unacknowledged packets.
+- Implement timeout and retransmission of packets starting from the window base.
+  
 **Workstream C: Ian Khoo**
-- Conduct performance evaluation experiments across all impairment levels.
-- Test and verify all phase 3 scenarios (Options 1, 2, 3, 4, and 5)
-- Generate completion-time plots and record demonstration videos for Phase 2.
+- Conduct performance evaluation experiments across varying loss/error probabilities.
+- Test protocol behavior with different window sizes.
+- Measure completion times for file transfers under all scenarios.
+- Generate performance plots and record demonstration videos for Phase 4.
 
 ---
 
@@ -174,326 +203,29 @@ Plot generated and included.
 
 ### 3.1 State Diagram Evolution
 
-#### Phase 3(a): RDT 3.0 File Transfer 
-
-```
-Sender State Diagram:
-                         +-------------------+
-                         |   Wait for Call   |
-                         |     (seq = 0)     |
-                         +-------------------+
-                                   |
-                                   | rdt_send(data)
-                                   | sndpkt = make_pkt(0, data, checksum)
-                                   | udt_send(sndpkt)
-                                   v
-                         +-------------------+
-              +--------->|  Wait for ACK 0   |<----------+
-			  |          |if timeout runs out|           |
-              |          |   Retransmit pkt  |           |
-              |          +-------------------+           |
-              |                    |                     |
-              |                    | rcv valid ACK0      |
-              |                    | seq = 1             |
-              |                    v                     |
-              |          +-------------------+           |
-              |          |   Wait for Call   |           |
-              |          |     (seq = 1)     |           |
-              |          +-------------------+           |
-              |                    |                     |
-              |                    | rdt_send(data)      |
-              |                    | sndpkt = make_pkt(1, data, checksum)
-              |                    | udt_send(sndpkt)    |
-              |                    v                     |
-              |          +-------------------+           |
-              +----------|  Wait for ACK 1   |-----------+
-			             |if timeout runs out|           
-                         |   Retransmit pkt  |           
-                         +-------------------+
-                                   |
-                                   | rcv valid ACK1
-                                   | seq = 0
-                                   v
-                         (returns to Wait for Call 0)
-
-Receiver State Diagram:
-                         +-------------------+
-              +--------->| Wait for Packet 0 |<----------+
-              |          | (expected_seq=0)  |           |
-              |          +-------------------+           |
-              |               |           |               |
-              |               |           +---------------+
-              |               |           rcv corrupt pkt OR
-              |               |           rcv pkt1
-              |               |           sndpkt = make_pkt(ACK1, checksum)
-              |               |           udt_send(sndpkt)
-              |               |           [Stay in Wait for Packet 0]
-              |               |
-              |               | rcv valid pkt0
-              |               | extract(data)
-              |               | deliver_data(data)
-              |               | sndpkt = make_pkt(ACK0, checksum)
-              |               | udt_send(sndpkt)
-              |               | expected_seq = 1
-              |               v
-              |          +-------------------+
-              +----------|Wait for Packet 1  |-----------+
-                         | (expected_seq=1)  |           |
-                         +-------------------+           |
-                                  |       |              |
-                                  |       +--------------+
-                                  |                      rcv corrupt pkt OR
-                                  |                      rcv pkt0
-                                  |                      sndpkt = make_pkt(ACK0, checksum)
-                                  |                      udt_send(sndpkt)
-                                  |                      [Stay in Wait for Packet 1]
-                                  |
-                                  | rcv valid pkt1
-                                  | extract(data)
-                                  | deliver_data(data)
-                                  | sndpkt = make_pkt(ACK1, checksum)
-                                  | udt_send(sndpkt)
-                                  | expected_seq = 0
-                                  v
-                         (returns to Wait for Packet 0)
+#### Phase 4(a): Go-Back-N Sliding Window Implementation
 
 ```
 
-#### Phase 3(b/d): Error Injection and Recovery
 
 ```
-Option 2/4 Corrupt/loss ACK Packets:
-Sender State Diagram (MODIFIED FOR OPTION 2/4):
-                         +-------------------+
-                         |   Wait for Call   |
-                         |     (seq = 0)     |
-                         +-------------------+
-                                   |
-                                   | rdt_send(data)
-                                   | sndpkt = make_pkt(0, data, checksum)
-                                   | udt_send(sndpkt)
-                                   v
-                         +-------------------+
-              +--------->|  Wait for ACK 0   |<----------+
-			  |          |if timeout runs out|           |
-              |          |   Retransmit pkt  |           |
-              |          +-------------------+           |
-              |                    |                     |
-              |                    | rcv ACK             |
-              |                    | ┌─────────────────────────────────┐
-              |                    | │ [OPTION 2/4 INJECTION]          │
-              |                    | │ if should_corrupt_ack():        │
-              |                    | │   rcvpkt = flip_bits(rcvpkt)    |
-              │                    | | if should_loss_ack():           |
-              |                    | |   rcvpkt = loss_bits(rcvpkt)    |
-              |                    | └─────────────────────────────────┘
-              |                    | validate_checksum(rcvpkt)
-              |                    | parse_ack_num(rcvpkt)
-              |                    |
-              |                    | IF (NOT corrupt AND ack_num == 0):
-              |                    |   seq = 1
-              |                    |   [move to Wait for Call 1]
-              |                    v
-              |          +-------------------+
-              |          |   Wait for Call   |
-              |          |     (seq = 1)     |
-              |          +-------------------+
-              |                    |
-              |                    | rdt_send(data)
-              |                    | sndpkt = make_pkt(1, data, checksum)
-              |                    | udt_send(sndpkt)
-              |                    v
-              |          +-------------------+
-              +----------|  Wait for ACK 1   |-----------+
-			             |if timeout runs out|           |
-                         |   Retransmit pkt  |           |
-                         +-------------------+           |
-                                   |                     |
-                                   | rcv ACK             |
-                                   | ┌─────────────────────────────────┐
-                                   | │ [OPTION 2/4 INJECTION]          │
-                                   | │ if should_corrupt_ack():        │
-                                   | │   rcvpkt = flip_bits(rcvpkt)    |
-                                   | | if should_loss_ack():           |
-                                   | |   rcvpkt = loss_bits(rcvpkt)    |
-                                   | └─────────────────────────────────┘
-                                   | validate_checksum(rcvpkt)
-                                   | parse_ack_num(rcvpkt)
-                                   |
-                                   | IF (NOT corrupt AND ack_num == 1):
-                                   |   seq = 0
-                                   |   [move to Wait for Call 0]
-                                   v
-                         (returns to Wait for Call 0)
-Receiver State Diagram (MODIFIED FOR OPTION 2/4, though no differences from the original):
-                         +-------------------+
-              +--------->| Wait for Packet 0 |<----------+
-              |          | (expected_seq=0)  |           |
-              |          +-------------------+           |
-              |               |           |               |
-              |               |           +---------------+
-              |               |           rcv corrupt pkt OR rcv loss pkt
-              |               |           rcv pkt1        
-              |               |           sndpkt = make_pkt(ACK1, checksum)
-              |               |           udt_send(sndpkt)
-              |               |           [Stay in Wait for Packet 0]
-              |               |
-              |               | rcv valid pkt0
-              |               | extract(data)
-              |               | deliver_data(data)
-              |               | sndpkt = make_pkt(ACK0, checksum)
-              |               | udt_send(sndpkt)
-              |               | expected_seq = 1
-              |               v
-              |          +-------------------+
-              +----------|Wait for Packet 1  |-----------+
-                         | (expected_seq=1)  |           |
-                         +-------------------+           |
-                                  |       |              |
-                                  |       +--------------+
-                                  |                      rcv corrupt pkt OR rcv loss pkt
-                                  |                      rcv pkt0
-                                  |                      sndpkt = make_pkt(ACK0, checksum)
-                                  |                      udt_send(sndpkt)
-                                  |                      [Stay in Wait for Packet 1]
-                                  |
-                                  | rcv valid pkt1
-                                  | extract(data)
-                                  | deliver_data(data)
-                                  | sndpkt = make_pkt(ACK1, checksum)
-                                  | udt_send(sndpkt)
-                                  | expected_seq = 0
-                                  v
-                         (returns to Wait for Packet 0)
 
-Option 3 Data bit-error:
-Sender State Diagram (MODIFIED FOR OPTION 3/5, though no differences from the original):
-                         +-------------------+
-                         |   Wait for Call   |
-                         |     (seq = 0)     |
-                         +-------------------+
-                                   |
-                                   | rdt_send(data)
-                                   | sndpkt = make_pkt(0, data, checksum)
-                                   | udt_send(sndpkt)
-                                   v
-                         +-------------------+
-              +--------->|  Wait for ACK 0   |<----------+
-			  |          |if timeout runs out|           |
-              |          |   Retransmit pkt  |           |
-              |          +-------------------+           |
-              |                    |                     |
-              |                    | rcv valid ACK0      |
-              |                    | seq = 1             |
-              |                    v                     |
-              |          +-------------------+           |
-              |          |   Wait for Call   |           |
-              |          |     (seq = 1)     |           |
-              |          +-------------------+           |
-              |                    |                     |
-              |                    | rdt_send(data)      |
-              |                    | sndpkt = make_pkt(1, data, checksum)
-              |                    | udt_send(sndpkt)    |
-              |                    v                     |
-              |          +-------------------+           |
-              +----------|  Wait for ACK 1   |-----------+
-			             |if timeout runs out|            
-                         |   Retransmit pkt  |           
-                         +-------------------+
-                                   |
-                                   | rcv valid ACK1
-                                   | seq = 0
-                                   v
-                         (returns to Wait for Call 0)
+#### Phase 4(b): Timeout and Retransmission Logic
 
-Receiver State Diagram (MODIFIED FOR OPTION 3/5):
-                         +-------------------+
-              +--------->| Wait for Packet 0 |<----------+
-              |          | (expected_seq=0)  |           |
-              |          | last_ack_num=1    |           |
-              |          +-------------------+           |
-              |               |           |               |
-              |               |           +---------------+
-              |               |           rcv DATA
-              |               |           ┌─────────────────────────────────┐
-              |               |           │ [OPTION 3/5 INJECTION]          │
-              |               |           │ if should_corrupt_data():       │
-              |               |           │   rcvpkt = flip_bits(rcvpkt)    │
-              |               |           │ if should_loss_data():     v    │
-              |               |           │   rcvpkt = loss(rcvpkt)         │
-              |               |           └─────────────────────────────────┘
-              |               |           validate_checksum(rcvpkt)
-              |               |           parse_seq_num(rcvpkt)
-              |               |           
-              |               |           IF (corrupt OR seq_num == 1 OR loss):
-              |               |             sndpkt = make_pkt(ACK, last_ack_num)
-              |               |             udt_send(sndpkt)
-              |               |             [Send LAST valid ACK = ACK1]
-              |               |             [Stay in Wait for Packet 0]
-              |               |
-              |               | rcv DATA
-              |               | ┌─────────────────────────────────┐
-              |               | │ [OPTION 3/5 INJECTION]          │
-              |               | │ if should_corrupt_data():       │
-              |               | │   rcvpkt = flip_bits(rcvpkt)    │
-              |               | │ if should_loss_data():          │
-              |               | │   rcvpkt = loss(rcvpkt)         │
-              |               | └─────────────────────────────────┘
-              |               | validate_checksum(rcvpkt)
-              |               | parse_seq_num(rcvpkt)
-              |               |
-              |               | IF (NOT corrupt AND seq_num == 0):
-              |               |   extract(data)
-              |               |   deliver_data(data)
-              |               |   sndpkt = make_pkt(ACK0, checksum)
-              |               |   udt_send(sndpkt)
-              |               |   last_ack_num = 0
-              |               |   expected_seq = 1
-              |               v
-              |          +-------------------+
-              +----------|Wait for Packet 1  |-----------+
-                         | (expected_seq=1)  |           |
-                         | last_ack_num=0    |           |
-                         +-------------------+           |
-                                  |       |              |
-                                  |       +--------------+
-                                  |                      rcv DATA
-                                  |                      ┌─────────────────────────────────┐
-                                  |                      │ [OPTION 3/5 INJECTION]          │
-                                  |                      │ if should_corrupt_data():       │
-                                  |                      │   rcvpkt = flip_bits(rcvpkt)    │
-                                  |                      │ if should_loss_data():       │
-                                  |                      │   rcvpkt = loss(rcvpkt)    │
-                                  |                      └─────────────────────────────────┘
-                                  |                      validate_checksum(rcvpkt)
-                                  |                      parse_seq_num(rcvpkt)
-                                  |                      
-                                  |                      IF (corrupt OR seq_num == 0 OR loss):
-                                  |                        sndpkt = make_pkt(ACK, last_ack_num)
-                                  |                        udt_send(sndpkt)
-                                  |                        [Send LAST valid ACK = ACK0]
-                                  |                        [Stay in Wait for Packet 1]
-                                  |
-                                  | rcv DATA
-                                  | ┌─────────────────────────────────┐
-                                  | │ [OPTION 3/5 INJECTION]          │
-                                  | │ if should_corrupt_data():       │
-                                  | │   rcvpkt = flip_bits(rcvpkt)    │
-                                  | │ if should_loss_data():          │
-                                  | │   rcvpkt = loss(rcvpkt)         │
-                                  | └─────────────────────────────────┘
-                                  | validate_checksum(rcvpkt)
-                                  | parse_seq_num(rcvpkt)
-                                  |
-                                  | IF (NOT corrupt AND seq_num == 1):
-                                  |   extract(data)
-                                  |   deliver_data(data)
-                                  |   sndpkt = make_pkt(ACK1, checksum)
-                                  |   udt_send(sndpkt)
-                                  |   last_ack_num = 1
-                                  |   expected_seq = 0
-                                  v
-                         (returns to Wait for Packet 0)
+```
+
+```
+
+#### Phase 4(c): Go-Back-N Receiver Behavior
+
+```
+
+```
+
+#### Phase 4(d): Error and Loss Handling
+
+```
+
 ```
 
 ### 3.2 Component Responsibilities
