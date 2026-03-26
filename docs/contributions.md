@@ -6,26 +6,26 @@
 
 | Task / Section | Description | Date Completed |
 |----------------|-------------|----------------|
-| Section 1.1 | Co-authored demo deliverables and requirements | 03/26/2026 |
-| Section 1.2 | Co-authored required demo scenarios | 03/26/2026 |
-| Section 2.1 | Authored scope definition for Phase 4 Go-Back-N implementation | 03/26/2026 |
-| Section 2.2 | Authored Phase 4 acceptance criteria for Go-Back-N protocol | 03/26/2026 |
-| Section 2.3 | Authored work breakdown and team responsibilities | 03/26/2026 |
-| Section 3.2 | Co-authored sender and receiver component responsibilities | 03/26/2026 |
-| Section 4.1 | Authored packet type definitions for DATA and ACK packets | 03/26/2026 |
-| Section 5.1 | Authored key data structures for Go-Back-N sender and receiver state | 03/26/2026 |
-| Section 5.2 | Co-authored module map and dependency structure | 03/26/2026 |
-| Section 6.1 | Authored Go-Back-N sender behavior and pseudocode | 03/26/2026 |
-| Section 6.2 | Authored Go-Back-N receiver behavior and pseudocode | 03/26/2026 |
-| Section 6.3 | Authored error and loss injection specification | 03/26/2026 |
-| Section 7.1 | Authored experiment setup for Phase 4 performance evaluation | 03/26/2026 |
-| Section 7.2 | Authored timing measurement methodology | 03/26/2026 |
-| Section 8.1 | Co-authored expected protocol edge cases | 03/26/2026 |
-| Section 8.2 | Co-authored unit and integration testing plan | 03/26/2026 |
-| Section 8.4 | Co-authored FSM validation criteria for Go-Back-N protocol | 03/26/2026 |
-| Section 10.1 | Co-authored task ownership and responsibility matrix | 03/26/2026 |
-| Section 10.2 | Co-authored project milestones | 03/26/2026 |
-| Section 11 | Co-authored demonstration checklist and recording requirements | 03/26/2026 |
+| Section 1.1 | Co-authored | 03/26/2026 |
+| Section 1.2 | Co-authored | 03/26/2026 |
+| Section 2.1 | Authored | 03/26/2026 |
+| Section 2.2 | Authored | 03/26/2026 |
+| Section 2.3 | Authored | 03/26/2026 |
+| Section 3.2 | Co-authored | 03/26/2026 |
+| Section 4.1 | Authored | 03/26/2026 |
+| Section 5.1 | Authored | 03/26/2026 |
+| Section 5.2 | Co-authored | 03/26/2026 |
+| Section 6.1 | Authored | 03/26/2026 |
+| Section 6.2 | Authored | 03/26/2026 |
+| Section 6.3 | Authored | 03/26/2026 |
+| Section 7.1 | Authored | 03/26/2026 |
+| Section 7.2 | Authored | 03/26/2026 |
+| Section 8.1 | Co-authored | 03/26/2026 |
+| Section 8.2 | Co-authored | 03/26/2026 |
+| Section 8.4 | Co-authored | 03/26/2026 |
+| Section 10.1 | Co-authored | 03/26/2026 |
+| Section 10.2 | Co-authored | 03/26/2026 |
+| Section 11 | Co-authored | 03/26/2026 |
 
 ---
 
