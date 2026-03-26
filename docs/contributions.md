@@ -52,7 +52,7 @@
 ## Cody’s Contributions
 
 | Task / Section | Description | Date Completed |
-|----------------|-------------|----------------|-|
+|----------------|-------------|----------------|
 | Phase 3(d) | Implemented error injection experiments and validated protocol behavior under varying conditions | 3/18/26 |
 | Phase 3(e) | Extended testing scenarios and verified retransmission correctness | 3/18/26 |
 | DESIGN_DOC.md and README.md | Updated documentation and experiment instructions for Phase 3 | 3/18/26 |
