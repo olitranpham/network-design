@@ -48,7 +48,7 @@
 	- Option 2: ACK packet bit-error
 	- Option 3: DATA packet bit-error
 	- Option 4: ACK packet loss
-	- Option 5: DATA packet lott
+	- Option 5: DATA packet loss
 
 **Phase 4(e):** Evaluate protocol performance under varying loss/error probabilities and analyze the effect of window size and timeout values on completion time.
 
@@ -230,7 +230,7 @@ Plot generated and included.
 
 ### 3.2 Component Responsibilities
 
-**Phase 4(b) - Sender Components**
+**Phase 4(a-b) - Sender Components**
 
 `sender.py` Main Responsibilities:
 - Read BMP into memory
@@ -302,8 +302,8 @@ Plot generated and included.
 ## 4 Packet Format
 
 ### 4.1 Packet Types
-- DATA: carries file chunk with seq (0/1)
-- ACK: acknowledges DATA seq (0/1)
+- DATA: carries file chunk with a sequence number
+- ACK: cumulative acknowledgment indicating the highest in-order packet received
 
 ### 4.2 Header Fields
 
@@ -316,8 +316,8 @@ Plot generated and included.
 | checksum | 4 | uint32 | Checksum over header and payload with checksum field = 0 during calculations | | 
 | payload | ≤ 1024 | bytes | File data chunk | DATA only |
 
-**Total header size:** 15 bytes
-**Maximum packet size:** 15 + 1024 = 1039 bytes
+**Total header size:** 12 bytes
+**Maximum packet size:** 12 + 1024 = 1036 bytes
 
 **Encoding format (Python struct):**
 ```python
@@ -402,7 +402,7 @@ experiments.py  -> subprocess, time, csv, matplotlib
 
 ### 6.1 Sender Behavior
 
-**Phase 4(b) - Go-Back-N File Transfer**
+**Phase 4(a) - Go-Back-N File Transfer**
 
 Steps:
 1. Open BMP file
