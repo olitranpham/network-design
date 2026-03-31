@@ -203,9 +203,60 @@ Plot generated and included.
 
 ### 3.1 State Diagram Evolution
 
-#### Phase 4(a): Go-Back-N File Transfer
+#### Phase 4(a): Go-Back-N Sender Behavior
 
 ```
+Sender State Diagram:
+                         +-----------------------------+
+                         |        Wait for Call        |
+                         |   base = 0                  |
+                         |   next_seq_num = 0          |
+                         |   window_size = N           |
+                         +-----------------------------+
+                                        |
+                                        | rdt_send(data)
+                                        | [next_seq_num < base + window_size]
+                                        | sndpkt[next_seq_num] = make_pkt(next_seq_num, data, checksum)
+                                        | udt_send(sndpkt[next_seq_num])
+                                        | if base == next_seq_num: start_timer()
+                                        | next_seq_num++
+                                        v
+                         +-----------------------------+
+              +--------->|      Wait for ACK/Timeout   |<----------+
+              |          |   (base <= next_seq_num-1)  |           |
+              |          +-----------------------------+           |
+              |               |                    |               |
+              |               | timeout            |               |
+              |               | retransmit all     |               |
+              |               | sndpkt[base] to    |               |
+              |               | sndpkt[next_seq_num-1]             |
+              |               | restart_timer()    |               |
+              |               |                    |               |
+              |               |    rcv ACK(n)      |               |
+              |               |    validate_checksum(rcvpkt)       |
+              |               |    parse_ack_num(rcvpkt)           |
+              |               |                    |               |
+              |               |    IF (NOT corrupt AND n >= base): |
+              |               |      base = n + 1  |               |
+              |               |      if base == next_seq_num:      |
+              |               |        stop_timer()|               |
+              |               |      else:         |               |
+              |               |        restart_timer()             |
+              |               |                    |               |
+              |               | [window slides,    |               |
+              |               |  send new pkts     |               |
+              |               |  while eligible]   |               |
+              +---------------+--------------------+---------------+
+                              |
+                              | base == next_seq_num
+                              | all ACKs received
+                              v
+                         +-----------------------------+
+                         |    Transfer Complete        |
+                         |    n packets sent           |
+                         |    x retransmission(s)      |
+                         +-----------------------------+
+
 
 
 ```
@@ -213,19 +264,336 @@ Plot generated and included.
 #### Phase 4(b): Timeout and Retransmission Logic
 
 ```
-
+Sender State Diagram:
+                         +-----------------------------+
+                         |        Wait for Call        |
+                         |   base = 0                  |
+                         |   next_seq_num = 0          |
+                         |   window_size = N           |
+                         |   timer = OFF               |
+                         +-----------------------------+
+                                        |
+                                        | rdt_send(data)
+                                        | [next_seq_num < base + window_size]
+                                        | sndpkt[next_seq_num] = make_pkt(next_seq_num, data, checksum)
+                                        | udt_send(sndpkt[next_seq_num])
+                                        | if (base == next_seq_num): start_timer()
+                                        | next_seq_num++
+                                        v
+                         +-----------------------------+
+              +--------->|    Wait for ACK / Timeout   |<----------+
+              |          |   timer covers sndpkt[base] |           |
+              |          +-----------------------------+           |
+              |               |                    |               |
+              |               | timeout            |               |
+              |               | [oldest unACKed    |               |
+              |               |  pkt (base) timer  |               |
+              |               |  expired]          |               |
+              |               |                    |               |
+              |               | for i = base to next_seq_num-1:    |
+              |               |   udt_send(sndpkt[i])              |
+              |               | restart_timer()    |               |
+              |               |                    |               |
+              +---------------+                    |               |
+                                                   |               |
+                                                   | rcv ACK(n)    |
+                                                   | validate_checksum(rcvpkt)
+                                                   | parse_ack_num(rcvpkt)
+                                                   |               |
+                                                   | IF corrupt:   |
+                                                   |   [ignore,    |
+                                                   |    stay]      |
+                                                   |               |
+                                                   | IF (NOT corrupt AND n >= base):
+                                                   |   base = n + 1|
+                                                   |               |
+                                                   |   if (base == next_seq_num):
+                                                   |     stop_timer()
+                                                   |   else:       |
+                                                   |     restart_timer()
+                                                   |     [timer now covers
+                                                   |      new oldest unACKed
+                                                   |      pkt (new base)]
+                                                   |               |
+                                                   | [window slides,
+                                                   |  send new pkts while eligible]
+                                                   +---------------+
 ```
 
 #### Phase 4(c): Go-Back-N Receiver Behavior
 
 ```
-
+Receiver State Diagram:
+                         +-----------------------------+
+              +--------->|    Wait for Packet          |<----------+
+              |          |  expected_seq_num = 0       |           |
+              |          +-----------------------------+           |
+              |               |              |                     |
+              |               |              +---------------------+
+              |               |              rcv corrupt pkt
+              |               |              OR rcv out-of-order pkt (seq != expected_seq_num)
+              |               |              sndpkt = make_pkt(ACK, last_ack_num, checksum)
+              |               |              udt_send(sndpkt)
+              |               |              [discard pkt, stay in Wait for Packet]
+              |               |
+              |               | rcv valid pkt (seq == expected_seq_num)
+              |               | extract(data)
+              |               | deliver_data(data)
+              |               | last_ack_num = expected_seq_num
+              |               | sndpkt = make_pkt(ACK, expected_seq_num, checksum)
+              |               | udt_send(sndpkt)
+              |               | expected_seq_num++
+              +---------------+
 ```
 
 #### Phase 4(d): Error and Loss Handling
 
 ```
+Option 2 Corrupt ACK Packet:
+Sender State Diagram (MODIFIED FOR OPTION 2):
+                         +-----------------------------+
+                         |        Wait for Call        |
+                         |   base = 0                  |
+                         |   next_seq_num = 0          |
+                         +-----------------------------+
+                                        |
+                                        | rdt_send(data)
+                                        | [next_seq_num < base + window_size]
+                                        | sndpkt[next_seq_num] = make_pkt(next_seq_num, data, checksum)
+                                        | udt_send(sndpkt[next_seq_num])
+                                        | if base == next_seq_num: start_timer()
+                                        | next_seq_num++
+                                        v
+                         +-----------------------------+
+              +--------->|      Wait for ACK/Timeout   |<----------+
+              |          +-----------------------------+           |
+              |               |                    |               |
+              |               | timeout            |               |
+              |               | retransmit sndpkt[base..next_seq_num-1]
+              |               | restart_timer()    |               |
+              |               |                    |               |
+              |               | rcv ACK            |               |
+              |               | ┌─────────────────────────────────┐|
+              |               | │ [OPTION 2 INJECTION]            ││
+              |               | │ if should_corrupt_ack():        ││
+              |               | │   rcvpkt = flip_bits(rcvpkt)    ││
+              |               | └─────────────────────────────────┘|
+              |               | validate_checksum(rcvpkt)          |
+              |               | parse_ack_num(rcvpkt)              |
+              |               |                                    |
+              |               | IF (corrupt):                      |
+              |               |   [ignore ACK, await timeout]      |
+              |               |   retransmit sndpkt[base..next_seq_num-1]
+              |               |                                    |
+              |               | IF (NOT corrupt AND n >= base):    |
+              |               |   base = n + 1                     |
+              |               |   restart or stop timer            |
+              +---------------+------------------------------------+
 
+Receiver State Diagram (MODIFIED FOR OPTION 2, no differences from original):
+                         +-----------------------------+
+              +--------->|    Wait for Packet          |<----------+
+              |          |  expected_seq_num = 0       |           |
+              |          +-----------------------------+           |
+              |               |              |                     |
+              |               |              +---------------------+
+              |               |              rcv corrupt pkt OR
+              |               |              rcv out-of-order pkt
+              |               |              sndpkt = make_pkt(ACK, last_ack_num, checksum)
+              |               |              udt_send(sndpkt)
+              |               |              [discard pkt, stay in Wait for Packet]
+              |               |
+              |               | rcv valid pkt (seq == expected_seq_num)
+              |               | extract(data)
+              |               | deliver_data(data)
+              |               | last_ack_num = expected_seq_num
+              |               | sndpkt = make_pkt(ACK, expected_seq_num, checksum)
+              |               | udt_send(sndpkt)
+              |               | expected_seq_num++
+              +---------------+
+
+Option 3 Data bit-error:
+Sender State Diagram (MODIFIED FOR OPTION 3, no differences from original):
+                         +-----------------------------+
+                         |        Wait for Call        |
+                         |   base = 0                  |
+                         |   next_seq_num = 0          |
+                         +-----------------------------+
+                                        |
+                                        | rdt_send(data)
+                                        | [next_seq_num < base + window_size]
+                                        | sndpkt[next_seq_num] = make_pkt(next_seq_num, data, checksum)
+                                        | udt_send(sndpkt[next_seq_num])
+                                        | if base == next_seq_num: start_timer()
+                                        | next_seq_num++
+                                        v
+                         +-----------------------------+
+              +--------->|      Wait for ACK/Timeout   |<----------+
+              |          +-----------------------------+           |
+              |               |                    |               |
+              |               | timeout            |               |
+              |               | retransmit sndpkt[base..next_seq_num-1]
+              |               | restart_timer()    |               |
+              |               |                    |               |
+              |               | rcv valid ACK(n) (NOT corrupt AND n >= base):
+              |               |   base = n + 1     |               |
+              |               |   restart or stop timer            |
+              +---------------+--------------------+---------------+
+
+Receiver State Diagram (MODIFIED FOR OPTION 3):
+                         +-----------------------------+
+              +--------->|    Wait for Packet          |<----------+
+              |          |  expected_seq_num = 0       |           |
+              |          |  last_ack_num = -1          |           |
+              |          +-----------------------------+           |
+              |               |              |                     |
+              |               |              +---------------------+
+              |               |              rcv DATA
+              |               |              ┌─────────────────────────────────┐
+              |               |              │ [OPTION 3 INJECTION]            │
+              |               |              │ if should_corrupt_data():       │
+              |               |              │   rcvpkt = flip_bits(rcvpkt)    │
+              |               |              └─────────────────────────────────┘
+              |               |              validate_checksum(rcvpkt)
+              |               |              parse_seq_num(rcvpkt)
+              |               |
+              |               |              IF (corrupt OR seq != expected_seq_num):
+              |               |                sndpkt = make_pkt(ACK, last_ack_num, checksum)
+              |               |                udt_send(sndpkt)
+              |               |                [Send LAST valid ACK]
+              |               |                [Stay in Wait for Packet]
+              |               |
+              |               | rcv DATA
+              |               | ┌─────────────────────────────────┐
+              |               | │ [OPTION 3 INJECTION]            │
+              |               | │ if should_corrupt_data():       │
+              |               | │   rcvpkt = flip_bits(rcvpkt)    │
+              |               | └─────────────────────────────────┘
+              |               | validate_checksum(rcvpkt)
+              |               | parse_seq_num(rcvpkt)
+              |               |
+              |               | IF (NOT corrupt AND seq == expected_seq_num):
+              |               |   extract(data)
+              |               |   deliver_data(data)
+              |               |   last_ack_num = expected_seq_num
+              |               |   sndpkt = make_pkt(ACK, expected_seq_num, checksum)
+              |               |   udt_send(sndpkt)
+              |               |   expected_seq_num++
+              +---------------+
+
+Option 4 Sender Timeout / Retransmit Window:
+Sender State Diagram (MODIFIED FOR OPTION 4):
+                         +-----------------------------+
+                         |        Wait for Call        |
+                         |   base = 0                  |
+                         |   next_seq_num = 0          |
+                         +-----------------------------+
+                                        |
+                                        | rdt_send(data)
+                                        | [next_seq_num < base + window_size]
+                                        | sndpkt[next_seq_num] = make_pkt(next_seq_num, data, checksum)
+                                        | udt_send(sndpkt[next_seq_num])
+                                        | if base == next_seq_num: start_timer()
+                                        | next_seq_num++
+                                        v
+                         +-----------------------------+
+              +--------->|      Wait for ACK/Timeout   |<----------+
+              |          +-----------------------------+           |
+              |               |                    |               |
+              |               | timeout            |               |
+              |               | ┌─────────────────────────────────┐|
+              |               | │ [OPTION 4]                      ││
+              |               | │ Timer expires (ACK lost/delayed)││
+              |               | └─────────────────────────────────┘|
+              |               | retransmit ALL sndpkt[base..next_seq_num-1]
+              |               | restart_timer()    |               |
+              |               |                    |               |
+              |               | rcv valid ACK(n) (NOT corrupt AND n >= base):
+              |               |   base = n + 1     |               |
+              |               |   restart or stop timer            |
+              +---------------+--------------------+---------------+
+
+Receiver State Diagram (MODIFIED FOR OPTION 4, no differences from original):
+                         +-----------------------------+
+              +--------->|    Wait for Packet          |<----------+
+              |          |  expected_seq_num = 0       |           |
+              |          +-----------------------------+           |
+              |               |              |                     |
+              |               |              +---------------------+
+              |               |              rcv corrupt pkt OR
+              |               |              rcv out-of-order pkt
+              |               |              sndpkt = make_pkt(ACK, last_ack_num, checksum)
+              |               |              udt_send(sndpkt)
+              |               |              [discard pkt, stay in Wait for Packet]
+              |               |
+              |               | rcv valid pkt (seq == expected_seq_num)
+              |               | extract(data)
+              |               | deliver_data(data)
+              |               | last_ack_num = expected_seq_num
+              |               | sndpkt = make_pkt(ACK, expected_seq_num, checksum)
+              |               | udt_send(sndpkt)
+              |               | expected_seq_num++
+              +---------------+
+
+Option 5 Data Loss (Missing Packet):
+Sender State Diagram (MODIFIED FOR OPTION 5, no differences from original):
+                         +-----------------------------+
+                         |        Wait for Call        |
+                         |   base = 0                  |
+                         |   next_seq_num = 0          |
+                         +-----------------------------+
+                                        |
+                                        | rdt_send(data)
+                                        | [next_seq_num < base + window_size]
+                                        | sndpkt[next_seq_num] = make_pkt(next_seq_num, data, checksum)
+                                        | udt_send(sndpkt[next_seq_num])
+                                        | if base == next_seq_num: start_timer()
+                                        | next_seq_num++
+                                        v
+                         +-----------------------------+
+              +--------->|      Wait for ACK/Timeout   |<----------+
+              |          +-----------------------------+           |
+              |               |                    |               |
+              |               | timeout            |               |
+              |               | retransmit ALL sndpkt[base..next_seq_num-1]
+              |               | restart_timer()    |               |
+              |               |                    |               |
+              |               | rcv valid ACK(n) (NOT corrupt AND n >= base):
+              |               |   base = n + 1     |               |
+              |               |   restart or stop timer            |
+              +---------------+--------------------+---------------+
+
+Receiver State Diagram (MODIFIED FOR OPTION 5):
+                         +-----------------------------+
+              +--------->|    Wait for Packet          |<----------+
+              |          |  expected_seq_num = 0       |           |
+              |          |  last_ack_num = -1          |           |
+              |          +-----------------------------+           |
+              |               |              |                     |
+              |               |              +---------------------+
+              |               |              rcv DATA
+              |               |              ┌─────────────────────────────────┐
+              |               |              │ [OPTION 5 INJECTION]            │
+              |               |              │ if should_loss_data():          │
+              |               |              │   rcvpkt = loss(rcvpkt)         │
+              |               |              └─────────────────────────────────┘
+              |               |              validate_checksum(rcvpkt)
+              |               |              parse_seq_num(rcvpkt)
+              |               |
+              |               |              IF (lost OR seq != expected_seq_num):
+              |               |                [do NOT ACK the missing pkt]
+              |               |                sndpkt = make_pkt(ACK, last_ack_num, checksum)
+              |               |                udt_send(sndpkt)
+              |               |                [Stay in Wait for Packet]
+              |               |
+              |               | rcv valid pkt (seq == expected_seq_num)
+              |               | extract(data)
+              |               | deliver_data(data)
+              |               | last_ack_num = expected_seq_num
+              |               | sndpkt = make_pkt(ACK, expected_seq_num, checksum)
+              |               | udt_send(sndpkt)
+              |               | expected_seq_num++
+              +---------------+
 ```
 
 ### 3.2 Component Responsibilities
@@ -276,26 +644,194 @@ Plot generated and included.
 #### Phase 4(a): Go-Back-N File Transfer
 
 ```
+Option 1 No Error:
+    SENDER                                              RECEIVER
+    ======                                              ========
 
+    base = 0, next_seq_num = 0                         expected_seq_num = 0
+    window_size = N
+    |                                                   |
+    | Send pkt0 (window open)                           |
+    |------------- DATA(seq=0, "chunk0") -------------->|
+    | Send pkt1 (window open)                           | Validate checksum
+    |------------- DATA(seq=1, "chunk1") -------------->| expected_seq_num == 0
+    | Send pkt2 (window open)                           | Deliver chunk0
+    |------------- DATA(seq=2, "chunk2") -------------->| expected_seq_num = 1
+    |                                                   |
+    |<------------- ACK(ack_num=0) ---------------------|
+    | base = 1, window slides                           | Validate checksum
+    |<------------- ACK(ack_num=1) ---------------------|  expected_seq_num == 1
+    | base = 2, window slides                           | Deliver chunk1
+    |<------------- ACK(ack_num=2) ---------------------|  expected_seq_num = 2
+    | base = 3, window slides                           |
+    |                                                   | Deliver chunk2
+    | -------------- Continue until all data sent ----- | expected_seq_num = 3
+    | Transfer complete                                 | File reconstruction complete
+    | n packets sent                                    | n packets received
+    | 0 retransmission(s)                               | Write output.bmp
 
-```
+Option 2 Corrupt ACK Packet w/ example data:
+    SENDER                                              RECEIVER
+    ======                                              ========
 
-#### Phase 4(b): Timeout and Retransmission Logic
+    base = 0, next_seq_num = 0                         expected_seq_num = 0
+    window_size = N
+    |                                                   |
+    |------------- DATA(seq=0, "chunk0") -------------->|
+    |------------- DATA(seq=1, "chunk1") -------------->| Validate checksum
+    |------------- DATA(seq=2, "chunk2") -------------->| Deliver chunk0, ACK0
+    |                                                   | Deliver chunk1, ACK1
+    |<------------- ACK(ack_num=0) ---------------------|
+    | base = 1                                          | Deliver chunk2, ACK2
+    |                                                   |
+    | ┌─────────────────────────────────────────┐       |
+    | │ ERROR INJECTION (Option 2)              │       |
+    | │ Flip bits in ACK1 before validation     │       |
+    | │ ACK corrupted: 0x5678 → 0x56FF          │       |
+    | └─────────────────────────────────────────┘       |
+    |                                                   |
+    |<--X---- ACK(ack_num=1) [CORRUPTED] ---------------|
+    | Validate checksum: FAIL                           |
+    | Corrupt ACK detected, ignore                      |
+    |                                                   |
+    |<------------- ACK(ack_num=2) ---------------------|
+    | Validate checksum: OK                             |
+    | ACK2 >= base (1): cumulative ACK covers pkt1+pkt2 |
+    | base = 3, window slides                           |
+    |                                                   |
+    | -------------- Continue until all data sent ----- |
+    | Transfer complete                                 | File reconstruction complete
+    | n packets sent                                    | n packets received
+    | 0 retransmission(s) [cumulative ACK recovered]    |
 
-```
+Option 3 Data bit-error w/ example data:
+    SENDER                                              RECEIVER
+    ======                                              ========
 
-```
+    base = 0, next_seq_num = 0                         expected_seq_num = 0
+    window_size = N
+    |                                                   |
+    |------------- DATA(seq=0, "chunk0") -------------->|
+    |------------- DATA(seq=1, "chunk1") --------X      |
+    |------------- DATA(seq=2, "chunk2") -------------->|
+    |                                                   | ┌────────────────────────────┐
+    |                                                   | │ ERROR INJECTION (Option 3) │
+    |                                                   | │ Flip bits in pkt1 data     │
+    |                                                   | │ 0xCD34 → 0xCDFF            │
+    |                                                   | └────────────────────────────┘
+    |                                                   |
+    |                                                   | pkt0: checksum OK, seq==0, deliver chunk0
+    |                                                   | ACK0, expected_seq_num=1, last_ack=0
+    |<------------- ACK(ack_num=0) ---------------------|
+    | base = 1                                          |
+    |                                                   | pkt1: checksum FAIL
+    |                                                   | Send last valid ACK (ACK0)
+    |                                                   | Discard, expected_seq_num stays 1
+    |<------------- ACK(ack_num=0) [last valid] --------|
+    | Check ACK: ACK0 < base(1), duplicate/stale, ignore|
+    |                                                   |
+    |                                                   | pkt2: seq=2 != expected(1), out-of-order
+    |                                                   | Send last valid ACK (ACK0)
+    |                                                   | Discard pkt2
+    |<------------- ACK(ack_num=0) [last valid] --------|
+    |                                                   |
+    | Timer expires (base=1 unACKed)                    |
+    | Retransmit all: pkt1, pkt2                        |
+    |------------- DATA(seq=1, "chunk1") [RETX] ------->|
+    |------------- DATA(seq=2, "chunk2") [RETX] ------->|
+    |                                                   | pkt1: checksum OK, seq==1, deliver chunk1
+    |                                                   | ACK1, expected_seq_num=2, last_ack=1
+    |<------------- ACK(ack_num=1) ---------------------|
+    | base = 2                                          | pkt2: checksum OK, seq==2, deliver chunk2
+    |<------------- ACK(ack_num=2) ---------------------|
+    | base = 3                                          | expected_seq_num=3
+    |                                                   |
+    | -------------- Continue until all data sent ----- |
+    | Transfer complete                                 | File reconstruction complete
+    | n packets sent                                    | n unique packets received
+    | x retransmission(s)                               |
 
-#### Phase 4(c): Go-Back-N Receiver Behavior
+Option 4 Sender Timeout w/ example data:
+    SENDER                                              RECEIVER
+    ======                                              ========
 
-```
+    base = 0, next_seq_num = 0                         expected_seq_num = 0
+    window_size = N
+    |                                                   |
+    |------------- DATA(seq=0, "chunk0") -------------->|
+    |------------- DATA(seq=1, "chunk1") -------------->| Deliver chunk0
+    |------------- DATA(seq=2, "chunk2") -------------->| Deliver chunk1
+    |                                                   | Deliver chunk2
+    | ┌─────────────────────────────────────────┐       |
+    | │ ERROR INJECTION (Option 4)              │       |
+    | │ ACKs lost in transit                    │       |
+    | └─────────────────────────────────────────┘       |
+    |                                                   |
+    |        X----- ACK(ack_num=0) lost ----------------|
+    |        X----- ACK(ack_num=1) lost ----------------|
+    |        X----- ACK(ack_num=2) lost ----------------|
+    |                                                   |
+    | Timer expires (base=0 unACKed)                    |
+    | Retransmit ALL: pkt0, pkt1, pkt2                  |
+    |------------- DATA(seq=0, "chunk0") [RETX] ------->|
+    |------------- DATA(seq=1, "chunk1") [RETX] ------->|
+    |------------- DATA(seq=2, "chunk2") [RETX] ------->|
+    |                                                   | seq==expected(0), deliver chunk0
+    |                                                   | ACK0, expected_seq_num=1
+    |<------------- ACK(ack_num=0) ---------------------|
+    | base = 1                                          | seq==expected(1), deliver chunk1
+    |<------------- ACK(ack_num=1) ---------------------|  ACK1, expected_seq_num=2
+    | base = 2                                          | seq==expected(2), deliver chunk2
+    |<------------- ACK(ack_num=2) ---------------------|  ACK2, expected_seq_num=3
+    | base = 3                                          |
+    |                                                   |
+    | -------------- Continue until all data sent ----- |
+    | Transfer complete                                 | File reconstruction complete
+    | n packets sent                                    | n packets received
+    | x retransmission(s)                               |
 
-```
+Option 5 Data Loss (Missing Packet) w/ example data:
+    SENDER                                              RECEIVER
+    ======                                              ========
 
-#### Phase 4(d): Error and Loss Handling
-
-```
-
+    base = 0, next_seq_num = 0                         expected_seq_num = 0
+    window_size = N
+    |                                                   |
+    |------------- DATA(seq=0, "chunk0") -------------->|
+    |------------- DATA(seq=1, "chunk1") --------X      |
+    |------------- DATA(seq=2, "chunk2") -------------->|
+    |                                                   | ┌────────────────────────────┐
+    |                                                   | │ ERROR INJECTION (Option 5) │
+    |                                                   | │ pkt1 dropped in transit    │
+    |                                                   | └────────────────────────────┘
+    |                                                   |
+    |                                                   | pkt0: seq==0, deliver chunk0
+    |                                                   | ACK0, expected_seq_num=1, last_ack=0
+    |<------------- ACK(ack_num=0) ---------------------|
+    | base = 1                                          |
+    |                                                   | pkt1: LOST (never arrives)
+    |                                                   |
+    |                                                   | pkt2: seq=2 != expected(1), out-of-order
+    |                                                   | Discard pkt2
+    |                                                   | Resend last valid ACK (ACK0)
+    |<------------- ACK(ack_num=0) [last valid] --------|
+    | ACK0 < base(1), stale, ignore                     |
+    |                                                   |
+    | Timer expires (base=1 unACKed)                    |
+    | Retransmit ALL: pkt1, pkt2                        |
+    |------------- DATA(seq=1, "chunk1") [RETX] ------->|
+    |------------- DATA(seq=2, "chunk2") [RETX] ------->|
+    |                                                   | seq==expected(1), deliver chunk1
+    |                                                   | ACK1, expected_seq_num=2, last_ack=1
+    |<------------- ACK(ack_num=1) ---------------------|
+    | base = 2                                          | seq==expected(2), deliver chunk2
+    |<------------- ACK(ack_num=2) ---------------------|  ACK2, expected_seq_num=3
+    | base = 3                                          |
+    |                                                   |
+    | -------------- Continue until all data sent ----- |
+    | Transfer complete                                 | File reconstruction complete
+    | n packets sent                                    | n unique packets received
+    | x retransmission(s)                               |
 ```
 ---
 
