@@ -13,10 +13,6 @@ from packet import (
 )
 
 
-def toggle(bit: int) -> int:
-    return 1 if bit == 0 else 0
-
-
 def maybe_drop_packet(prob: float, rng: random.Random) -> bool:
     if prob <= 0.0:
         return False
@@ -28,6 +24,12 @@ def main():
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--port", type=int, default=9000)
     ap.add_argument("--file", required=True)
+    ap.add_argument(
+        "--window",
+        type=int,
+        default=4,
+        help="Go-Back-N window size"
+    )
     ap.add_argument(
         "--timeout",
         type=float,
@@ -62,10 +64,24 @@ def main():
     file_size = len(file_data)
     total_packets = (file_size + MAX_PAYLOAD - 1) // MAX_PAYLOAD
 
-    sock = socket.socket(AF_INET, SOCK_DGRAM)
-    sock.settimeout(args.timeout)
+    if total_packets == 0:
+        log("Sender: input file is empty, nothing to send")
+        return
 
-    seq = 0
+    packet_buffer = []
+    for pkt_index in range(total_packets):
+        start = pkt_index * MAX_PAYLOAD
+        end = min(start + MAX_PAYLOAD, file_size)
+        chunk = file_data[start:end]
+        packet_buffer.append(make_data_packet(pkt_index, chunk, total_packets))
+
+    sock = socket.socket(AF_INET, SOCK_DGRAM)
+    sock.settimeout(0.05)
+
+    base = 0
+    next_seq_num = 0
+    timer_start = None
+
     retransmissions = 0
     packets_sent = 0
     timeouts = 0
@@ -73,87 +89,82 @@ def main():
     log(
         f"Sender: file_size={file_size} bytes, "
         f"total_packets={total_packets}, "
+        f"window={args.window}, "
         f"timeout={args.timeout}s, "
         f"ack_biterr={args.ack_biterr}, "
         f"ack_loss={args.ack_loss}"
     )
 
-    for pkt_index in range(total_packets):
-        start = pkt_index * MAX_PAYLOAD
-        end = min(start + MAX_PAYLOAD, file_size)
-        chunk = file_data[start:end]
-
-        last_packet = make_data_packet(seq, chunk, total_packets)
-
-        waiting_for_ack = True
-        while waiting_for_ack:
+    while base < total_packets:
+        while next_seq_num < total_packets and next_seq_num < base + args.window:
+            sock.sendto(packet_buffer[next_seq_num], (args.host, args.port))
             packets_sent += 1
-            sock.sendto(last_packet, (args.host, args.port))
-            send_time = time.time()
 
             log(
-                f"Sent DATA pkt_index={pkt_index + 1}/{total_packets} "
-                f"seq={seq} bytes={len(chunk)}"
+                f"Sent DATA pkt_index={next_seq_num + 1}/{total_packets} "
+                f"seq={next_seq_num}"
             )
 
-            while True:
-                remaining = args.timeout - (time.time() - send_time)
-                if remaining <= 0:
+            if base == next_seq_num:
+                timer_start = time.time()
+
+            next_seq_num += 1
+
+        try:
+            raw_ack, _ = sock.recvfrom(2048)
+
+            if maybe_drop_packet(args.ack_loss, rng):
+                log("Intentionally dropped received ACK packet")
+                raise socket.timeout
+
+            raw_ack = maybe_flip_bits(raw_ack, args.ack_biterr, rng)
+
+            try:
+                ack = parse_packet(raw_ack)
+            except Exception as e:
+                log(f"Failed to parse ACK -> ignore (err={e})")
+                ack = None
+
+            if ack is None:
+                pass
+            elif not ack["checksum_ok"]:
+                log("Corrupt ACK detected -> ignore")
+            elif ack["type"] != PKT_ACK:
+                log(f"Non-ACK packet received (type={ack['type']}) -> ignore")
+            else:
+                ack_num = ack["seq"]
+
+                if ack_num < base:
+                    log(f"Duplicate/stale ACK{ack_num} received -> ignore")
+                else:
+                    log(f"Received valid ACK{ack_num}")
+
+                    base = ack_num + 1
+
+                    if base == next_seq_num:
+                        timer_start = None
+                    else:
+                        timer_start = time.time()
+
+        except socket.timeout:
+            pass
+
+        if timer_start is not None:
+            elapsed = time.time() - timer_start
+            if elapsed >= args.timeout:
+                timeouts += 1
+                log(
+                    f"Timeout at base={base} -> retransmit "
+                    f"window [{base}, {next_seq_num - 1}]"
+                )
+
+                for seq in range(base, next_seq_num):
+                    sock.sendto(packet_buffer[seq], (args.host, args.port))
+                    packets_sent += 1
                     retransmissions += 1
-                    timeouts += 1
-                    log(
-                        f"Timeout waiting for ACK{seq} -> retransmit "
-                        f"(timeouts={timeouts}, total_retx={retransmissions})"
-                    )
-                    break
+                    log(f"Retransmitted DATA seq={seq}")
 
-                sock.settimeout(remaining)
-
-                try:
-                    raw_ack, _ = sock.recvfrom(2048)
-                except socket.timeout:
-                    retransmissions += 1
-                    timeouts += 1
-                    log(
-                        f"Timeout waiting for ACK{seq} -> retransmit "
-                        f"(timeouts={timeouts}, total_retx={retransmissions})"
-                    )
-                    break
-
-                if maybe_drop_packet(args.ack_loss, rng):
-                    log(f"Intentionally dropped received ACK for seq={seq}")
-                    continue
-
-                raw_ack = maybe_flip_bits(raw_ack, args.ack_biterr, rng)
-
-                try:
-                    ack = parse_packet(raw_ack)
-                except Exception as e:
-                    log(f"Failed to parse ACK -> ignore until timeout/retry (err={e})")
-                    continue
-
-                if not ack["checksum_ok"]:
-                    log(f"Corrupt ACK detected for seq={seq} -> ignore until timeout/retry")
-                    continue
-
-                if ack["type"] != PKT_ACK:
-                    log(
-                        f"Non-ACK packet received (type={ack['type']}) "
-                        f"-> ignore until timeout/retry"
-                    )
-                    continue
-
-                if ack["seq"] != seq:
-                    log(
-                        f"Wrong ACK received: got ACK{ack['seq']}, expected ACK{seq} "
-                        f"-> ignore until timeout/retry"
-                    )
-                    continue
-
-                log(f"Received valid ACK{ack['seq']} for seq={seq}")
-                seq = toggle(seq)
-                waiting_for_ack = False
-                break
+                timer_start = time.time()
 
     sock.close()
     log(
