@@ -2,7 +2,7 @@ import struct
 import zlib
 
 PKT_DATA = 0
-PKT_ACK  = 1
+PKT_ACK = 1
 
 MAX_PAYLOAD = 1024
 
@@ -24,6 +24,10 @@ def _ack_checksum_bytes(seq: int) -> bytes:
 
 def make_data_packet(seq: int, payload: bytes, total_packets: int) -> bytes:
     length = len(payload)
+
+    if length > MAX_PAYLOAD:
+        raise ValueError(f"Payload too large: {length} > {MAX_PAYLOAD}")
+
     checksum = compute_checksum(_data_checksum_bytes(seq, length, total_packets, payload))
     header = struct.pack(
         HEADER_FMT,
