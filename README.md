@@ -27,7 +27,7 @@
 
 ## Repository Structure 
 
-```
+
 project/
 src/
   sender.py
@@ -52,7 +52,7 @@ results/
 test-files/
   sample1.bmp
   bmp_24.bmp
-```
+
 
 ## Requirements
 - Language/runtime: Python 3.14.2
@@ -118,10 +118,10 @@ python3 scripts/phase4_experiments.py \
   --timeout 0.2 \
   --hard-timeout 20 \
   --plot
-
+```
 ## Required Demo Scenarios
 
-### option 1 - RDT 3.0 File Transfer 
+### option 1 - Regular file trasnfer (no ERROR)
 
 Server:
 ```
@@ -231,6 +231,7 @@ Expected behavior:
 ### ```md
 ## Phase 4: Go-Back-N (GBN)
 Run:
+```
 python3 scripts/phase4_experiments.py \
   --file test-files/bmp_24.bmp \
   --runs 5 \
@@ -239,17 +240,21 @@ python3 scripts/phase4_experiments.py \
   --timeout 0.2 \
   --hard-timeout 20 \
   --plot
+```
 
 Chart 2: Window Size Evaluation
 Run:
-```bash
+bash
+```
 python3 scripts/phase4_chart2.py
-
+```
 Chart 3: Phase Comparison
 Run:
-```bash
-python3 scripts/phase4_chart3.py
 
+bash
+```
+python3 scripts/phase4_chart3.py
+```
 Key features:
 - Sliding window at sender (window size N)
 - Cumulative ACKs
