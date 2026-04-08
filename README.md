@@ -37,14 +37,21 @@ src/
 
 scripts/
   phase3_experiments.py
+  phase4_experiments.py
+  phase4_chart2.py
+  phase4_chart3.py
 
 results/
   phase3_avg.csv
   phase3_raw.csv
   phase3_plot.png
+  phase4_chart1.png
+  phase4_chart2.png
+  phase4_chart3.png
 
 test-files/
   sample1.bmp
+  bmp_24.bmp
 ```
 
 ## Requirements
@@ -100,8 +107,17 @@ flags:
 
 ## Quick Start (Run Locally)
 
-Start receiver first, then run sender with desired flags.
----
+Run full experiment (Chart 1):
+
+```bash
+python3 scripts/phase4_experiments.py \
+  --file test-files/bmp_24.bmp \
+  --runs 5 \
+  --max-attempts 10 \
+  --window 4 \
+  --timeout 0.2 \
+  --hard-timeout 20 \
+  --plot
 
 ## Required Demo Scenarios
 
@@ -212,31 +228,61 @@ Expected behavior:
 - Sender retransmits
 - File still correct
 
-### Phase 3(c): Performance Evaluation
+### ```md
+## Phase 4: Go-Back-N (GBN)
 Run:
-```
-python3 scripts/phase3_experiments.py \
-  --file test-files/sample1.bmp \
+python3 scripts/phase4_experiments.py \
+  --file test-files/bmp_24.bmp \
   --runs 5 \
-  --max-attempts 60 \
-  --timeout 0.005 \
-  --hard-timeout 60 \
+  --max-attempts 10 \
+  --window 4 \
+  --timeout 0.2 \
+  --hard-timeout 20 \
   --plot
-  ```
-If running in PyCharm (or PowerShell): 
-```
-python3 scripts/phase3_experiments.py --file test-files/sample1.bmp --runs 5 --max-attempts 60 --timeout 0.005 --hard-timeout 60 --plot
-  ```
+
+Chart 2: Window Size Evaluation
+Run:
+```bash
+python3 scripts/phase4_chart2.py
+
+Chart 3: Phase Comparison
+Run:
+```bash
+python3 scripts/phase4_chart3.py
+
+Key features:
+- Sliding window at sender (window size N)
+- Cumulative ACKs
+- Timeout-based retransmission of entire window
+- Supports error/loss injection for testing
+
+Options tested:
+1. No loss/errors
+2. ACK bit errors
+3. DATA bit errors
+4. ACK loss
+5. DATA loss
 
 ## Figures / Plots
-results/phase3_plot.png
 
-### Results files
-- 
-results/phase3_raw.csv
-results/phase3_avg.csv
-results/phase3_plot.png
----
+### Chart 1: Phase 4 Performance
+- X-axis: Loss/Error Rate (0%–95%)
+- Y-axis: Completion Time
+- Includes all 5 options
+
+### Chart 2: Window Size vs Completion Time (10% Error)
+- X-axis: Window Size (1, 2, 5, 10, 20, 50)
+- Y-axis: Completion Time
+
+### Chart 3: Phase Comparison
+- X-axis: Phase 1–4
+- Y-axis: Completion Time
+
+### Files:
+- results/phase4_chart1.png
+- results/phase4_chart2.png
+- results/phase4_chart3.png
+- results/phase3_plot.png
 
 ## Known Issues / Limitations
 The program that runs the incremental tests for error percentage notably runs faster on machines with higher technical specifications.
