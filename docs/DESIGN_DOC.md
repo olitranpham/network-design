@@ -58,10 +58,16 @@
 
 ### 1.1 Demo Deliverable
 
-- **Private YouTube link** 
-	- Link: TBD
+- **Private YouTube link **
+	- Link: (https://youtu.be/G_qu06qyzf8)
 		- Timestamped outline:
-			- TBD
+			- Phase 4 Option 1 ==> 0:00 - 0:20
+     		- Phase 4 Option 2 ==> 0:20 - 0:53
+     		- Phase 4 Option 3 ==> 0:53 - 3:03
+     		- Phase 4 Option 4 ==> 3:03 - 3:35
+       		- Phase 4 Option 5 ==> 3:35 - 5:52
+         - Misclick of incorrect graph ==> 6:02 - 6:10
+            - Phase 4 Generated Plots ==> 6:10 - 6:57
 
 ### 1.2 Required Demo Scenarios
 
@@ -69,35 +75,39 @@
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-|   |   |   |   |
+| Run option 1 using Go-Back-N  |  No error injection |  File will be smoothly sent over | Setting up of server and client, then sending the file over, finally opening the file when it is complete  |
 |   |   |   |   |
 
 **Phase 4(b) - Timeout and Retransmission Logic**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-|   |   |   |   |
-|   |   |   |   |
+| Run option 2 using Go-Back-N | ACK-bit errors  |  File will be sent over, and packets will be retransmitted when corrupted |  Setting up the server and client, then sending the file over, finally opening the file when it is complete  |
+| Run option 3 using Go-Back-N | DATA-bit errors  |  File will be sent over, and packets will be retransmitted when corrupted |  Setting up the server and client, then sending the file over, finally opening the file when it is complete  |
+| Run option 4 using Go-Back-N | ACK packet Loss  |  File will be sent over, and packets will be retransmitted when ACK is not received after timeout |  Setting up the server and client, then sending the file over, finally opening the file when it is complete  |
+| Run option 5 using Go-Back-N | DATA packet Loss  |  File will be sent over, and packets will be retransmitted when ACK is not received after timeout |  Setting up the server and client, then sending the file over, finally opening the file when it is complete  |
 
 **Phase 4(c) - Go-Back-N Receiver Behavior**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-|   |   |   |   |
+| Run option 1 using Go-Back-N  |  No error injection |  File will be smoothly sent over | Setting up of server and client, then sending the file over, finally opening the file when it is complete  |
 |   |   |   |   |
 
 **Phase 4(d) - Error and Loss Handling**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-|   |   |   |   |
-|   |   |   |   |
+| Run option 2 using Go-Back-N | ACK-bit errors  |  File will be sent over, and packets will be retransmitted when corrupted |  Setting up the server and client, then sending the file over, finally opening the file when it is complete  |
+| Run option 3 using Go-Back-N | DATA-bit errors  |  File will be sent over, and packets will be retransmitted when corrupted |  Setting up the server and client, then sending the file over, finally opening the file when it is complete  |
+| Run option 4 using Go-Back-N | ACK packet Loss  |  File will be sent over, and packets will be retransmitted when ACK is not received after timeout |  Setting up the server and client, then sending the file over, finally opening the file when it is complete  |
+| Run option 5 using Go-Back-N | DATA packet Loss  |  File will be sent over, and packets will be retransmitted when ACK is not received after timeout |  Setting up the server and client, then sending the file over, finally opening the file when it is complete  |
 
 **Phase 4(e) - Correctness Verification**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-|   |   |   |   |
+| Test correctness of the scripts, sender and receiver  | The picture is opened after every demo run  | the picture should be the same every time, with an updated date and timestamp to show the tests ran and edited it  | The video will show the opening of the picture after every demo with the timestamps  |
 |   |   |   |   |
 
 ### 1.3 Required Figures/Plots
@@ -1208,7 +1218,7 @@ Refer to README
 |---|---|---|---|
 | Implement Go-Back-N sender sliding window | Olivia Pham | 4/8/26 | Sender supports `base`, `next_seq_num`, and configurable window size |
 | Implement packet buffering and retransmission | Olivia Pham | 4/8/26 | Sender retransmits packets from base on timeout |
-| Implement Go-Back-N receiver logic | Olivia Pham | 4/8/266 | Receiver accepts only expected packets and sends cumulative ACKs |
+| Implement Go-Back-N receiver logic | Olivia Pham | 4/8/26 | Receiver accepts only expected packets and sends cumulative ACKs |
 | Implement ACK bit-error injection | Cody Nguyen | 4/8/26 | ACK corruption is applied and handled correctly |
 | Implement DATA bit-error injection | Cody Nguyen | 4/8/26 | DATA corruption detected and handled |
 | Implement ACK packet loss | Cody Nguyen | 4/8/26 | ACK loss causes timeout and retransmission |
