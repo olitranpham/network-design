@@ -53,11 +53,10 @@
 
 | Task / Section | Description | Date Completed |
 |----------------|-------------|----------------|
-| Phase 3(d) | Implemented error injection experiments and validated protocol behavior under varying conditions | 3/18/26 |
-| Phase 3(e) | Extended testing scenarios and verified retransmission correctness | 3/18/26 |
-| DESIGN_DOC.md and README.md | Updated documentation and experiment instructions for Phase 3 | 3/18/26 |
-| Section 1 | Co-authored | 3/18/26 |
-| Section 5 | Co-authored | 3/18/26 |
-| Section 10 | Co-authored | 3/18/26 |
+| Section 1 | Co-authored | 4/7/26 |
+| Phase 4 Experiments | Developed and ran phase4_experiments.py for performance evaluation across loss rates | 4/7/26 |
+| Charts | Generated performance plots (loss vs time, window size analysis, phase comparison) | 4/7/26 |
+| Debugging | Tuned timeout, fixed retransmission behavior, and handled edge cases | 4/7/26 |
+| README.md / DESIGN_DOC.md | Updated documentation with Phase 4 commands, results, and analysis | 4/7/26 |
 
 
