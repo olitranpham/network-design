@@ -5,9 +5,9 @@
 ## Team
 | Name | Email | Primary responsibility |
 |---|---|------------------------|
-| Cody Nguyen | cody_nguyen@student.uml.edu | Phase 3(b)             | 
-| Olivia Pham | olivia_pham@student.uml.edu | Phase 4(a)             |
-| Ian Khoo | ian_khoo@student.uml.edu | Phase 3(c)             |
+| Cody Nguyen | cody_nguyen@student.uml.edu | Phase 4(a)-(d) | 
+| Olivia Pham | olivia_pham@student.uml.edu | Phase 4(a)-(c) |
+| Ian Khoo | ian_khoo@student.uml.edu | Phase 4(a)-(d) |
 
 
 ## Demo Video
