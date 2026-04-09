@@ -108,7 +108,7 @@
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
 | Test correctness of the scripts, sender and receiver  | The picture is opened after every demo run  | the picture should be the same every time, with an updated date and timestamp to show the tests ran and edited it  | The video will show the opening of the picture after every demo with the timestamps  |
-|   |   |   |   |
+
 
 ### 1.3 Required Figures/Plots
 
@@ -141,41 +141,41 @@ Plot generated and included.
 ### 2.2 Acceptance Criteria 
 
 **Phase 4(a):**
-- [ ] The sender implements the Go-Back-N sliding window protocol over UDP.
-- [ ] The sender is able to transmit multiple packets without waiting for individual ACKs.
-- [ ] The sender maintains 2 variables:
+- [X] The sender implements the Go-Back-N sliding window protocol over UDP.
+- [X] The sender is able to transmit multiple packets without waiting for individual ACKs.
+- [X] The sender maintains 2 variables:
       	- `base`: the sequence number of the oldest unacknowledged packet
       	- `next_seq_num`: the next packet to be transmitted
-- [ ] The sender stores transmitted but unacknowledged packets in a packet buffer.
-- [ ] Sequence numbers are used to identify packets and maintain correct ordering.
-- [ ] The sender is able to transmit packets while `next_seq_num < base + window_size`
+- [X] The sender stores transmitted but unacknowledged packets in a packet buffer.
+- [X] Sequence numbers are used to identify packets and maintain correct ordering.
+- [X] The sender is able to transmit packets while `next_seq_num < base + window_size`
 
 **Phase 4(b):**
-- [ ] A single timer is maintained for the oldest unacknowledged packet.
-- [ ] If the timer expires before an ACK is received, the sender retransmits all packets starting from `base` up to `next_seq_num - 1`
-- [ ] The timer is restarted whenever retransmissions occur.
+- [X] A single timer is maintained for the oldest unacknowledged packet.
+- [X] If the timer expires before an ACK is received, the sender retransmits all packets starting from `base` up to `next_seq_num - 1`
+- [X] The timer is restarted whenever retransmissions occur.
 
 **Phase 4(c):**
-- [ ] The receiver maintains the variable `expected_sequence_num`
-- [ ] If a packet arrives with the expected sequence number, the receiver accepts the packet, the payload is delivered to the application layer, a cumulative ACK for that packet is sent, and `expected_seq_num` increments.
-- [ ] If a packet arrives out of order, the packet is discarded and the receiver resends the last ACK.
+- [X] The receiver maintains the variable `expected_sequence_num`
+- [X] If a packet arrives with the expected sequence number, the receiver accepts the packet, the payload is delivered to the application layer, a cumulative ACK for that packet is sent, and `expected_seq_num` increments.
+- [X] If a packet arrives out of order, the packet is discarded and the receiver resends the last ACK.
 
 **Phase 4(d):**
-- [ ] Option 1: File transfer completes normally without retransmissions
-- [ ] Option 2: Sender detects corrupted ACK and retransmits packets as needed
-- [ ] Option 3: Receiver detects corruption and resends last ACK
-- [ ] Option 4: Sender times out and retransmits packets
-- [ ] Option 5: Receiver does not acknowledge missing packet, causing sender retransmission
+- [X] Option 1: File transfer completes normally without retransmissions
+- [X] Option 2: Sender detects corrupted ACK and retransmits packets as needed
+- [X] Option 3: Receiver detects corruption and resends last ACK
+- [X] Option 4: Sender times out and retransmits packets
+- [X] Option 5: Receiver does not acknowledge missing packet, causing sender retransmission
       
 **Phase 4(e):**
-- [ ] Loss/error probability will range from 0% to 95% in increments of 5%.
-- [ ] Each configuration will be tested five times, and results will be averaged.
-- [ ] Experiments will analyze the impact of window size, timeout values, and network loss/error rates. 
+- [X] Loss/error probability will range from 0% to 95% in increments of 5%.
+- [X] Each configuration will be tested five times, and results will be averaged.
+- [X] Experiments will analyze the impact of window size, timeout values, and network loss/error rates. 
       
 **General:**
-- [ ] README.md is complete
-- [ ] Invite instructor(s) to GitHub repo and include GitHub link
-- [ ] Record demo and upload to YouTube 
+- [X] README.md is complete
+- [X] Invite instructor(s) to GitHub repo and include GitHub link
+- [X] Record demo and upload to YouTube 
 
 ### 2.3 Work Breakdown
 
@@ -1246,27 +1246,27 @@ Refer to README
 ### Pre-Recording Checklist
 
 **Phase 4 (Option 1):**
-- [ ] Both terminal windows visible side-by-side
+- [X] Both terminal windows visible side-by-side
 
 **Phase 4 (Option 2):**
-- [ ] Both terminal windows visible side-by-side
-- [ ] ACK corruption demonstration
+- [X] Both terminal windows visible side-by-side
+- [X] ACK corruption demonstration
 
 **Phase 4 (Option 3):**
-- [ ] Both terminal windows visible side-by-side
-- [ ] DATA corruption demonstration
+- [X] Both terminal windows visible side-by-side
+- [X] DATA corruption demonstration
 
 **Phase 4 (Option 4):**
-- [ ] Both terminal windows visible side-by-side
-- [ ] ACK packet loss demonstration
+- [X] Both terminal windows visible side-by-side
+- [X] ACK packet loss demonstration
 
 **Phase 4 (Option 5):**
-- [ ] Both terminal windows visible side-by-side
-- [ ] DATA packet loss demonstration
+- [X] Both terminal windows visible side-by-side
+- [X] DATA packet loss demonstration
       
 **Video Quality:**
-- [ ] Both terminal windows visible side-by-side
-- [ ] Clear explanation of steps
-- [ ] Show file comparison/verification
+- [X] Both terminal windows visible side-by-side
+- [X] Clear explanation of steps
+- [X] Show file comparison/verification
 
 
