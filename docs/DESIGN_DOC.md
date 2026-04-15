@@ -1,5 +1,5 @@
 # Network Design Project – Phase Proposal & Design Document 
-## (Phase 4 of 5)
+## (Phase 5 of 5)
 
 **Team Name:**  Don't Be COI
 
@@ -10,11 +10,11 @@
 
 **GitHub Repo URL (with GitHub usernames):** https://github.com/olitranpham/network-design, olitranpham, iantkhoo1488, codynguyen-dev
 
-**Phase:** 4
+**Phase:** 5
 
-**Submission Date:**  3/31/2026
+**Submission Date:**  4/17/2026
 
-**Version:** v5
+**Version:** v6
 
 ---
 
@@ -37,20 +37,19 @@
 
 ## 0 Executive summary
 
-**Phase 4(a):** Implement the Go-Back-N (GBN) data transfer protocol over an unreliable UDP channel. Unlike the stop-and-wait model used in Phase 3 (RDT 3.0), the sender will transmit multiple packets without waiting for an ACK for each packet. A sliding window of size N will be used to allow pipelined transmission. 
+**Phase 5(a):** TCP-style connection establishment using a simplified three-way handshake (SYN, SYN-ACK, ACK) before data transmission begins.
 
-**Phase 4(b):** The sender maintains a window buffer containing packets that have been sent but not yet acknowledged. If a timeout occurs, the sender will retransmit all unacknowledged packets starting from the base of the window.
+**Phase 5(b):** Dynamic sender window behavior based on congestion control and receiver-advertised flow control.
 
-**Phase 4(c):** The receiver implements the Go-Back-N receiver model, which accepts only the next expected packet in sequence and discards out-of-order packets.
+**Phase 5(c):** Implementation of TCP congestion control mechanisms including:
+	- Slow start
+	- Congestion avoidance
+	- TCP Reno fast retransmit
+	- TCP Reno fast recovery
+	
+**Phase 5(d):** Receiver-side flow control where the receiver advertises available buffer space (rwnd) and the sender limits transmission based on that window.
 
-**Phase 4(d):** Test the protocol under the save 5 unreliable network conditions:
-	- Option 1: No loss/no bit errors
-	- Option 2: ACK packet bit-error
-	- Option 3: DATA packet bit-error
-	- Option 4: ACK packet loss
-	- Option 5: DATA packet loss
-
-**Phase 4(e):** Evaluate protocol performance under varying loss/error probabilities and analyze the effect of window size and timeout values on completion time.
+**Phase 5(e):** TCP-style connection teardown using a FIN/ACK exchange to reliably close the connection after file transfer.
 
 ---
 
@@ -59,55 +58,41 @@
 ### 1.1 Demo Deliverable
 
 - **Private YouTube link **
-	- Link: (https://youtu.be/G_qu06qyzf8)
+	- Link:
 		- Timestamped outline:
-			- Phase 4 Option 1 ==> 0:00 - 0:20
-     		- Phase 4 Option 2 ==> 0:20 - 0:53
-     		- Phase 4 Option 3 ==> 0:53 - 3:03
-     		- Phase 4 Option 4 ==> 3:03 - 3:35
-       		- Phase 4 Option 5 ==> 3:35 - 5:52
-         - Misclick of incorrect graph ==> 6:02 - 6:10
-            - Phase 4 Generated Plots ==> 6:10 - 6:57
 
 ### 1.2 Required Demo Scenarios
 
-**Phase 4(a) - Go-Back-N File Transfer**
+**Phase 5(a) - TCP Connection Setup**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-| Run option 1 using Go-Back-N  |  No error injection |  File will be smoothly sent over | Setting up of server and client, then sending the file over, finally opening the file when it is complete  |
+|   |   |   |   | 
+
+**Phase 5(b) - Dynamic Sender Window**
+
+| Scenario | Configuration | Expected Behavior | What Video Will Show |
+| Scenario | Configuration | Expected Behavior | What Video Will Show |
+|---|---|---|---|
 |   |   |   |   |
 
-**Phase 4(b) - Timeout and Retransmission Logic**
+**Phase 5(c) - TCP Slow Start Behavior**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-| Run option 2 using Go-Back-N | ACK-bit errors  |  File will be sent over, and packets will be retransmitted when corrupted |  Setting up the server and client, then sending the file over, finally opening the file when it is complete  |
-| Run option 3 using Go-Back-N | DATA-bit errors  |  File will be sent over, and packets will be retransmitted when corrupted |  Setting up the server and client, then sending the file over, finally opening the file when it is complete  |
-| Run option 4 using Go-Back-N | ACK packet Loss  |  File will be sent over, and packets will be retransmitted when ACK is not received after timeout |  Setting up the server and client, then sending the file over, finally opening the file when it is complete  |
-| Run option 5 using Go-Back-N | DATA packet Loss  |  File will be sent over, and packets will be retransmitted when ACK is not received after timeout |  Setting up the server and client, then sending the file over, finally opening the file when it is complete  |
+|   |   |   |   | 
 
-**Phase 4(c) - Go-Back-N Receiver Behavior**
+**Phase 5(d) - Reno Fast Retransmit / Fast Recovery**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-| Run option 1 using Go-Back-N  |  No error injection |  File will be smoothly sent over | Setting up of server and client, then sending the file over, finally opening the file when it is complete  |
-|   |   |   |   |
+|   |   |   |   | 
 
-**Phase 4(d) - Error and Loss Handling**
-
-| Scenario | Configuration | Expected Behavior | What Video Will Show |
-|---|---|---|---|
-| Run option 2 using Go-Back-N | ACK-bit errors  |  File will be sent over, and packets will be retransmitted when corrupted |  Setting up the server and client, then sending the file over, finally opening the file when it is complete  |
-| Run option 3 using Go-Back-N | DATA-bit errors  |  File will be sent over, and packets will be retransmitted when corrupted |  Setting up the server and client, then sending the file over, finally opening the file when it is complete  |
-| Run option 4 using Go-Back-N | ACK packet Loss  |  File will be sent over, and packets will be retransmitted when ACK is not received after timeout |  Setting up the server and client, then sending the file over, finally opening the file when it is complete  |
-| Run option 5 using Go-Back-N | DATA packet Loss  |  File will be sent over, and packets will be retransmitted when ACK is not received after timeout |  Setting up the server and client, then sending the file over, finally opening the file when it is complete  |
-
-**Phase 4(e) - Correctness Verification**
+**Phase 5(e) - Timeout-Based Congestion Response**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-| Test correctness of the scripts, sender and receiver  | The picture is opened after every demo run  | the picture should be the same every time, with an updated date and timestamp to show the tests ran and edited it  | The video will show the opening of the picture after every demo with the timestamps  |
+|   |   |   |   | 
 
 
 ### 1.3 Required Figures/Plots
@@ -121,91 +106,101 @@ Plot generated and included.
 ### 2.1 Scope
 
 **New behaviors added:** 
-- Sliding window transmission
-- Sender packet buffer
-- Go-Back-N retransmission logic
-- Cumulative acknowledgements
-- Variable window size testing
+- TCP-style connection establishment (three-way handshake)  
+- TCP-style connection teardown (FIN handshake)  
+- Dynamic congestion window (`cwnd`)  
+- Receiver advertised window (`rwnd`)  
+- Sender transmission limited by min(`cwnd`, `rwnd`)  
+- Slow start congestion control  
+- Congestion avoidance behavior  
+- TCP Reno fast retransmit and fast recovery  
 
 **Behaviors unchanged from previous phase:** 
 - UDP socket communication
 - Packet checksum validation
 - File segmentation into 1024-byte chunks
 - Error injection mechanisms
+- Sliding window transmission framework  
 
 **Out of scope (explicitly):**
-- Selective repeat protocol
-- Congestion control
-- Adaptive timeout calculation
+- Selective acknowledgments (SACK)  
+- Multiple simultaneous connections  
+- Byte-level TCP sequence numbering  
+- Advanced RTT estimation algorithms
 
 ### 2.2 Acceptance Criteria 
 
-**Phase 4(a):**
-- [X] The sender implements the Go-Back-N sliding window protocol over UDP.
-- [X] The sender is able to transmit multiple packets without waiting for individual ACKs.
-- [X] The sender maintains 2 variables:
-      	- `base`: the sequence number of the oldest unacknowledged packet
-      	- `next_seq_num`: the next packet to be transmitted
-- [X] The sender stores transmitted but unacknowledged packets in a packet buffer.
-- [X] Sequence numbers are used to identify packets and maintain correct ordering.
-- [X] The sender is able to transmit packets while `next_seq_num < base + window_size`
+**Phase 5(a):**
+- [ ] The sender initiates a connection using a SYN segment.
+- [ ] The receiver responds with a SYN-ACK segment.
+- [ ] The sender completes the handshake by sending an ACK segment.
+- [ ] The connection enters the ESTABLISHED state before any data transfer occurs.
+- [ ] If a handshake packet is lost, the sender retransmits the SYN after timeout.
 
-**Phase 4(b):**
-- [X] A single timer is maintained for the oldest unacknowledged packet.
-- [X] If the timer expires before an ACK is received, the sender retransmits all packets starting from `base` up to `next_seq_num - 1`
-- [X] The timer is restarted whenever retransmissions occur.
+**Phase 5(b):**
+- [ ] The sender maintains a congestion window `(cwnd)`.
+- [ ] The receiver advertises its available receive window `(rwnd)`.
+- [ ] The sender limits transmission to `send_window = min(cwnd, rwnd)`
+- [ ] The sender stops transmitting when the window is full.
+- [ ] Transmission resumes when ACKs are received and the window advances.
 
-**Phase 4(c):**
-- [X] The receiver maintains the variable `expected_sequence_num`
-- [X] If a packet arrives with the expected sequence number, the receiver accepts the packet, the payload is delivered to the application layer, a cumulative ACK for that packet is sent, and `expected_seq_num` increments.
-- [X] If a packet arrives out of order, the packet is discarded and the receiver resends the last ACK.
+**Phase 5(c):**
+- [ ] The sender initializes `cwnd = 1`.
+- [ ] For each ACK received during slow start, cwnd increases by 1 segment.
+- [ ] `cwnd` grows exponentially until it reaches `ssthresh`.
+- [ ] Once `cwnd >= ssthresh`, the sender transitions into congestion avoidance.
+- [ ] The console output or logs show the growth of `cwnd`.
 
-**Phase 4(d):**
-- [X] Option 1: File transfer completes normally without retransmissions
-- [X] Option 2: Sender detects corrupted ACK and retransmits packets as needed
-- [X] Option 3: Receiver detects corruption and resends last ACK
-- [X] Option 4: Sender times out and retransmits packets
-- [X] Option 5: Receiver does not acknowledge missing packet, causing sender retransmission
+**Phase 5(d):**
+- [ ] The sender tracks duplicate ACKs.
+- [ ] When three duplicate ACKs are received, the sender immediately retransmits the missing segment.
+- [ ] The sender updates congestion parameters `ssthresh = cwnd / 2` and `cwnd = ssthresh + 3`
+- [ ] The sender enters fast recovery instead of waiting for timeout.
+- [ ] Normal transmission resumes when the missing packet is acknowledged.
       
-**Phase 4(e):**
-- [X] Loss/error probability will range from 0% to 95% in increments of 5%.
-- [X] Each configuration will be tested five times, and results will be averaged.
-- [X] Experiments will analyze the impact of window size, timeout values, and network loss/error rates. 
+**Phase 5(e):**
+- [ ] If a packet is lost and no ACK is received within the timeout interval, the sender retransmits the missing packet.
+- [ ] Congestion control parameters are updated: `ssthresh = cwnd / 2` and `cwnd = 1`.
+- [ ] The sender re-enters slow start after timeout.
+- [ ] The file transfer continues until all packets are acknowledged.
       
 **General:**
-- [X] README.md is complete
-- [X] Invite instructor(s) to GitHub repo and include GitHub link
-- [X] Record demo and upload to YouTube 
+- [ ] README.md is complete
+- [ ] Invite instructor(s) to GitHub repo and include GitHub link
+- [ ] Record demo and upload to YouTube 
 
 ### 2.3 Work Breakdown
 
 **New Tasks for Phase 4:**
-- Implement Go-Back-N sliding window protocol
-- Implement sender window buffer for unacknowledged packets
-- Implement `base` and `next_seq_num` tracking in the sender
-- Implement Go-Back-N retransmission behavior on timeout
-- Modify sender logic to support pipelined packet transmission
-- Modify receiver to support cumulative ACK behavior
-- Test protocol under unreliable channel scenarios (Options 1–5)
-- Evaluate protocol performance under different window sizes and loss/error probabilities
+- Implement TCP-style connection establishment using a three-way handshake (SYN, SYN-ACK, ACK).
+- Extend the existing Go-Back-N data transfer system to support a TCP-like dynamic sliding window.
+- Implement congestion control mechanisms including slow start and congestion avoidance.
+- Implement TCP Reno fast retransmit and fast recovery triggered by duplicate ACKs.
+- Implement receiver-advertised flow control (rwnd) and enforce sender limits based on min(cwnd, rwnd).
+- Implement timeout-based congestion response, including updating cwnd and ssthresh.
+- Implement TCP-style connection teardown using a FIN/ACK exchange.
+- Test protocol behavior under all required demo scenarios (Options 1–5).
+- Generate performance graphs including completion time under packet loss and congestion window evolution.
 
 **Workstream A: Cody Nguyen**
-- Integrate Go-Back-N logic into the existing UDP file transfer framework.
-- Implement and validate error injection scenarios (Options 1–5).
-- Ensure sender correctly handles corrupted or lost ACK packets.
-- Verify retransmission behavior under packet loss conditions.
+- Integrate TCP-style connection setup and teardown into the existing UDP communication framework.
+- Implement and validate packet loss and duplicate ACK scenarios used in Options 4 and 5.
+- Ensure sender correctly detects duplicate ACKs and triggers fast retransmit.
+- Validate retransmission behavior under packet loss and timeout conditions.
 
 **Workstream B: Olivia Pham**
-- Design and implement the Go-Back-N sender architecture.
-- Implement sliding window transmission logic (`base`, `next_seq_num`, window size).
-- Implement packet buffering for unacknowledged packets.
-- Implement timeout and retransmission of packets starting from the window base.
+- Extend the sender architecture to support TCP-style congestion control.
+- Implement congestion window `(cwnd)` tracking and updates during slow start and congestion avoidance.
+- Implement logic to compute the effective sending window `min(cwnd, rwnd)`.
+- Implement timeout handling that updates `ssthresh` and resets `cwnd`.
+- Integrate the new congestion-control logic with the existing reliable data transfer system.
   
 **Workstream C: Ian Khoo**
-- Conduct performance evaluation experiments across varying loss/error probabilities.
-- Test protocol behavior with different window sizes.
-- Measure completion times for file transfers under all scenarios.
-- Generate performance plots and record demonstration videos for Phase 4.
+- Conduct performance experiments across varying packet loss probabilities.
+- Measure completion times and evaluate the impact of congestion control mechanisms.
+- Track congestion window `(cwnd)` evolution during transfers.
+- Generate required plots for Phase 5 performance analysis.
+- Record demonstration videos for all Phase 5 scenarios.
 
 ---
 
@@ -213,636 +208,119 @@ Plot generated and included.
 
 ### 3.1 State Diagram Evolution
 
-#### Phase 4(a): Go-Back-N Sender Behavior
-
-```
-Sender State Diagram:
-                         +-----------------------------+
-                         |        Wait for Call        |
-                         |   base = 0                  |
-                         |   next_seq_num = 0          |
-                         |   window_size = N           |
-                         +-----------------------------+
-                                        |
-                                        | rdt_send(data)
-                                        | [next_seq_num < base + window_size]
-                                        | sndpkt[next_seq_num] = make_pkt(next_seq_num, data, checksum)
-                                        | udt_send(sndpkt[next_seq_num])
-                                        | if base == next_seq_num: start_timer()
-                                        | next_seq_num++
-                                        v
-                         +-----------------------------+
-              +--------->|      Wait for ACK/Timeout   |<----------+
-              |          |   (base <= next_seq_num-1)  |           |
-              |          +-----------------------------+           |
-              |               |                    |               |
-              |               | timeout            |               |
-              |               | retransmit all     |               |
-              |               | sndpkt[base] to    |               |
-              |               | sndpkt[next_seq_num-1]             |
-              |               | restart_timer()    |               |
-              |               |                    |               |
-              |               |    rcv ACK(n)      |               |
-              |               |    validate_checksum(rcvpkt)       |
-              |               |    parse_ack_num(rcvpkt)           |
-              |               |                    |               |
-              |               |    IF (NOT corrupt AND n >= base): |
-              |               |      base = n + 1  |               |
-              |               |      if base == next_seq_num:      |
-              |               |        stop_timer()|               |
-              |               |      else:         |               |
-              |               |        restart_timer()             |
-              |               |                    |               |
-              |               | [window slides,    |               |
-              |               |  send new pkts     |               |
-              |               |  while eligible]   |               |
-              +---------------+--------------------+---------------+
-                              |
-                              | base == next_seq_num
-                              | all ACKs received
-                              v
-                         +-----------------------------+
-                         |    Transfer Complete        |
-                         |    n packets sent           |
-                         |    x retransmission(s)      |
-                         +-----------------------------+
-
-
+#### Phase 5(a): TCP Connection Establishment (Three-Way Handshake)
 
 ```
 
-#### Phase 4(b): Timeout and Retransmission Logic
-
-```
-Sender State Diagram:
-                         +-----------------------------+
-                         |        Wait for Call        |
-                         |   base = 0                  |
-                         |   next_seq_num = 0          |
-                         |   window_size = N           |
-                         |   timer = OFF               |
-                         +-----------------------------+
-                                        |
-                                        | rdt_send(data)
-                                        | [next_seq_num < base + window_size]
-                                        | sndpkt[next_seq_num] = make_pkt(next_seq_num, data, checksum)
-                                        | udt_send(sndpkt[next_seq_num])
-                                        | if (base == next_seq_num): start_timer()
-                                        | next_seq_num++
-                                        v
-                         +-----------------------------+
-              +--------->|    Wait for ACK / Timeout   |<----------+
-              |          |   timer covers sndpkt[base] |           |
-              |          +-----------------------------+           |
-              |               |                    |               |
-              |               | timeout            |               |
-              |               | [oldest unACKed    |               |
-              |               |  pkt (base) timer  |               |
-              |               |  expired]          |               |
-              |               |                    |               |
-              |               | for i = base to next_seq_num-1:    |
-              |               |   udt_send(sndpkt[i])              |
-              |               | restart_timer()    |               |
-              |               |                    |               |
-              +---------------+                    |               |
-                                                   |               |
-                                                   | rcv ACK(n)    |
-                                                   | validate_checksum(rcvpkt)
-                                                   | parse_ack_num(rcvpkt)
-                                                   |               |
-                                                   | IF corrupt:   |
-                                                   |   [ignore,    |
-                                                   |    stay]      |
-                                                   |               |
-                                                   | IF (NOT corrupt AND n >= base):
-                                                   |   base = n + 1|
-                                                   |               |
-                                                   |   if (base == next_seq_num):
-                                                   |     stop_timer()
-                                                   |   else:       |
-                                                   |     restart_timer()
-                                                   |     [timer now covers
-                                                   |      new oldest unACKed
-                                                   |      pkt (new base)]
-                                                   |               |
-                                                   | [window slides,
-                                                   |  send new pkts while eligible]
-                                                   +---------------+
 ```
 
-#### Phase 4(c): Go-Back-N Receiver Behavior
+#### Phase 5(b): TCP Dynamic Sender Window Behavior
 
 ```
-Receiver State Diagram:
-                         +-----------------------------+
-              +--------->|    Wait for Packet          |<----------+
-              |          |  expected_seq_num = 0       |           |
-              |          +-----------------------------+           |
-              |               |              |                     |
-              |               |              +---------------------+
-              |               |              rcv corrupt pkt
-              |               |              OR rcv out-of-order pkt (seq != expected_seq_num)
-              |               |              sndpkt = make_pkt(ACK, last_ack_num, checksum)
-              |               |              udt_send(sndpkt)
-              |               |              [discard pkt, stay in Wait for Packet]
-              |               |
-              |               | rcv valid pkt (seq == expected_seq_num)
-              |               | extract(data)
-              |               | deliver_data(data)
-              |               | last_ack_num = expected_seq_num
-              |               | sndpkt = make_pkt(ACK, expected_seq_num, checksum)
-              |               | udt_send(sndpkt)
-              |               | expected_seq_num++
-              +---------------+
-```
-
-#### Phase 4(d): Error and Loss Handling
 
 ```
-Option 2 Corrupt ACK Packet:
-Sender State Diagram (MODIFIED FOR OPTION 2):
-                         +-----------------------------+
-                         |        Wait for Call        |
-                         |   base = 0                  |
-                         |   next_seq_num = 0          |
-                         +-----------------------------+
-                                        |
-                                        | rdt_send(data)
-                                        | [next_seq_num < base + window_size]
-                                        | sndpkt[next_seq_num] = make_pkt(next_seq_num, data, checksum)
-                                        | udt_send(sndpkt[next_seq_num])
-                                        | if base == next_seq_num: start_timer()
-                                        | next_seq_num++
-                                        v
-                         +-----------------------------+
-              +--------->|      Wait for ACK/Timeout   |<----------+
-              |          +-----------------------------+           |
-              |               |                    |               |
-              |               | timeout            |               |
-              |               | retransmit sndpkt[base..next_seq_num-1]
-              |               | restart_timer()    |               |
-              |               |                    |               |
-              |               | rcv ACK            |               |
-              |               | ┌─────────────────────────────────┐|
-              |               | │ [OPTION 2 INJECTION]            ││
-              |               | │ if should_corrupt_ack():        ││
-              |               | │   rcvpkt = flip_bits(rcvpkt)    ││
-              |               | └─────────────────────────────────┘|
-              |               | validate_checksum(rcvpkt)          |
-              |               | parse_ack_num(rcvpkt)              |
-              |               |                                    |
-              |               | IF (corrupt):                      |
-              |               |   [ignore ACK, await timeout]      |
-              |               |   retransmit sndpkt[base..next_seq_num-1]
-              |               |                                    |
-              |               | IF (NOT corrupt AND n >= base):    |
-              |               |   base = n + 1                     |
-              |               |   restart or stop timer            |
-              +---------------+------------------------------------+
 
-Receiver State Diagram (MODIFIED FOR OPTION 2, no differences from original):
-                         +-----------------------------+
-              +--------->|    Wait for Packet          |<----------+
-              |          |  expected_seq_num = 0       |           |
-              |          +-----------------------------+           |
-              |               |              |                     |
-              |               |              +---------------------+
-              |               |              rcv corrupt pkt OR
-              |               |              rcv out-of-order pkt
-              |               |              sndpkt = make_pkt(ACK, last_ack_num, checksum)
-              |               |              udt_send(sndpkt)
-              |               |              [discard pkt, stay in Wait for Packet]
-              |               |
-              |               | rcv valid pkt (seq == expected_seq_num)
-              |               | extract(data)
-              |               | deliver_data(data)
-              |               | last_ack_num = expected_seq_num
-              |               | sndpkt = make_pkt(ACK, expected_seq_num, checksum)
-              |               | udt_send(sndpkt)
-              |               | expected_seq_num++
-              +---------------+
+#### Phase 5(c): TCP Receiver Behavior and Flow Control
 
-Option 3 Data bit-error:
-Sender State Diagram (MODIFIED FOR OPTION 3, no differences from original):
-                         +-----------------------------+
-                         |        Wait for Call        |
-                         |   base = 0                  |
-                         |   next_seq_num = 0          |
-                         +-----------------------------+
-                                        |
-                                        | rdt_send(data)
-                                        | [next_seq_num < base + window_size]
-                                        | sndpkt[next_seq_num] = make_pkt(next_seq_num, data, checksum)
-                                        | udt_send(sndpkt[next_seq_num])
-                                        | if base == next_seq_num: start_timer()
-                                        | next_seq_num++
-                                        v
-                         +-----------------------------+
-              +--------->|      Wait for ACK/Timeout   |<----------+
-              |          +-----------------------------+           |
-              |               |                    |               |
-              |               | timeout            |               |
-              |               | retransmit sndpkt[base..next_seq_num-1]
-              |               | restart_timer()    |               |
-              |               |                    |               |
-              |               | rcv valid ACK(n) (NOT corrupt AND n >= base):
-              |               |   base = n + 1     |               |
-              |               |   restart or stop timer            |
-              +---------------+--------------------+---------------+
+```
 
-Receiver State Diagram (MODIFIED FOR OPTION 3):
-                         +-----------------------------+
-              +--------->|    Wait for Packet          |<----------+
-              |          |  expected_seq_num = 0       |           |
-              |          |  last_ack_num = -1          |           |
-              |          +-----------------------------+           |
-              |               |              |                     |
-              |               |              +---------------------+
-              |               |              rcv DATA
-              |               |              ┌─────────────────────────────────┐
-              |               |              │ [OPTION 3 INJECTION]            │
-              |               |              │ if should_corrupt_data():       │
-              |               |              │   rcvpkt = flip_bits(rcvpkt)    │
-              |               |              └─────────────────────────────────┘
-              |               |              validate_checksum(rcvpkt)
-              |               |              parse_seq_num(rcvpkt)
-              |               |
-              |               |              IF (corrupt OR seq != expected_seq_num):
-              |               |                sndpkt = make_pkt(ACK, last_ack_num, checksum)
-              |               |                udt_send(sndpkt)
-              |               |                [Send LAST valid ACK]
-              |               |                [Stay in Wait for Packet]
-              |               |
-              |               | rcv DATA
-              |               | ┌─────────────────────────────────┐
-              |               | │ [OPTION 3 INJECTION]            │
-              |               | │ if should_corrupt_data():       │
-              |               | │   rcvpkt = flip_bits(rcvpkt)    │
-              |               | └─────────────────────────────────┘
-              |               | validate_checksum(rcvpkt)
-              |               | parse_seq_num(rcvpkt)
-              |               |
-              |               | IF (NOT corrupt AND seq == expected_seq_num):
-              |               |   extract(data)
-              |               |   deliver_data(data)
-              |               |   last_ack_num = expected_seq_num
-              |               |   sndpkt = make_pkt(ACK, expected_seq_num, checksum)
-              |               |   udt_send(sndpkt)
-              |               |   expected_seq_num++
-              +---------------+
+```
 
-Option 4 Sender Timeout / Retransmit Window:
-Sender State Diagram (MODIFIED FOR OPTION 4):
-                         +-----------------------------+
-                         |        Wait for Call        |
-                         |   base = 0                  |
-                         |   next_seq_num = 0          |
-                         +-----------------------------+
-                                        |
-                                        | rdt_send(data)
-                                        | [next_seq_num < base + window_size]
-                                        | sndpkt[next_seq_num] = make_pkt(next_seq_num, data, checksum)
-                                        | udt_send(sndpkt[next_seq_num])
-                                        | if base == next_seq_num: start_timer()
-                                        | next_seq_num++
-                                        v
-                         +-----------------------------+
-              +--------->|      Wait for ACK/Timeout   |<----------+
-              |          +-----------------------------+           |
-              |               |                    |               |
-              |               | timeout            |               |
-              |               | ┌─────────────────────────────────┐|
-              |               | │ [OPTION 4]                      ││
-              |               | │ Timer expires (ACK lost/delayed)││
-              |               | └─────────────────────────────────┘|
-              |               | retransmit ALL sndpkt[base..next_seq_num-1]
-              |               | restart_timer()    |               |
-              |               |                    |               |
-              |               | rcv valid ACK(n) (NOT corrupt AND n >= base):
-              |               |   base = n + 1     |               |
-              |               |   restart or stop timer            |
-              +---------------+--------------------+---------------+
+#### Phase 5(d): Congestion Control and Loss Recovery
 
-Receiver State Diagram (MODIFIED FOR OPTION 4, no differences from original):
-                         +-----------------------------+
-              +--------->|    Wait for Packet          |<----------+
-              |          |  expected_seq_num = 0       |           |
-              |          +-----------------------------+           |
-              |               |              |                     |
-              |               |              +---------------------+
-              |               |              rcv corrupt pkt OR
-              |               |              rcv out-of-order pkt
-              |               |              sndpkt = make_pkt(ACK, last_ack_num, checksum)
-              |               |              udt_send(sndpkt)
-              |               |              [discard pkt, stay in Wait for Packet]
-              |               |
-              |               | rcv valid pkt (seq == expected_seq_num)
-              |               | extract(data)
-              |               | deliver_data(data)
-              |               | last_ack_num = expected_seq_num
-              |               | sndpkt = make_pkt(ACK, expected_seq_num, checksum)
-              |               | udt_send(sndpkt)
-              |               | expected_seq_num++
-              +---------------+
+```
 
-Option 5 Data Loss (Missing Packet):
-Sender State Diagram (MODIFIED FOR OPTION 5, no differences from original):
-                         +-----------------------------+
-                         |        Wait for Call        |
-                         |   base = 0                  |
-                         |   next_seq_num = 0          |
-                         +-----------------------------+
-                                        |
-                                        | rdt_send(data)
-                                        | [next_seq_num < base + window_size]
-                                        | sndpkt[next_seq_num] = make_pkt(next_seq_num, data, checksum)
-                                        | udt_send(sndpkt[next_seq_num])
-                                        | if base == next_seq_num: start_timer()
-                                        | next_seq_num++
-                                        v
-                         +-----------------------------+
-              +--------->|      Wait for ACK/Timeout   |<----------+
-              |          +-----------------------------+           |
-              |               |                    |               |
-              |               | timeout            |               |
-              |               | retransmit ALL sndpkt[base..next_seq_num-1]
-              |               | restart_timer()    |               |
-              |               |                    |               |
-              |               | rcv valid ACK(n) (NOT corrupt AND n >= base):
-              |               |   base = n + 1     |               |
-              |               |   restart or stop timer            |
-              +---------------+--------------------+---------------+
+```
 
-Receiver State Diagram (MODIFIED FOR OPTION 5):
-                         +-----------------------------+
-              +--------->|    Wait for Packet          |<----------+
-              |          |  expected_seq_num = 0       |           |
-              |          |  last_ack_num = -1          |           |
-              |          +-----------------------------+           |
-              |               |              |                     |
-              |               |              +---------------------+
-              |               |              rcv DATA
-              |               |              ┌─────────────────────────────────┐
-              |               |              │ [OPTION 5 INJECTION]            │
-              |               |              │ if should_loss_data():          │
-              |               |              │   rcvpkt = loss(rcvpkt)         │
-              |               |              └─────────────────────────────────┘
-              |               |              validate_checksum(rcvpkt)
-              |               |              parse_seq_num(rcvpkt)
-              |               |
-              |               |              IF (lost OR seq != expected_seq_num):
-              |               |                [do NOT ACK the missing pkt]
-              |               |                sndpkt = make_pkt(ACK, last_ack_num, checksum)
-              |               |                udt_send(sndpkt)
-              |               |                [Stay in Wait for Packet]
-              |               |
-              |               | rcv valid pkt (seq == expected_seq_num)
-              |               | extract(data)
-              |               | deliver_data(data)
-              |               | last_ack_num = expected_seq_num
-              |               | sndpkt = make_pkt(ACK, expected_seq_num, checksum)
-              |               | udt_send(sndpkt)
-              |               | expected_seq_num++
-              +---------------+
+### Phase 5(e): TCP Connection Teardown (FIN/ACK Exchange)
+
+```
+
 ```
 
 ### 3.2 Component Responsibilities
 
-**Phase 4(a-b) - Sender Components**
+**Phase 5(a-e) - Sender Components**
 
 `sender.py` Main Responsibilities:
-- Read BMP into memory
+- Initiate TCP-style connection setup using a three-way handshake (SYN, SYN-ACK, ACK).
+- Read BMP file into memory.
 - Compute the total number of packets using a fixed payload size 
 - Divide BMP file data into chunks of 1024 bytes
 - Packetize file and transmit using the Go-Back-N protocol
 - Maintain sliding window variables
-	- `base`: sequence number of the oldest unacknowledged packet
-   	- `next_seq_num`: next packet sequence number to send
-- Maintain a window buffer containing packets that have been sent but not yet acknowledged
-- Send packets while `next_seq_num < base + window_size`
-- Start a timer for the oldest unacknowledged packet
+	- `seq_num`: Sequence number of the next packet to send
+ 	- `ack_num`: Acknowledgment number expected from the receiver
+- Maintain congestion control parameters:
+  - `cwnd` (congestion window)
+  - `sstresh` (slow start threshold)
+- Compute effective sending window `send_window = min(cwnd, rwnd)`
+- Send packets while the sender window allows transmission.
+- Start and manage retransmission timers.
 - Process cumulative ACK packets received from the receiver
-- Update `base` when valid ACKs are received
+- Detect duplicate ACKs and trigger fast retransmit / fast recovery.
+- Update congestion control parameters during slow start, congestion avoidance, and timeout events
+- Retransmit missing packets when loss is detected.
 - Print transmission progress into console
-- Phase 4 option 2: intentionally corrupt received ACK bits before validation
-- Phase 4 option 4: intentionally drop received ACK packets before validation
+- Initiate connection teardown using a FIN/ACK exchange after file transfer completes.
 
-**Phase 4(c) - Receiver Components**
+**Phase 4(c-d) - Receiver Components**
 
 `receiver.py` Main Responsibilities:
-- Create and bind UDP socket to the specified port
-- Receive DATA packets and validate checksum
-- Maintain `expected_seq_num` for Go-Back-N reception
+- Create and bind UDP socket to the receiver port
+- Respond to connection setup by replying to SYN with SYN-ACK.
+- Maintain receiver connection state.
+- Receive TCP-like DATA packets and validate checksums.
+- Maintain `expected_seq_num` for in-order packet reception.
 - Accept and deliver packets only if `seq == expected_seq_num`
-- Deliver payload data to the application layer in order
-- Send cumulative ACK packets for the last correctly received packet
-- Discard out-of-order packets
+- Store payload data for file reconstruction.
+- Send cumulative ACK packets for the last correctly received packet.
+- Advertise available receiver window `(rwnd)` to support flow control.
+- Discard out-of-order packets and resend the last ACK.
 - For corrupt/unexpected DATA packets -> resend last valid ACK
-- Phase 4 option 3: intentionally corrupt received DATA bits before checksum validation
-- Phase 4 option 5: intentionally drop received DATA packets before processing
+- Respond to FIN packets and participate in TCP-style connection teardown.
 - Write the reconstructed file to disk
 
 **Shared Modules**
 - `packet.py` - Packet encoding/decoding utilities
-	- Build and parse DATA packets
-	- Build and parse ACK packets
-	- Compute packet checksum for error detection
-	- Provide packet structure utilities used by both sender and receiver
+	- Define the TCP-like packet structure.
+   	- Build and parse packet types: `SYN`, `ACK`, `DATA`, `FIN`.
+	- Encode and decode packet header fields.
+	- Compute packet checksum for error detection.
+	- Provide packet structure utilities used by both sender and receiver.
 
 ### 3.3 Message Flow Overview
 
-#### Phase 4(a): Go-Back-N File Transfer
+#### Phase 5(a): TCP Connection Establishment and Normal Transfer
 
 ```
-Option 1 No Error:
-    SENDER                                              RECEIVER
-    ======                                              ========
 
-    base = 0, next_seq_num = 0                         expected_seq_num = 0
-    window_size = N
-    |                                                   |
-    | Send pkt0 (window open)                           |
-    |------------- DATA(seq=0, "chunk0") -------------->|
-    | Send pkt1 (window open)                           | Validate checksum
-    |------------- DATA(seq=1, "chunk1") -------------->| expected_seq_num == 0
-    | Send pkt2 (window open)                           | Deliver chunk0
-    |------------- DATA(seq=2, "chunk2") -------------->| expected_seq_num = 1
-    |                                                   |
-    |<------------- ACK(ack_num=0) ---------------------|
-    | base = 1, window slides                           | Validate checksum
-    |<------------- ACK(ack_num=1) ---------------------|  expected_seq_num == 1
-    | base = 2, window slides                           | Deliver chunk1
-    |<------------- ACK(ack_num=2) ---------------------|  expected_seq_num = 2
-    | base = 3, window slides                           |
-    |                                                   | Deliver chunk2
-    | -------------- Continue until all data sent ----- | expected_seq_num = 3
-    | Transfer complete                                 | File reconstruction complete
-    | n packets sent                                    | n packets received
-    | 0 retransmission(s)                               | Write output.bmp
-
-Option 2 Corrupt ACK Packet w/ example data:
-    SENDER                                              RECEIVER
-    ======                                              ========
-
-    base = 0, next_seq_num = 0                         expected_seq_num = 0
-    window_size = N
-    |                                                   |
-    |------------- DATA(seq=0, "chunk0") -------------->|
-    |------------- DATA(seq=1, "chunk1") -------------->| Validate checksum
-    |------------- DATA(seq=2, "chunk2") -------------->| Deliver chunk0, ACK0
-    |                                                   | Deliver chunk1, ACK1
-    |<------------- ACK(ack_num=0) ---------------------|
-    | base = 1                                          | Deliver chunk2, ACK2
-    |                                                   |
-    | ┌─────────────────────────────────────────┐       |
-    | │ ERROR INJECTION (Option 2)              │       |
-    | │ Flip bits in ACK1 before validation     │       |
-    | │ ACK corrupted: 0x5678 → 0x56FF          │       |
-    | └─────────────────────────────────────────┘       |
-    |                                                   |
-    |<--X---- ACK(ack_num=1) [CORRUPTED] ---------------|
-    | Validate checksum: FAIL                           |
-    | Corrupt ACK detected, ignore                      |
-    |                                                   |
-    |<------------- ACK(ack_num=2) ---------------------|
-    | Validate checksum: OK                             |
-    | ACK2 >= base (1): cumulative ACK covers pkt1+pkt2 |
-    | base = 3, window slides                           |
-    |                                                   |
-    | -------------- Continue until all data sent ----- |
-    | Transfer complete                                 | File reconstruction complete
-    | n packets sent                                    | n packets received
-    | 0 retransmission(s) [cumulative ACK recovered]    |
-
-Option 3 Data bit-error w/ example data:
-    SENDER                                              RECEIVER
-    ======                                              ========
-
-    base = 0, next_seq_num = 0                         expected_seq_num = 0
-    window_size = N
-    |                                                   |
-    |------------- DATA(seq=0, "chunk0") -------------->|
-    |------------- DATA(seq=1, "chunk1") --------X      |
-    |------------- DATA(seq=2, "chunk2") -------------->|
-    |                                                   | ┌────────────────────────────┐
-    |                                                   | │ ERROR INJECTION (Option 3) │
-    |                                                   | │ Flip bits in pkt1 data     │
-    |                                                   | │ 0xCD34 → 0xCDFF            │
-    |                                                   | └────────────────────────────┘
-    |                                                   |
-    |                                                   | pkt0: checksum OK, seq==0, deliver chunk0
-    |                                                   | ACK0, expected_seq_num=1, last_ack=0
-    |<------------- ACK(ack_num=0) ---------------------|
-    | base = 1                                          |
-    |                                                   | pkt1: checksum FAIL
-    |                                                   | Send last valid ACK (ACK0)
-    |                                                   | Discard, expected_seq_num stays 1
-    |<------------- ACK(ack_num=0) [last valid] --------|
-    | Check ACK: ACK0 < base(1), duplicate/stale, ignore|
-    |                                                   |
-    |                                                   | pkt2: seq=2 != expected(1), out-of-order
-    |                                                   | Send last valid ACK (ACK0)
-    |                                                   | Discard pkt2
-    |<------------- ACK(ack_num=0) [last valid] --------|
-    |                                                   |
-    | Timer expires (base=1 unACKed)                    |
-    | Retransmit all: pkt1, pkt2                        |
-    |------------- DATA(seq=1, "chunk1") [RETX] ------->|
-    |------------- DATA(seq=2, "chunk2") [RETX] ------->|
-    |                                                   | pkt1: checksum OK, seq==1, deliver chunk1
-    |                                                   | ACK1, expected_seq_num=2, last_ack=1
-    |<------------- ACK(ack_num=1) ---------------------|
-    | base = 2                                          | pkt2: checksum OK, seq==2, deliver chunk2
-    |<------------- ACK(ack_num=2) ---------------------|
-    | base = 3                                          | expected_seq_num=3
-    |                                                   |
-    | -------------- Continue until all data sent ----- |
-    | Transfer complete                                 | File reconstruction complete
-    | n packets sent                                    | n unique packets received
-    | x retransmission(s)                               |
-
-Option 4 Sender Timeout w/ example data:
-    SENDER                                              RECEIVER
-    ======                                              ========
-
-    base = 0, next_seq_num = 0                         expected_seq_num = 0
-    window_size = N
-    |                                                   |
-    |------------- DATA(seq=0, "chunk0") -------------->|
-    |------------- DATA(seq=1, "chunk1") -------------->| Deliver chunk0
-    |------------- DATA(seq=2, "chunk2") -------------->| Deliver chunk1
-    |                                                   | Deliver chunk2
-    | ┌─────────────────────────────────────────┐       |
-    | │ ERROR INJECTION (Option 4)              │       |
-    | │ ACKs lost in transit                    │       |
-    | └─────────────────────────────────────────┘       |
-    |                                                   |
-    |        X----- ACK(ack_num=0) lost ----------------|
-    |        X----- ACK(ack_num=1) lost ----------------|
-    |        X----- ACK(ack_num=2) lost ----------------|
-    |                                                   |
-    | Timer expires (base=0 unACKed)                    |
-    | Retransmit ALL: pkt0, pkt1, pkt2                  |
-    |------------- DATA(seq=0, "chunk0") [RETX] ------->|
-    |------------- DATA(seq=1, "chunk1") [RETX] ------->|
-    |------------- DATA(seq=2, "chunk2") [RETX] ------->|
-    |                                                   | seq==expected(0), deliver chunk0
-    |                                                   | ACK0, expected_seq_num=1
-    |<------------- ACK(ack_num=0) ---------------------|
-    | base = 1                                          | seq==expected(1), deliver chunk1
-    |<------------- ACK(ack_num=1) ---------------------|  ACK1, expected_seq_num=2
-    | base = 2                                          | seq==expected(2), deliver chunk2
-    |<------------- ACK(ack_num=2) ---------------------|  ACK2, expected_seq_num=3
-    | base = 3                                          |
-    |                                                   |
-    | -------------- Continue until all data sent ----- |
-    | Transfer complete                                 | File reconstruction complete
-    | n packets sent                                    | n packets received
-    | x retransmission(s)                               |
-
-Option 5 Data Loss (Missing Packet) w/ example data:
-    SENDER                                              RECEIVER
-    ======                                              ========
-
-    base = 0, next_seq_num = 0                         expected_seq_num = 0
-    window_size = N
-    |                                                   |
-    |------------- DATA(seq=0, "chunk0") -------------->|
-    |------------- DATA(seq=1, "chunk1") --------X      |
-    |------------- DATA(seq=2, "chunk2") -------------->|
-    |                                                   | ┌────────────────────────────┐
-    |                                                   | │ ERROR INJECTION (Option 5) │
-    |                                                   | │ pkt1 dropped in transit    │
-    |                                                   | └────────────────────────────┘
-    |                                                   |
-    |                                                   | pkt0: seq==0, deliver chunk0
-    |                                                   | ACK0, expected_seq_num=1, last_ack=0
-    |<------------- ACK(ack_num=0) ---------------------|
-    | base = 1                                          |
-    |                                                   | pkt1: LOST (never arrives)
-    |                                                   |
-    |                                                   | pkt2: seq=2 != expected(1), out-of-order
-    |                                                   | Discard pkt2
-    |                                                   | Resend last valid ACK (ACK0)
-    |<------------- ACK(ack_num=0) [last valid] --------|
-    | ACK0 < base(1), stale, ignore                     |
-    |                                                   |
-    | Timer expires (base=1 unACKed)                    |
-    | Retransmit ALL: pkt1, pkt2                        |
-    |------------- DATA(seq=1, "chunk1") [RETX] ------->|
-    |------------- DATA(seq=2, "chunk2") [RETX] ------->|
-    |                                                   | seq==expected(1), deliver chunk1
-    |                                                   | ACK1, expected_seq_num=2, last_ack=1
-    |<------------- ACK(ack_num=1) ---------------------|
-    | base = 2                                          | seq==expected(2), deliver chunk2
-    |<------------- ACK(ack_num=2) ---------------------|  ACK2, expected_seq_num=3
-    | base = 3                                          |
-    |                                                   |
-    | -------------- Continue until all data sent ----- |
-    | Transfer complete                                 | File reconstruction complete
-    | n packets sent                                    | n unique packets received
-    | x retransmission(s)                               |
 ```
+
+#### Phase 5(b): Flow-Control-Limited Data Transfer
+
+```
+
+```
+
+### Phase 5(c): Slow Start and Congestion Window Growth
+
+```
+
+```
+
+### Phase 5(d): Reno Fast Retransmit and Fast Recovery
+
+```
+
+```
+
+### Phase 5(e): Timeout-Based Congestion Recovery
+
+```
+
+```
+
 ---
 
 ## 4 Packet Format
@@ -850,24 +328,31 @@ Option 5 Data Loss (Missing Packet) w/ example data:
 ### 4.1 Packet Types
 - DATA: carries file chunk with a sequence number
 - ACK: cumulative acknowledgment indicating the highest in-order packet received
+- SYN: initiates connection establishment
+- SYN-ACK: acknowledges connection request
+- FIN: initiates connection termination
 
 ### 4.2 Header Fields
 
 | Field | Size (bytes/bits) | Type | Description | Notes |
-|---|---:|---|---|---|
+|---|---|---|---|---|
 | pkt_type | 1 | uint8 | O = DATA, 1 = ACK | Identifies packet type |
 | seq | 4 | uint32 | DATA seq (0/1) or ACK number (0/1) | Used for Go-Back-N sliding window | 
+| ack | 4 | uint32 | Acknowledgement number | Highest in-order packet received |
+| rwnd | 2 | uint16 | Receiver advertised window | Used for flow control |
 | payload_length | 2 | uint16 | DATA payload size (0 for ACK) |  |
 | total_packets | 4 | uint32 | Total number of DATA packets |
 | checksum | 4 | uint32 | Checksum over header and payload with checksum field = 0 during calculations | | 
 | payload | ≤ 1024 | bytes | File data chunk | DATA only |
 
-**Total header size:** 12 bytes
-**Maximum packet size:** 12 + 1024 = 1036 bytes
+**Total header size:** 21 bytes
+**Maximum packet size:** 21 + 1024 = 1045 bytes
 
 **Encoding format (Python struct):**
+
 ```python
-header_format = "!BBHII"  # type, seq, payload_len, total_packets, checksum
+header_format = "!BIIHHII"
+# type, seq, ack, rwnd, payload_len, total_packets, checksum
 ```
 
 ---
@@ -876,11 +361,13 @@ header_format = "!BBHII"  # type, seq, payload_len, total_packets, checksum
 
 ### 5.1 Key Data Structures
 
-**Go-Back-N Packet Structure** (in `packet.py`)
+**TCP-like Packet Structure** (in `packet.py`)
 
 - Fields:
-  - `pkt_type` (uint8): Packet type identifier (DATA/ACK)
-  - `seq` (uint32): Sequence number used for Go-Back-N transmission
+  - `pkt_type` (uint8): Packet type identifier (SYN / SYN-ACK / DATA / ACK / FIN)
+  - `seq` (uint32): Sequence number used for ordered packet delivery
+  - `ack` (uint32): Acknowledgment number representing the highest in-order packet received
+  - `rwnd` (uint16): Receiver advertised window used for flow control
   - `payload_length`(uint16): Number of valid bytes in the payload (0 for ACK packets)
   - `total_packets` (uint32): Total number of DATA packets in the transfer
   - `checksum` (uint32): Checksum computer over header and payload
@@ -889,46 +376,55 @@ header_format = "!BBHII"  # type, seq, payload_len, total_packets, checksum
 - Invariants:
   - `0 <= payload_length <= 1024`
   - `total_packets >= 1`
+  - Control packets (SYN / ACK / FIN) contain no payload
 
 **Sender Transmission State** (in `sender.py`)
 
 - Fields:
+  - `seq_num` (uint32): Sequence number of the next packet to send
   - `base` (uint32): Sequence number of the oldest unacknowledged packet
-  - `next_seq_num` (uint32): Sequence number of the next packet to send
-  - `window_size` (int): Maximum number of packets allowed in the sender window
+  - `cwnd` (int): Congestion window size (in packets)
+  - `ssthresh` (int): Slow start threshold
+  - `rwnd` (int): Receiver advertised window
   - `packet_buffer` (list): Buffer storing transmitted but unacknowledged packets
+  - `dup_ack_count` (int): Counter for duplicate ACK detection
   - `file_data` (bytes): Contents of the input file
   - `total_packets` (int): Total number of DATA packets to send
   - `timeout` (float): Sender timeout duration in seconds
 
 - Invariants:
-  - `base <= next_seq_num`
-  - Sender transmits packets while `next_seq_num < base + window_size`
-  - If timeout occurs, sender retransmits packets fro `base` to `next_seq_num - 1`
+  - Sender transmission window is limited by `send_window = min(cwnd, rwnd)`
+  - Packets may be transmitted while `nseq_num < base + send_window`
+  - On 3 duplicate ACKs, fast retransmit is triggered
+  - On timeout, `ssthresh` is updated and `cwnd` resets to 1
 
 **Receiver Reception State** (in `receiver.py`)
 
 - Fields:
   - `expected_seq` (uint32): Sequence number expected
+  - `rwnd` (int): Receiver available buffer space
   - `last_ack` (bytes): Most recently sent valid ACK packet
   - `received_packets` (list): Storage for received payload data
   - `total_packets` (int): Expected total number of packets (from first received packet)
   - `received_count` (int): Number of packets successfully received
+  - `connection_state` (enum): Receiver connection state (LISTEN / ESTABLISHED / CLOSED)
 
 - Invariants:
   - Receiver delivers DATA only if packet is valid/non-corrupt and `seq == expected_seq`
   - Duplicate or corrupt DATA packets are not delivered
+  - Receiver sends cumulative ACKs indicating the highest in-order packet received
+  - Receiver advertises `rwnd` in every ACK packet
   - Transfer completed when `received_count == total_packets`
-  - Receiver sends cumulative ACKs for the last correctly received packet
+  - Receiver participates in connection teardown after receiving FIN
 
 ### 5.2 Module Map and Dependencies
 
 ```
 src/
-|-- sender.py          # Phase 4(a): Go-Back-N sender
-|-- receiver.py        # Phase 4(c): Go-Back-N receiver
+|-- sender.py          # Phase 5(a–d): TCP-style sender
+|-- receiver.py        # Phase 5(c–e): TCP-style receiver 
 |-- packet.py          # Packet creation, parsing, and checksum utilities
-|-- channel.py         # Bit-error and packet loss injection simulation
+|-- channel.py         # Bit-error and packet loss injection simulation (Options 1-5)
 |-- experiments.py     # Completion-time experiments and data collection
 ```
 
@@ -948,89 +444,170 @@ experiments.py  -> subprocess, time, csv, matplotlib
 
 ### 6.1 Sender Behavior
 
-**Phase 4(a) - Go-Back-N File Transfer**
+**Phase 5(a-e) - TCP-Style Sender Behavior**
 
 Steps:
 1. Open BMP file
 2. Read the file and split into fixed-size chunks (<= 1024 bytes)
 3. Initialize sender variables:
-	a. `base = 0`
-	b. `next_seq_num = 0`
-	c. `window_size = N`
-4. While packets remain to be sent:
-	a. If `next_seq_num < base + window_size`, create and send DATA packet
-	b. If `base == next_seq_num`, start timer
-	c. Increment `next_seq_num`
-5. Upon receiving ACK
+	a. `seq_num = 0`
+	b. `base = 0`
+	c. `cwnd = 1`
+	d. `ssthresh = initial_threshold`
+	e. `rwnd = receiver_advertised_window`
+	f. `dup_ack_count = 0`
+4. Begin connection establishment using a simplified three-way handshake:
+	a. Send `SYN`
+	b. Wait for `SYN-ACK`
+	c. Reply with `ACK`
+5. After the connection is established, begin data transfer.
+6. Compute the effective sender window `send_window = min(cwnd, rwnd)`
+7. While packets remain to be sent:
+	a. If `seq_num < base + send_window`, create and send a DATA packet
+   	b. If `base == seq_num`, start the retransmission timer
+   	c. Increment `seq_num`
+8. Upon receiving ACK
    	a. Validate checksum
-   	b. Update `base = ack_num + 1`
-   	c. If `base == next_seq_num`, stop timer
-   	d. Otherwise, start timer
-   	b. If the ACK is valid and matches the current sequence number, stop the timer and toggle the sequence number
-6. If timeout occurs, retransmit all packets from `base` to `next_seq_num - 1`
-7. Continue until all packets are acknowledged
+   	b. f the ACK is new, slide the window forward by updating `base`
+   	c. Reset `dup_ack_count` if needed
+9. If a duplicate ACK is received:
+	a. Increment `dup_ack_count`
+	b. If `dup_ack_count == 3`, perform fast retransmit:
+		i. Retransmit the missing packet immediately
+		ii. set `ssthresh = cwnd / 2`
+		iii. set `cwnd = ssthresh + 3`
+10. If a timeout occurs:
+	a. a. Retransmit the oldest unacknowledged packet
+	b. Set `ssthresh = cwnd / 2`
+	c. Set `cwnd = 1`
+	d. Restart slow start
+	e. Restart the timer
+11. Continue until all packets are acknowledged
+12. After file transfer completes, begin connection teardown:
+	a. Send `FIN`
+	b. Wait for `ACK`
+	c. Wait for receiver `FIN`
+	d. Send final `ACK`
 
-**Phase 4(b) Sender Pseudocode:**
+**Phase 5(a-e) Sender Pseudocode:**
 
 ```
+initialize seq_num = 0
 initialize base = 0
-initialize next_seq_num = 0
+initialize cwnd = 1
+initialize ssthresh = initial_threshold
+initialize dup_ack_count = 0
+
+send SYN
+wait for SYN-ACK
+send ACK
 
 while base < total_packets do
 
-    if next_seq_num < base + window_size then
-        send packet[next_seq_num]
+    send_window = min(cwnd, rwnd)
 
-        if base == next_seq_num then
+    if seq_num < base + send_window then
+        send packet[seq_num]
+
+        if base == seq_num then
             start timer
         end if
 
-        next_seq_num += 1
+        seq_num += 1
     end if
 
-    if ACK received then
+    if new ACK received then
         base = ACK + 1
+        dup_ack_count = 0
 
-        if base == next_seq_num then
+        if cwnd < ssthresh then
+            cwnd = cwnd + 1
+        else
+            cwnd = cwnd + (1 / cwnd)
+        end if
+
+        if base == seq_num then
             stop timer
         else
             restart timer
         end if
     end if
 
+    if duplicate ACK received then
+        dup_ack_count += 1
+
+        if dup_ack_count == 3 then
+            ssthresh = cwnd / 2
+            cwnd = ssthresh + 3
+            retransmit missing packet
+        end if
+    end if
+
     if timeout then
-        for i from base to next_seq_num - 1 do
-            retransmit packet[i]
-        end for
+        ssthresh = cwnd / 2
+        cwnd = 1
+        retransmit packet[base]
         restart timer
     end if
 
 end while
+
+send FIN
+wait for ACK
+wait for FIN
+send ACK
 ```
 
 ### 6.2 Receiver Behavior
 
-**Phase 4(c) - Go-Back-N Receiver**
+**Phase 5(c-e) - TCP-Style Receiver Behavior**
 
 Steps:
 1. Bind UDP socket to receiver port
-2. Initialize `expected_seq = 0`
-3. Loop unntil all packets are received (receive DATA packet and validate checksum)
-4. If packet is valid and `seq == expected_seq`:
+2. Initialize receiver variables:
+	a. `expected_seq = 0`
+	b. `received_count = 0`
+	c. `rwnd = receiver_buffer_size`
+	d. `connection_state = LISTEN`
+3. Wait for connection establishment:
+	a. Receive `SYN` from sender
+	b. Reply with `SYN-ACK`
+	c. Wait for final `ACK`
+	d. Transition to `ESTABLISHED`
+4. Loop until all packets are received.
+5. When a DATA packet arrives:
+	a. Validate checksum
+	b. Check whether `seq == expected_seq`
+6. If the packet is valid and in order:
 	a. Deliver payload
 	b. Store payload
-	c. Send ACK
+	c. Update `received_count`
 	d. Increment `expected_seq`
-7. If the ACK is corrupted, invalid, or times out:
+7. If the packet is corrupt or out of order:
 	a. Discard packet
-	b. Send last valid ACK
-9. Continue retransmission until a valid ACK is received
+	b. Send the last valid cumulative `ACK`
+8, Continue receiving packets until the full file has been reconstructed.
+9. Reassemble the file and write it to disk.
+10. Wait for connection teardown:
+	a. Receive `FIN` from sender
+	b. Reply with `ACK`
+	c. Send `FIN`
+	d. Wait for final `ACK`
+	e. Transition to `CLOSED`
 	
-**Phase 4(c) Pseudocode:**
+**Phase 5(c-e) Pseudocode:**
 
 ```
 initialize expected_seq = 0
+initialize received_count = 0
+initialize rwnd = receiver_buffer_size
 initialize last_ack = ACK(-1)
+initialize connection_state = LISTEN
+
+wait for SYN
+send SYN-ACK
+wait for ACK
+connection_state = ESTABLISHED
 
 while received_count < total_packets do
 
@@ -1042,43 +619,69 @@ while received_count < total_packets do
     else
         deliver payload
         store payload
-        last_ack = make_ACK(expected_seq)
-        send last_ack
-        expected_seq += 1
         received_count += 1
+        expected_seq += 1
+        update rwnd
+        last_ack = make_ACK(expected_seq - 1, rwnd)
+        send last_ack
     end if
 
 end while
 
 reassemble file and write to disk
+
+wait for FIN
+send ACK
+send FIN
+wait for final ACK
+connection_state = CLOSED
 ```
 
 ### 6.3 Error / Loss Injection Specification
 
-During Phase 4(d) testing:
-- ACK packet bit error: ACK packet will be intentionally changed at the sender
-- DATA packet bit error: Data packet will be intentionally changed at the receiver
-- ACK packet loss error: ACK packet will intentionally be lost at the sender
-- DATA packet loss error: DATA packet will intentionally be lost at the receiver
+During Phase 5 testing:
+- Option 1: Normal Transfer
+	- No packet corruption or loss occurs.
+	- Used to demonstrate successful connection establishment, data transfer, and connection teardown.
+- Option 2: Flow-Control-Limited Transfer
+	- Receiver advertises a small receive window `(rwnd)`.
+	- Sender transmission rate is limited by the receiver buffer size.
+- Option 3: Slow Start Behavior
+	- No packet loss is introduced.
+	- Congestion window `(cwnd)` grows exponentially during slow start and transitions into congestion avoidance.
+- Option 4: Duplicate ACK Scenario (Fast Retransmit)
+	- Duplicate ACKs are generated to simulate packet loss detection without timeout.
+	- Sender detects three duplicate ACKs and performs fast retransmit and fast recovery.
+- Option 5: Timeout-Based Loss Detection
+	- A DATA packet is intentionally dropped during transmission.
+	- Sender fails to receive an ACK before timeout.
+	- Sender retransmits the missing packet and resets congestion control parameters.
 
 ---
 
 ## 7 Experiments and Metrics Plan
 
-Phase 4 evaluates Go-Back-N performance under unreliable channel conditions.
+Phase 5 evaluates the behavior of the TCP-style transport protocol, including congestion control and flow control mechanisms, under various network conditions.
 
 The same BMP file is transferred under 5 scenarios: 
-- Option 1: No bit errors
-- Option 2: ACK packet bit-error
-- Option 3: DATA packet bit-error
-- Option 4: ACK packet loss
-- Option 5: DATA packet loss
+- Option 1: Normal TCP transfer (no loss or corruption)
+- Option 2: Flow-control-limited transfer (restricted receiver window `rwnd`)
+- Option 3: Slow start behavior
+- Option 4: Reno fast retransmit / fast recovery (duplicate ACK scenario)
+- Option 5: Timeout-based congestion response (packet loss causing retransmission)
 
 ### 7.1 Setup
+
 - Payload size: 1024 bytes
-- Sliding window transmission (Go-Back-N)
+- Transport protocol: TCP-style reliable transfer over UDP
+- Congestion control mechanisms:
+	- Slow start
+	- Congestion avoidance
+	- Fast retransmit
+	- Fast recovery
+- Flow control: receiver-advertised window `(rwnd)`
 - Checksum: CRC32
-- Loss/error rates: Transfers are executed across error rates from 0% to 95% in increments of 5%
+- Packet loss/error rates: experiments run across loss rates from 0% to 95% in increments of 5%
 
 Each rate is tested:
 - 5 independent runs
@@ -1086,25 +689,41 @@ Each rate is tested:
 - Debug logging disabled during timing
 
 ### 7.2 Timing Measurement 
+
 End-to-end completion time is measured at the sender and includes:
-- Retransmissions
-- ACK recovery
-- Sliding-window pipeline overhead
-Timing ends when the final packet is acknowledged.
+	- Retransmissions due to packet loss
+	- Congestion window adjustments
+	- Flow control limitations
+	- Duplicate ACK handling
+	- Timeout recovery events
+	
+Timing begins when the first packet is transmitted and ends when the final packet is acknowledged and the transfer completes.
 
 ### 7.3 Plot Generation 
-A single plot is generated with:
+
+Two plots are generated:
+
+Plot 1: Completion Time vs Packet Loss
 - X-axis: error rate (%)
 - Y-axis: average completion time (seconds)
-- Five lines representing Options 1, 2, 3, 4, and 5
-- Completion time is expected to increase as error rate rises
+- Five lines representing Options 1–5
+- Completion time is expected to increase as packet loss rises due to retransmissions and congestion control adjustments.
+
+Plot 2: Congestion Window Evolution
+- X-axis: transmission rounds (or time)
+- Y-axis: congestion window size `(cwnd)`
+- The graph will illustrate:
+	- Exponential growth during slow start
+	- Linear growth during congestion avoidance
+	- Reductions caused by fast retransmit or timeouts
 
 ### 7.4 Correctness Validation
 For every run:
 - The output file must match the input file byte-for-byte.
 - Sequence numbers must alternate correctly.
-- No deadlocks or infinite retransmissions may occur.
-
+- Congestion control transitions must follow expected TCP behavior.
+- No deadlocks, infinite retransmissions, or stalled connections may occur.
+- The connection must terminate successfully after file transfer.
 
 **Output Artifacts:**
 - TBD
@@ -1113,7 +732,7 @@ For every run:
 
 ## 8 Edge Cases and Test Plan
 
-Phase 4 must validate the Go-Back-N protocol implementation.
+Phase 5 validates the TCP-style transport protocol, including connection management, congestion control, flow control, and loss recovery.
 
 ### 8.1 Expected Edge Cases
 
@@ -1124,9 +743,12 @@ Phase 4 must validate the Go-Back-N protocol implementation.
 | Corrupted ACK packet | Sender must detect corruption | Sender ignores ACK and retransmits after timeout |
 | Duplicate DATA packet | Caused by retransmission | Receiver discards packet and resends last ACK |
 | Out of order packet | Occurs with Go-Back-N pipeline | Receiver discards packet and sends last ACK | 
+| Duplicate ACKs | Trigger fast retransmit | Sender detects 3 duplicate ACKs and retransmits missing packet| 
 | High error rate (≥80%) | Stress test | Transfer completes eventually |
 | Lost DATA packet | Receiver never receives packet | Sender times out and retransmits |
 | Lost ACK packet | Sender never sees ACK | Sender times out and retransmits |
+| SYN packet loss | Connection establishment robustness | Sender retransmits SYN | 
+| FIN packet loss | Connection teardown reliability | Sender retransmits FIN until acknowledged | 
 
 ### 8.2 Tests
 - `test_make_parse_roundtrip`: `make_packet(seq, payload, total)` then `parse_packet()` returns the same fields
@@ -1135,31 +757,36 @@ Phase 4 must validate the Go-Back-N protocol implementation.
 - `test_checksum_correct`: checksum function produces the expected value and detects corruption
 - `test_ack_packet_format`: ACK packets are encoded/decoded correctly and contain only ACK fields.
 - `test_data_packet_format`: DATA packets include expected fields and validate correctly.
+- `test_control_packet_format`: SYN and FIN packets encode and decode correctly.
+- `test_data_packet_format`: DATA packets include expected fields and validate correctly.
 
 **Integration Tests:**
-Option 1 - No loss: 
-- Transfer file
-- Confirm byte match
+
+- Option 1: Normal Transfer
+	- Establish connection using handshake
+	- Transfer file successfully
+	- Confirm byte-for-byte match
+	- Confirm connection teardown completes
   
-Option 2 - ACK corruption: 
-- Corrupt ACK packets with probability p
-- Sender detects corruption
-- Sender retransmits window
+- Option 2: Flow-Control-Limited Transfer
+	- Restrict receiver window `(rwnd)`
+	- Confirm sender respects flow control limit
+	- Confirm correct file reconstruction
   
-Option 3 - DATA corruption:
-- Corrupt DATA with probability p
-- Confirm receiver discards corrupted packet
-- Confirm retransmission occurs
+- Option 3: Slow Start Behavior
+	- Monitor congestion window `(cwnd)` growth
+	- Confirm exponential growth during slow start
+	- Confirm transition to congestion avoidance
   
-Option 4 - ACK loss:
-- Lose ACK with probability p
-- Confirm retransmission logic works
-- Confirm file correctness
+- Option 4: Fast Retransmit / Fast Recovery
+	- Trigger duplicate ACK scenario
+	- Confirm sender detects 3 duplicate ACKs
+	- Confirm immediate retransmission of missing packet
   
-Option 5 - DATA loss:
-- Lose DATA with probability p
-- Confirm receiver discards corrupted packet
-- Confirm retransmission occurs
+- Option 5: Timeout-Based Loss Recovery
+	- Intentionally drop DATA packet
+	- Confirm timeout occurs
+	- Confirm retransmission and congestion window reset
 
 ### 8.3 Test Artifacts
 
@@ -1169,18 +796,21 @@ Option 5 - DATA loss:
 
 ### 8.4 FSM Validation
 
-Ensure sender states match Go-Back-N FSM behavior.
+**Ensure sender states match Go-Back-N FSM behavior.**
 
-Sender states:
-- Send packets within sliding window
-- Wait for ACKs
-- Retransmit packets on timeout
+- Sender states:
+	- Connection establishment (SYN sent)
+	- Data transmission (ESTABLISHED)
+	- Congestion control adjustments
+	- Loss recovery
+	- Connection teardown (FIN sent)
 
-Receiver states:
-- Wait for expected packet
-- Accept in-order packet
-- Send cumulative ACK
-- Discard out-of-order packets
+- Receiver states:
+	- LISTEN (waiting for SYN)
+	- ESTABLISHED (receiving DATA)
+	- Sending cumulative ACKs
+	- Handling retransmissions
+	- Connection teardown and CLOSED state
 
 ---
 
@@ -1193,13 +823,13 @@ src/
   channel.py
 
 scripts/
-  phase4_experiments.py
+  phase5_experiments.py
 
 results/
-  phase4_raw.csv
-  phase4_avg.csv
-  phase4_plot.gp
-  phase4_plot.png
+  phase5_raw.csv
+  phase5_avg.csv
+  phase5_plot.gp
+  phase5_plot.png
 
 test-files/
   sample1.bmp
@@ -1216,28 +846,29 @@ Refer to README
 
 | Task | Owner | Target Date | Definition of Done |
 |---|---|---|---|
-| Implement Go-Back-N sender sliding window | Olivia Pham | 4/8/26 | Sender supports `base`, `next_seq_num`, and configurable window size |
-| Implement packet buffering and retransmission | Olivia Pham | 4/8/26 | Sender retransmits packets from base on timeout |
-| Implement Go-Back-N receiver logic | Olivia Pham | 4/8/26 | Receiver accepts only expected packets and sends cumulative ACKs |
-| Implement ACK bit-error injection | Cody Nguyen | 4/8/26 | ACK corruption is applied and handled correctly |
-| Implement DATA bit-error injection | Cody Nguyen | 4/8/26 | DATA corruption detected and handled |
-| Implement ACK packet loss | Cody Nguyen | 4/8/26 | ACK loss causes timeout and retransmission |
-| Implement DATA packet loss | Cody Nguyen | 4/8/26 | DATA loss triggers retransmission |
+| Implement TCP-style connection setup (SYN / SYN-ACK / ACK) | Olivia Pham | 4/30/26 | Sender and receiver complete three-way handshake before data transfer |
+| Implement TCP-style sender transmission logic | Olivia Pham | 4/30/26 | Sender maintains `seq_num`, `base`, and dynamic sender window |
+| Implement congestion control (slow start and congestion avoidance) | Olivia Pham | 4/30/26 | `cwnd` grows correctly during slow start and transitions to congestion avoidance |
+| Implement fast retransmit and fast recovery | Olivia Phan | 4/30/26 | Sender detects 3 duplicate ACKs and retransmits missing packet | 
+| Implement TCP-style receiver logic and flow control | Olivia Pham | 4/30/26 | Receiver advertises `rwnd` and sends cumulative ACKs | 
+| Implement DATA packet loss simulation | Cody Nguyen | 4/30/26 | Packet loss triggers retransmission and congestion response |
+| Implement DATA bit-error injection | Cody Nguyen | 4/30/26 | DATA corruption detected and handled |
 | Validate end-to-end correctness | Cody Nguyen | 4/8/26 | Output file matches original input file |
-| Run performance experiments | Ian Khoo | 4/8/26 | Completion times collected |
-| Generate performance plots | Ian Khoo | 4/8/26 | Graphs produced for analysis |
+| Run performance experiments | Ian Khoo | 4/30/26 | Completion times collected |
+| Generate performance plots | Ian Khoo | 4/30/26 | Graphs produced for analysis |
 
 ### 10.2 Milestones
 
-1. Sliding window sender implemented
-2. Receiver correctly handles ordered and out-of-order packets
-3. ACK corruption detection works correctly
-4. DATA corruption detection works correctly
-5. ACK packet loss recovery implemented
-6. DATA packet loss recovery implemented
-7. Completion time measurements collected across loss rates
-8. Performance plots generated
-9. Demo video(s) recorded
+1. TCP-style three-way handshake implemented (SYN / SYN-ACK / ACK)
+2. Sender implements dynamic congestion window `(cwnd)` behavior
+3. Receiver correctly implements flow control using advertised window `(rwnd)`
+4. Slow start and congestion avoidance operate correctly during data transfer
+5. Duplicate ACK detection triggers fast retransmit / fast recovery
+6. Timeout-based retransmission correctly resets congestion window
+7. End-to-end file transfer works under all five Phase 5 demo scenarios
+8. Completion time and congestion window metrics collected across loss rates
+9. Performance plots generated
+10. Demo video(s) recorded
 
 ---
 
@@ -1245,28 +876,35 @@ Refer to README
 
 ### Pre-Recording Checklist
 
-**Phase 4 (Option 1):**
-- [X] Both terminal windows visible side-by-side
+**Phase 5 (Option 1):**
+- [ ] Both terminal windows visible side-by-side
+- [ ] Demonstrate connection establishment (SYN / SYN-ACK / ACK)
+- [ ] Successful file transfer shown
+- [ ] Demonstrate connection teardown (FIN / ACK)
 
-**Phase 4 (Option 2):**
-- [X] Both terminal windows visible side-by-side
-- [X] ACK corruption demonstration
+**Phase 5 (Option 2):**
+- [ ] Both terminal windows visible side-by-side
+- [ ] Receiver advertises small rwnd
+- [ ] Sender transmission rate visibly limited by receiver window
 
-**Phase 4 (Option 3):**
-- [X] Both terminal windows visible side-by-side
-- [X] DATA corruption demonstration
+**Phase 5 (Option 3):**
+- [ ] Both terminal windows visible side-by-side
+- [ ] Show cwnd increasing during slow start
+- [ ] Show transition into congestion avoidance
 
-**Phase 4 (Option 4):**
-- [X] Both terminal windows visible side-by-side
-- [X] ACK packet loss demonstration
+**Phase 5 (Option 4):**
+- [ ] Both terminal windows visible side-by-side
+- [ ] Show duplicate ACKs being generated
+- [ ] Show fast retransmit triggered after 3 duplicate ACKs
 
-**Phase 4 (Option 5):**
-- [X] Both terminal windows visible side-by-side
-- [X] DATA packet loss demonstration
+**Phase 5 (Option 5):**
+- [ ] Both terminal windows visible side-by-side
+- [ ] DATA packet loss demonstration
+- [ ] Show timeout-based retransmission and cwnd reset
       
 **Video Quality:**
-- [X] Both terminal windows visible side-by-side
-- [X] Clear explanation of steps
-- [X] Show file comparison/verification
+- [ ] Both terminal windows visible side-by-side
+- [ ] Clear explanation of steps
+- [ ] Show file comparison/verification
 
 
