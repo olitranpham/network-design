@@ -171,10 +171,10 @@ Plot generated and included.
 
 ### 2.3 Work Breakdown
 
-**New Tasks for Phase 4:**
+**New Tasks for Phase 5:**
 - Implement TCP-style connection establishment using a three-way handshake (SYN, SYN-ACK, ACK).
 - Extend the existing Go-Back-N data transfer system to support a TCP-like dynamic sliding window.
-- Implement congestion control mechanisms including slow start and congestion avoidance.
+- Implement congestion control mechanisms, including slow start and congestion avoidance.
 - Implement TCP Reno fast retransmit and fast recovery triggered by duplicate ACKs.
 - Implement receiver-advertised flow control (rwnd) and enforce sender limits based on min(cwnd, rwnd).
 - Implement timeout-based congestion response, including updating cwnd and ssthresh.
@@ -211,31 +211,306 @@ Plot generated and included.
 #### Phase 5(a): TCP Connection Establishment (Three-Way Handshake)
 
 ```
+Sender (Client) State Diagram:
+                         +-----------------------------+
+                         |          CLOSED             |
+                         +-----------------------------+
+                                        |
+                                        | connect()
+                                        | sndpkt = make_pkt(SYN, seq=0, checksum)
+                                        | udt_send(sndpkt)
+                                        | start_timer()
+                                        v
+                         +-----------------------------+
+              +--------->|          SYN_SENT           |
+              |          +-----------------------------+
+              |               |              |
+              |               | timeout      | rcv SYN-ACK
+              |               | retransmit   | validate_checksum(rcvpkt)
+              |               | SYN          |
+              |               | restart_     | IF (NOT corrupt):
+              +---------------+ timer()      |   sndpkt = make_pkt(ACK, seq=1, checksum)
+                                             |   udt_send(sndpkt)
+                                             |   stop_timer()
+                                             v
+                         +-----------------------------+
+                         |         ESTABLISHED         |
+                         |   base = 0                  |
+                         |   next_seq_num = 0          |
+                         |   cwnd = 1                  |
+                         |   ssthresh = 16             |
+                         |   dup_ack_count = 0         |
+                         |   send_window = min(cwnd,   |
+                         |                    rwnd)    |
+                         +-----------------------------+
+                                        |
+                                        | [proceed to Phase 5(b)]
 
+
+Receiver (Server) State Diagram:
+                         +-----------------------------+
+                         |           LISTEN            |
+                         +-----------------------------+
+                                        |
+                                        | rcv SYN
+                                        | validate_checksum(rcvpkt)
+                                        |
+                                        | IF corrupt: [ignore, stay]
+                                        |
+                                        | IF (NOT corrupt):
+                                        |   sndpkt = make_pkt(SYN-ACK, seq=0, checksum)
+                                        |   udt_send(sndpkt)
+                                        v
+                         +-----------------------------+
+              +--------->|          SYN_RCVD           |
+              |          +-----------------------------+
+              |               |
+              |               | rcv ACK
+              |               | validate_checksum(rcvpkt)
+              |               |
+              |               | IF corrupt: [ignore, stay]
+              +---------------+
+                              |
+                              | IF (NOT corrupt):
+                              v
+                         +-----------------------------+
+                         |         ESTABLISHED         |
+                         |   expected_seq_num = 0      |
+                         |   last_ack_num = -1         |
+                         |   rwnd = RECV_BUFFER_SIZE   |
+                         +-----------------------------+
+                                        |
+                                        | [proceed to Phase 5(c)]
 ```
 
 #### Phase 5(b): TCP Dynamic Sender Window Behavior
 
 ```
-
+Sender State Diagram:
+                         +-----------------------------+
+                         |         ESTABLISHED         |
+                         |   base = 0                  |
+                         |   next_seq_num = 0          |
+                         |   cwnd = 1                  |
+                         |   ssthresh = 16             |
+                         |   dup_ack_count = 0         |
+                         |   rwnd = (from receiver)    |
+                         |   send_window =             |
+                         |     min(cwnd, rwnd)         |
+                         +-----------------------------+
+                                        |
+                                        | rdt_send(data)
+                                        | [next_seq_num < base + send_window]
+                                        | sndpkt[next_seq_num] = make_pkt(next_seq_num, data, checksum)
+                                        | udt_send(sndpkt[next_seq_num])
+                                        | if base == next_seq_num: start_timer()
+                                        | next_seq_num++
+                                        v
+                         +-----------------------------+
+              +--------->|    Wait for ACK / Timeout   |<----------+
+              |          +-----------------------------+           |
+              |               |                    |               |
+              |               |                    | timeout       |
+              |               |                    | [TIMEOUT:     |
+              |               |                    |  see Phase    |
+              |               |                    |  5(d)]        |
+              |               |                    +---------------+
+              |               |
+              |               | rcv ACK(n, rwnd_adv)
+              |               | validate_checksum(rcvpkt)
+              |               | parse_ack_num(rcvpkt)
+              |               | parse_rwnd(rcvpkt)
+              |               |
+              |               | IF corrupt: [ignore, stay]
+              |               |
+              |               | IF (NOT corrupt AND n == base - 1):
+              |               |   dup_ack_count++
+              |               |   [duplicate ACK: see Phase 5(d)]
+              |               |
+              |               | IF (NOT corrupt AND n >= base):
+              |               |   base = n + 1
+              |               |   rwnd = rwnd_adv
+              |               |   send_window = min(cwnd, rwnd)
+              |               |   [update cwnd: see Phase 5(d)]
+              |               |   dup_ack_count = 0
+              |               |   if base == next_seq_num:
+              |               |     stop_timer()
+              |               |   else:
+              |               |     restart_timer()
+              |               |   [send new pkts while eligible]
+              +---------------+
 ```
 
 #### Phase 5(c): TCP Receiver Behavior and Flow Control
 
 ```
+Receiver State Diagram:
+                         +-----------------------------+
+              +--------->|    Wait for Packet          |<----------+
+              |          |   expected_seq_num = 0      |           |
+              |          |   last_ack_num = -1         |           |
+              |          |   rwnd = RECV_BUFFER_SIZE   |           |
+              |          +-----------------------------+           |
+              |               |              |                     |
+              |               |              +---------------------+
+              |               |              rcv corrupt pkt OR
+              |               |              rcv out-of-order pkt
+              |               |              (seq != expected_seq_num)
+              |               |              rwnd = RECV_BUFFER_SIZE - buffered
+              |               |              sndpkt = make_pkt(ACK, last_ack_num,
+              |               |                                   rwnd, checksum)
+              |               |              udt_send(sndpkt)
+              |               |              [discard pkt, stay]
+              |               |
+              |               | rcv valid pkt (NOT corrupt AND
+              |               |               seq == expected_seq_num)
+              |               | extract(data)
+              |               | deliver_data(data)
+              |               | last_ack_num = expected_seq_num
+              |               | rwnd = RECV_BUFFER_SIZE - buffered
+              |               | sndpkt = make_pkt(ACK, expected_seq_num,
+              |               |                        rwnd, checksum)
+              |               | udt_send(sndpkt)
+              |               | expected_seq_num++
+              +---------------+
 
 ```
 
 #### Phase 5(d): Congestion Control and Loss Recovery
 
 ```
+Congestion Control State Diagram:
+                         +-----------------------------+
+                         |         SLOW START          |
+                         |   cwnd = 1                  |
+                         |   ssthresh = 16 (initial)   |
+                         +-----------------------------+
+                                        |
+                                        | rcv new ACK (n >= base)
+                                        | cwnd = cwnd + 1
+                                        | [exponential growth per ACK]
+                                        |
+                              +---------+----------+
+                              |                    |
+                              | cwnd < ssthresh    | cwnd >= ssthresh
+                              | [stay in           v
+                              |  slow start]  +-----------------------------+
+                              +-------------->|    CONGESTION AVOIDANCE     |
+                                              +-----------------------------+
+                                                   |
+                                                   | rcv new ACK (n >= base)
+                                                   | cwnd = cwnd + (1 / cwnd)
+                                                   | [approx +1 segment per RTT]
+                                                   |
+                                 +-----------------+
+                                 |
+                                 | 3 duplicate ACKs received
+                                 | [FAST RETRANSMIT]
+                                 v
+                         +-----------------------------+
+              +--------->|       FAST RECOVERY         |
+              |          |   ssthresh = max(cwnd/2, 2) |
+              |          |   cwnd = ssthresh + 3       |
+              |          |   retransmit sndpkt[base]   |
+              |          +-----------------------------+
+              |               |              |
+              |               | rcv another  | rcv new ACK
+              |               | dup ACK      | (n > base - 1)
+              |               | cwnd++       | [FAST RECOVERY EXIT]
+              |               | [send new    | base = n + 1
+              |               |  pkt if      | cwnd = ssthresh
+              |               |  window      | dup_ack_count = 0
+              +---------------+ allows]      | restart or stop timer
+                                             v
+                         +-----------------------------+
+                         |    CONGESTION AVOIDANCE     |
+                         |    (resume)                 |
+                         +-----------------------------+
+
+              Timeout (from any state above):
+              +-----------------------------+
+              |   [TIMEOUT LOSS RECOVERY]   |
+              |   ssthresh = max(cwnd/2, 2) |
+              |   cwnd = 1                  |
+              |   dup_ack_count = 0         |
+              |   retransmit ALL            |
+              |     sndpkt[base..           |
+              |     next_seq_num-1]         |
+              |   restart_timer()           |
+              +-----------------------------+
+                              |
+                              v
+                         +-----------------------------+
+                         |      SLOW START (re-enter)  |
+                         +-----------------------------+
+
 
 ```
 
 ### Phase 5(e): TCP Connection Teardown (FIN/ACK Exchange)
 
 ```
+Sender (Active Close) State Diagram:
+                         +-----------------------------+
+                         |         ESTABLISHED         |
+                         |   [all data sent and ACKed] |
+                         +-----------------------------+
+                                        |
+                                        | close()
+                                        | sndpkt = make_pkt(FIN, seq=next_seq_num,
+                                        |                        checksum)
+                                        | udt_send(sndpkt)
+                                        | start_timer()
+                                        v
+                         +-----------------------------+
+              +--------->|          FIN_WAIT           |
+              |          +-----------------------------+
+              |               |              |
+              |               | timeout      | rcv FIN-ACK
+              |               | retransmit   | validate_checksum(rcvpkt)
+              |               | FIN          |
+              |               | restart_     | IF (NOT corrupt):
+              +---------------+ timer()      |   sndpkt = make_pkt(ACK, checksum)
+                                             |   udt_send(sndpkt)
+                                             |   stop_timer()
+                                             v
+                         +-----------------------------+
+                         |           CLOSED            |
+                         +-----------------------------+
 
+
+Receiver (Passive Close) State Diagram:
+                         +-----------------------------+
+              +--------->|         ESTABLISHED         |
+              |          |   [receiving data]          |
+              |          +-----------------------------+
+              |               |
+              |               | rcv FIN
+              |               | validate_checksum(rcvpkt)
+              |               |
+              |               | IF corrupt: [ignore, stay]
+              +---------------+
+                              |
+                              | IF (NOT corrupt):
+                              |   deliver_remaining_data()
+                              |   sndpkt = make_pkt(FIN-ACK, checksum)
+                              |   udt_send(sndpkt)
+                              v
+                         +-----------------------------+
+              +--------->|         CLOSE_WAIT          |
+              |          +-----------------------------+
+              |               |
+              |               | rcv ACK
+              |               | validate_checksum(rcvpkt)
+              |               |
+              |               | IF corrupt: [ignore, stay]
+              +---------------+
+                              |
+                              | IF (NOT corrupt):
+                              v
+                         +-----------------------------+
+                         |           CLOSED            |
+                         +-----------------------------+
 ```
 
 ### 3.2 Component Responsibilities
@@ -294,31 +569,318 @@ Plot generated and included.
 #### Phase 5(a): TCP Connection Establishment and Normal Transfer
 
 ```
+SENDER                                              RECEIVER
+    ======                                              ========
 
+    CLOSED                                              LISTEN
+    cwnd = 1, ssthresh = 16
+    |                                                   |
+    | [THREE-WAY HANDSHAKE]                             |
+    |                                                   |
+    |------------- SYN(seq=0) ------------------------->|
+    |                                                   | rcv SYN, validate checksum
+    | SYN_SENT                                          | SYN_RCVD
+    |                                                   |
+    |<------------- SYN-ACK(seq=0) --------------------|
+    | rcv SYN-ACK, validate checksum                    |
+    |------------- ACK(seq=1) ------------------------->|
+    |                                                   | rcv ACK, validate checksum
+    | ESTABLISHED                                       | ESTABLISHED
+    | base=0, next_seq_num=0                            | expected_seq_num=0
+    | send_window = min(cwnd=1, rwnd=N) = 1             | rwnd = N
+    |                                                   |
+    | [DATA TRANSFER — window grows via slow start]     |
+    |                                                   |
+    | Send pkt0 (send_window=1, window full)            |
+    |------------- DATA(seq=0, "chunk0") -------------->|
+    |                                                   | Validate checksum
+    |                                                   | seq==expected(0), deliver chunk0
+    |                                                   | expected_seq_num=1, rwnd=N
+    |<------------- ACK(ack_num=0, rwnd=N) -------------|
+    | base=1, cwnd=2, send_window=min(2,N)=2            |
+    |                                                   |
+    | Send pkt1 (window open)                           |
+    |------------- DATA(seq=1, "chunk1") -------------->|
+    | Send pkt2 (window open)                           | Validate checksum
+    |------------- DATA(seq=2, "chunk2") -------------->| seq==expected(1), deliver chunk1
+    |                                                   | expected_seq_num=2, rwnd=N
+    |<------------- ACK(ack_num=1, rwnd=N) -------------|
+    | base=2, cwnd=3, send_window=min(3,N)              |
+    |<------------- ACK(ack_num=2, rwnd=N) -------------|
+    | base=3, cwnd=4, send_window=min(4,N)              |
+    |                                                   |
+    | -------------- Continue until all data sent ----- |
+    |                                                   |
+    | [CONNECTION TEARDOWN]                             |
+    |                                                   |
+    |------------- FIN ------------------------------>  |
+    |<------------- FIN-ACK --------------------------- |
+    |------------- ACK ------------------------------>  |
+    |                                                   |
+    | CLOSED                                            | CLOSED
+    | Transfer complete                                 | File reconstruction complete
+    | n packets sent, 0 retransmission(s)               | Write output.bmp
 ```
 
 #### Phase 5(b): Flow-Control-Limited Data Transfer
 
 ```
+SENDER                                              RECEIVER
+    ======                                              ========
 
+    ESTABLISHED                                         ESTABLISHED
+    base=0, next_seq_num=0                              expected_seq_num=0
+    cwnd=4, ssthresh=16                                 rwnd=2  (receive buffer nearly full)
+    send_window = min(cwnd=4, rwnd=2) = 2               last_ack_num=-1
+    |                                                   |
+    | send_window=2, only 2 pkts permitted              |
+    |                                                   |
+    | Send pkt0 (window open)                           |
+    |------------- DATA(seq=0, "chunk0") -------------->|
+    | Send pkt1 (window open)                           | Validate checksum
+    |------------- DATA(seq=1, "chunk1") -------------->| seq==expected(0), deliver chunk0
+    |                                                   | expected_seq_num=1
+    | [window full: next_seq_num=2 == base+send_window] | rwnd=1 (buffer filling)
+    | [SENDER BLOCKED — waiting for ACK]                |
+    |                                                   |
+    |<------------- ACK(ack_num=0, rwnd=1) -------------|
+    | base=1                                            |
+    | rwnd=1, send_window = min(cwnd=4, rwnd=1) = 1     |
+    | [still flow-controlled: only 1 slot open]         |
+    |                                                   | seq==expected(1), deliver chunk1
+    | Send pkt2 (1 slot open)                           | expected_seq_num=2
+    |------------- DATA(seq=2, "chunk2") -------------->| rwnd=0 (buffer full)
+    |                                                   |
+    |<------------- ACK(ack_num=1, rwnd=0) -------------|
+    | base=2                                            |
+    | rwnd=0, send_window = min(cwnd=4, rwnd=0) = 0     |
+    | [SENDER BLOCKED — rwnd=0, zero window]            |
+    |                                                   |
+    | [Receiver drains buffer, frees space]             |
+    |                                                   | deliver chunk2, buffer drained
+    |                                                   | rwnd=3 (buffer freed)
+    |<------------- ACK(ack_num=2, rwnd=3) -------------|
+    | base=3                                            |
+    | rwnd=3, send_window = min(cwnd=4, rwnd=3) = 3     |
+    | [transmission resumes]                            |
+    |                                                   |
+    | Send pkt3 (window open)                           |
+    |------------- DATA(seq=3, "chunk3") -------------->|
+    | Send pkt4 (window open)                           |
+    |------------- DATA(seq=4, "chunk4") -------------->|
+    | Send pkt5 (window open)                           |
+    |------------- DATA(seq=5, "chunk5") -------------->|
+    |                                                   |
+    | -------------- Continue until all data sent ----- |
+    | Transfer complete                                 | File reconstruction complete
+    | n packets sent, 0 retransmission(s)               | Write output.bmp
 ```
 
 ### Phase 5(c): Slow Start and Congestion Window Growth
 
 ```
+SENDER                                              RECEIVER
+    ======                                              ========
 
+    ESTABLISHED                                         ESTABLISHED
+    base=0, next_seq_num=0                              expected_seq_num=0
+    cwnd=1, ssthresh=8, rwnd=16                         rwnd=16
+    send_window = min(cwnd=1, rwnd=16) = 1
+    |                                                   |
+    | [SLOW START: cwnd < ssthresh]                     |
+    |                                                   |
+    | RTT 1: send_window=1                              |
+    |------------- DATA(seq=0, "chunk0") -------------->|
+    |                                                   | deliver chunk0, ACK0
+    |<------------- ACK(ack_num=0, rwnd=16) ------------|
+    | cwnd = cwnd + 1 = 2                               |
+    | send_window = min(2,16) = 2                       |
+    |                                                   |
+    | RTT 2: send_window=2                              |
+    |------------- DATA(seq=1, "chunk1") -------------->|
+    |------------- DATA(seq=2, "chunk2") -------------->| deliver chunk1, ACK1
+    |                                                   | deliver chunk2, ACK2
+    |<------------- ACK(ack_num=1, rwnd=16) ------------|
+    | cwnd = cwnd + 1 = 3                               |
+    |<------------- ACK(ack_num=2, rwnd=16) ------------|
+    | cwnd = cwnd + 1 = 4                               |
+    | send_window = min(4,16) = 4                       |
+    |                                                   |
+    | RTT 3: send_window=4                              |
+    |------------- DATA(seq=3, "chunk3") -------------->|
+    |------------- DATA(seq=4, "chunk4") -------------->| deliver chunk3..6, ACK3..6
+    |------------- DATA(seq=5, "chunk5") -------------->|
+    |------------- DATA(seq=6, "chunk6") -------------->|
+    |<------------- ACK(ack_num=3, rwnd=16) ------------|
+    | cwnd=5                                            |
+    |<------------- ACK(ack_num=4, rwnd=16) ------------|
+    | cwnd=6                                            |
+    |<------------- ACK(ack_num=5, rwnd=16) ------------|
+    | cwnd=7                                            |
+    |<------------- ACK(ack_num=6, rwnd=16) ------------|
+    | cwnd=8 == ssthresh                                |
+    |                                                   |
+    | [TRANSITION: cwnd >= ssthresh]                    |
+    | [Enter CONGESTION AVOIDANCE]                      |
+    |                                                   |
+    | RTT 4: send_window=8                              |
+    |------------- DATA(seq=7..14) ------------------>  |
+    |                                                   | deliver chunk7..14, ACK7..14
+    |<------------- ACK(ack_num=7, rwnd=16) ------------|
+    | cwnd = 8 + 1/8 = 8.125                            |
+    |<------------- ACK(ack_num=8, rwnd=16) ------------|
+    | cwnd = 8.125 + 1/8 ≈ 8.25                         |
+    |        ... (8 ACKs total, cwnd ≈ 9 after RTT) ... |
+    |<------------- ACK(ack_num=14, rwnd=16) -----------|
+    | cwnd ≈ 9, send_window = min(9,16) = 9             |
+    | [LINEAR growth continues]                         |
+    |                                                   |
+    | -------------- Continue until all data sent ----- |
+    | Transfer complete                                 | File reconstruction complete
+    | n packets sent, 0 retransmission(s)               | Write output.bmp
 ```
 
 ### Phase 5(d): Reno Fast Retransmit and Fast Recovery
 
 ```
+SENDER                                              RECEIVER
+    ======                                              ========
 
+    ESTABLISHED                                         ESTABLISHED
+    base=4, next_seq_num=9                              expected_seq_num=4
+    cwnd=8, ssthresh=16, rwnd=16                        rwnd=16
+    send_window = min(8,16) = 8, dup_ack_count=0
+    |                                                   |
+    |------------- DATA(seq=4, "chunk4") -------------->|
+    |------------- DATA(seq=5, "chunk5") --------X      | pkt5 dropped in transit
+    |------------- DATA(seq=6, "chunk6") -------------->|
+    |------------- DATA(seq=7, "chunk7") -------------->|
+    |------------- DATA(seq=8, "chunk8") -------------->|
+    |                                                   |
+    |                                                   | seq==expected(4), deliver chunk4
+    |                                                   | ACK4, expected_seq_num=5
+    |<------------- ACK(ack_num=4, rwnd=16) ------------|
+    | base=5, dup_ack_count=0                           |
+    |                                                   |
+    |                                                   | seq=6 != expected(5), out-of-order
+    |                                                   | Send last valid ACK (ACK4)
+    |<------------- ACK(ack_num=4, rwnd=16) [dup 1] ----|
+    | dup_ack_count=1                                   |
+    |                                                   |
+    |                                                   | seq=7 != expected(5), out-of-order
+    |                                                   | Send last valid ACK (ACK4)
+    |<------------- ACK(ack_num=4, rwnd=16) [dup 2] ----|
+    | dup_ack_count=2                                   |
+    |                                                   |
+    |                                                   | seq=8 != expected(5), out-of-order
+    |                                                   | Send last valid ACK (ACK4)
+    |<------------- ACK(ack_num=4, rwnd=16) [dup 3] ----|
+    | dup_ack_count=3                                   |
+    |                                                   |
+    | ┌─────────────────────────────────────────┐       |
+    | │ FAST RETRANSMIT (3 dup ACKs)            │       |
+    | │ ssthresh = max(cwnd/2, 2) = 4           │       |
+    | │ cwnd = ssthresh + 3 = 7                 │       |
+    | │ retransmit sndpkt[base=5] immediately   │       |
+    | │ Enter FAST RECOVERY                     │       |
+    | └─────────────────────────────────────────┘       |
+    |                                                   |
+    |------------- DATA(seq=5, "chunk5") [RETX] ------->|
+    |                                                   |
+    | [FAST RECOVERY: inflate cwnd per extra dup ACK]   |
+    | [send new pkt if send_window allows]              |
+    |                                                   | seq==expected(5), deliver chunk5
+    |                                                   | ACK5, expected_seq_num=6
+    |                                                   | seq==expected(6), deliver chunk6
+    |                                                   | ACK6, expected_seq_num=7
+    |                                                   | (buffered pkts 6,7,8 now deliverable)
+    |                                                   | ACK7, ACK8
+    |<------------- ACK(ack_num=5, rwnd=16) ------------|
+    |                                                   |
+    | ┌─────────────────────────────────────────┐       |
+    | │ FAST RECOVERY EXIT (new ACK > base-1)   │       |
+    | │ base = 6                                │       |
+    | │ cwnd = ssthresh = 4                     │       |
+    | │ dup_ack_count = 0                       │       |
+    | │ Enter CONGESTION AVOIDANCE              │       |
+    | └─────────────────────────────────────────┘       |
+    |                                                   |
+    |<------------- ACK(ack_num=6, rwnd=16) ------------|
+    | base=7, cwnd = 4 + 1/4 ≈ 4.25                    |
+    |<------------- ACK(ack_num=7, rwnd=16) ------------|
+    | base=8, cwnd ≈ 4.5                                |
+    |<------------- ACK(ack_num=8, rwnd=16) ------------|
+    | base=9, cwnd ≈ 4.75                               |
+    |                                                   |
+    | -------------- Continue until all data sent ----- |
+    | Transfer complete                                 | File reconstruction complete
+    | n packets sent, x retransmission(s)               | Write output.bmp
 ```
 
 ### Phase 5(e): Timeout-Based Congestion Recovery
 
 ```
+SENDER                                              RECEIVER
+    ======                                              ========
 
+    ESTABLISHED                                         ESTABLISHED
+    base=3, next_seq_num=7                              expected_seq_num=3
+    cwnd=6, ssthresh=16, rwnd=16                        rwnd=16
+    send_window = min(6,16) = 6, dup_ack_count=0
+    |                                                   |
+    |------------- DATA(seq=3, "chunk3") -------------->|
+    |------------- DATA(seq=4, "chunk4") -------------->|
+    |------------- DATA(seq=5, "chunk5") -------------->|
+    |------------- DATA(seq=6, "chunk6") -------------->|
+    |                                                   |
+    | ┌─────────────────────────────────────────┐       |
+    | │ ERROR INJECTION (Option 4/5)            │       |
+    | │ All ACKs lost in transit                │       |
+    | └─────────────────────────────────────────┘       |
+    |                                                   |
+    |        X----- ACK(ack_num=3) lost ----------------|
+    |        X----- ACK(ack_num=4) lost ----------------|
+    |        X----- ACK(ack_num=5) lost ----------------|
+    |        X----- ACK(ack_num=6) lost ----------------|
+    |                                                   |
+    | [No dup ACKs received — fast retransmit           |
+    |  does NOT trigger]                                |
+    |                                                   |
+    | Timer expires (base=3 unACKed)                    |
+    |                                                   |
+    | ┌─────────────────────────────────────────┐       |
+    | │ TIMEOUT CONGESTION RESPONSE             │       |
+    | │ ssthresh = max(cwnd/2, 2) = 3           │       |
+    | │ cwnd = 1                                │       |
+    | │ dup_ack_count = 0                       │       |
+    | │ Re-enter SLOW START                     │       |
+    | └─────────────────────────────────────────┘       |
+    |                                                   |
+    | Retransmit ALL: pkt3, pkt4, pkt5, pkt6            |
+    |------------- DATA(seq=3, "chunk3") [RETX] ------->|
+    |------------- DATA(seq=4, "chunk4") [RETX] ------->| seq==expected(3), deliver chunk3
+    |------------- DATA(seq=5, "chunk5") [RETX] ------->| seq==expected(4), deliver chunk4
+    |------------- DATA(seq=6, "chunk6") [RETX] ------->| seq==expected(5), deliver chunk5
+    |                                                   | seq==expected(6), deliver chunk6
+    |                                                   |
+    |<------------- ACK(ack_num=3, rwnd=16) ------------|
+    | base=4                                            |
+    | [SLOW START] cwnd = 1 + 1 = 2                     |
+    | send_window = min(2,16) = 2                       |
+    |<------------- ACK(ack_num=4, rwnd=16) ------------|
+    | base=5, cwnd=3, send_window=3                     |
+    |<------------- ACK(ack_num=5, rwnd=16) ------------|
+    | base=6, cwnd=4, send_window=4                     |
+    |<------------- ACK(ack_num=6, rwnd=16) ------------|
+    | base=7, cwnd=5                                    |
+    |                                                   |
+    | [cwnd=5 >= ssthresh=3]                            |
+    | [TRANSITION: Enter CONGESTION AVOIDANCE]          |
+    | cwnd grows linearly: +1/cwnd per ACK              |
+    |                                                   |
+    | -------------- Continue until all data sent ----- |
+    | Transfer complete                                 | File reconstruction complete
+    | n packets sent, x retransmission(s)               | Write output.bmp
 ```
 
 ---
