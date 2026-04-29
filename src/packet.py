@@ -3,10 +3,14 @@ import zlib
 
 PKT_DATA = 0
 PKT_ACK = 1
+PKT_SYN = 2
+PKT_SYN_ACK = 3
+PKT_FIN = 4
+PKT_FIN_ACK = 5
 
 MAX_PAYLOAD = 1024
 
-HEADER_FMT = "!IIIII"
+HEADER_FMT = "!BIIHHII"
 HEADER_SIZE = struct.calcsize(HEADER_FMT)
 
 
@@ -14,50 +18,73 @@ def compute_checksum(data: bytes) -> int:
     return zlib.crc32(data) & 0xFFFFFFFF
 
 
-def _data_checksum_bytes(seq: int, length: int, total_packets: int, payload: bytes) -> bytes:
-    return struct.pack("!IIII", PKT_DATA, seq, length, total_packets) + payload
+def _checksum_bytes(pkt_type: int, seq: int, ack: int, rwnd: int,
+                    length: int, total_packets: int, payload: bytes) -> bytes:
+    return struct.pack(
+        "!BIIHHI",
+        pkt_type,
+        seq,
+        ack,
+        rwnd,
+        length,
+        total_packets
+    ) + payload
 
 
-def _ack_checksum_bytes(seq: int) -> bytes:
-    return struct.pack("!II", PKT_ACK, seq)
-
-
-def make_data_packet(seq: int, payload: bytes, total_packets: int) -> bytes:
+def make_packet(pkt_type: int, seq: int = 0, ack: int = 0, rwnd: int = 0,
+                payload: bytes = b"", total_packets: int = 0) -> bytes:
     length = len(payload)
 
     if length > MAX_PAYLOAD:
         raise ValueError(f"Payload too large: {length} > {MAX_PAYLOAD}")
 
-    checksum = compute_checksum(_data_checksum_bytes(seq, length, total_packets, payload))
+    checksum = compute_checksum(
+        _checksum_bytes(pkt_type, seq, ack, rwnd, length, total_packets, payload)
+    )
+
     header = struct.pack(
         HEADER_FMT,
-        PKT_DATA,
+        pkt_type,
         seq,
+        ack,
+        rwnd,
         length,
         total_packets,
         checksum
     )
+
     return header + payload
 
 
-def make_ack_packet(seq: int) -> bytes:
-    checksum = compute_checksum(_ack_checksum_bytes(seq))
-    header = struct.pack(
-        HEADER_FMT,
-        PKT_ACK,
-        seq,
-        0,
-        0,
-        checksum
-    )
-    return header
+def make_data_packet(seq: int, payload: bytes, total_packets: int) -> bytes:
+    return make_packet(PKT_DATA, seq=seq, payload=payload, total_packets=total_packets)
+
+
+def make_ack_packet(ack: int, rwnd: int = 16) -> bytes:
+    return make_packet(PKT_ACK, ack=ack, rwnd=rwnd)
+
+
+def make_syn_packet() -> bytes:
+    return make_packet(PKT_SYN)
+
+
+def make_syn_ack_packet(rwnd: int = 16) -> bytes:
+    return make_packet(PKT_SYN_ACK, rwnd=rwnd)
+
+
+def make_fin_packet(seq: int = 0) -> bytes:
+    return make_packet(PKT_FIN, seq=seq)
+
+
+def make_fin_ack_packet(ack: int = 0) -> bytes:
+    return make_packet(PKT_FIN_ACK, ack=ack)
 
 
 def parse_packet(data: bytes) -> dict:
     if len(data) < HEADER_SIZE:
         raise ValueError("Packet too short")
 
-    pkt_type, seq, length, total_packets, checksum = struct.unpack(
+    pkt_type, seq, ack, rwnd, length, total_packets, checksum = struct.unpack(
         HEADER_FMT,
         data[:HEADER_SIZE]
     )
@@ -70,19 +97,17 @@ def parse_packet(data: bytes) -> dict:
 
     payload = data[HEADER_SIZE:HEADER_SIZE + length]
 
-    if pkt_type == PKT_DATA:
-        checksum_ok = (
-            compute_checksum(_data_checksum_bytes(seq, length, total_packets, payload))
-            == checksum
-        )
-    elif pkt_type == PKT_ACK:
-        checksum_ok = compute_checksum(_ack_checksum_bytes(seq)) == checksum
-    else:
-        checksum_ok = False
+    checksum_ok = (
+        compute_checksum(
+            _checksum_bytes(pkt_type, seq, ack, rwnd, length, total_packets, payload)
+        ) == checksum
+    )
 
     return {
         "type": pkt_type,
         "seq": seq,
+        "ack": ack,
+        "rwnd": rwnd,
         "length": length,
         "total_packets": total_packets,
         "payload": payload,
