@@ -10,11 +10,11 @@
 
 **GitHub Repo URL (with GitHub usernames):** https://github.com/olitranpham/network-design, olitranpham, iantkhoo1488, codynguyen-dev
 
-**Phase:** 6
+**Phase:** 5
 
 **Submission Date:**  4/29/2026
 
-**Version:** v6
+**Version:** v5
 
 ---
 
