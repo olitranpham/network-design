@@ -15,13 +15,12 @@
 - **Private YouTube link **
 	- Link: (https://youtu.be/5e1QwMdtTuE)
 		- Timestamped outline:
-			- Phase 4 Option 1 ==> 0:00 - 0:20
-     		- Phase 4 Option 2 ==> 0:20 - 0:53
-     		- Phase 4 Option 3 ==> 0:53 - 3:03
-     		- Phase 4 Option 4 ==> 3:03 - 3:35
-       		- Phase 4 Option 5 ==> 3:35 - 5:52
-         - Misclick of incorrect graph ==> 6:02 - 6:10
-            - Phase 4 Generated Plots ==> 6:10 - 6:57
+			- Phase 5 Option 1 ==> 0:00 - 0:13
+     		- Phase 5 Option 2 ==> 0:14 - 0:38
+     		- Phase 5 Option 3 ==> 0:39 - 2:22
+     		- Phase 5 Option 4 ==> 2:23 - 2:46
+       		- Phase 5 Option 5 ==> 2:47 - 5:00
+            - Phase 5 Generated Plots ==> 5:01 - 5:33
 
 
 ---
