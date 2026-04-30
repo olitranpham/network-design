@@ -5,7 +5,7 @@
 ## Team
 | Name | Email | Primary responsibility |
 |---|---|------------------------|
-| Cody Nguyen | cody_nguyen@student.uml.edu | Phase 4(a)-(d) | 
+| Cody Nguyen | cody_nguyen@student.uml.edu | Phase 4 (a)-(d) | 
 | Olivia Pham | olivia_pham@student.uml.edu | Phase 4(a)-(c) |
 | Ian Khoo | ian_khoo@student.uml.edu | Phase 4(a)-(d) |
 
@@ -29,30 +29,36 @@
 ## Repository Structure 
 
 
+Repository Structure
+
 project/
 src/
-  sender.py
-  receiver.py
-  packet.py
-  channel.py
+ sender.py
+ receiver.py
+ packet.py
+ channel.py
 
 scripts/
-  phase3_experiments.py
-  phase4_experiments.py
-  phase4_chart2.py
-  phase4_chart3.py
+ phase3_experiments.py
+ phase4_experiments.py
+ phase4_chart2.py
+ phase4_chart3.py
+ phase5_plots.py
 
 results/
-  phase3_avg.csv
-  phase3_raw.csv
-  phase3_plot.png
-  phase4_chart1.png
-  phase4_chart2.png
-  phase4_chart3.png
+ phase3_avg.csv
+ phase3_raw.csv
+ phase3_plot.png
+ phase4_chart1.png
+ phase4_chart2.png
+ phase4_chart3.png
+ phase5_chart1.png
+ phase5_cwnd.png
+ phase5_phase_comparison.png
 
 test-files/
-  sample1.bmp
-  bmp_24.bmp
+ sample1.bmp
+ bmp_24.bmp
 
 
 ## Requirements
@@ -76,7 +82,7 @@ test-files/
 
 flags:
 - (--host) receiver address
-- (--port) receiver port)
+- (--port) receiver port
 - (--file) input file
 - (--timeout) retransmission timeout
 - (--ack-biterr) ACK corruption probability (option 2)
@@ -229,8 +235,7 @@ Expected behavior:
 - Sender retransmits
 - File still correct
 
-### ```md
-## Phase 4: Go-Back-N (GBN)
+### Phase 4: Go-Back-N (GBN)
 Run:
 ```
 python3 scripts/phase4_experiments.py \
@@ -289,6 +294,47 @@ Options tested:
 - results/phase4_chart2.png
 - results/phase4_chart3.png
 - results/phase3_plot.png
+
+## Phase 5: TCP Congestion Control
+
+Run:
+
+bash
+```
+python3 scripts/phase5_plots.py \
+  --file test-files/bmp_24.bmp \
+  --runs 5 \
+  --max-attempts 20 \
+  --timeout 0.5 \
+  --hard-timeout 30 \
+  --plot
+```
+
+Key features:
+- Dynamic congestion window (cwnd)
+- Slow start (exponential growth)
+- Congestion avoidance (linear growth)
+- Fast retransmit (3 duplicate ACKs)
+- Timeout-based recovery
+- Flow control using receiver window (rwnd)
+- Send window = min(cwnd, rwnd)
+
+## Figures / Plots
+
+### Chart 1: Completion Time vs Packet Loss
+- Shows increased completion time with higher loss rates
+
+### Chart 2: Congestion Window Evolution
+- Shows slow start followed by congestion avoidance
+
+### Chart 3: Phase Comparison
+- Compares Phase 1–5 performance
+
+### Files:
+
+results/phase5_chart1.png
+results/phase5_cwnd.png
+results/phase5_phase_comparison.png
 
 ## Known Issues / Limitations
 The program that runs the incremental tests for error percentage notably runs faster on machines with higher technical specifications.
