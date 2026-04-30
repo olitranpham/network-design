@@ -301,7 +301,7 @@ Run:
 bash
 ```
 python3 scripts/phase5_plots.py \
-  --file test-files/bmp_24.bmp \
+  --file test-files/sample1.bmp \
   --runs 5 \
   --max-attempts 20 \
   --timeout 0.5 \
