@@ -10,9 +10,9 @@
 
 **GitHub Repo URL (with GitHub usernames):** https://github.com/olitranpham/network-design, olitranpham, iantkhoo1488, codynguyen-dev
 
-**Phase:** 5
+**Phase:** 6
 
-**Submission Date:**  4/17/2026
+**Submission Date:**  4/29/2026
 
 **Version:** v6
 
@@ -136,43 +136,43 @@ Plot generated and included.
 ### 2.2 Acceptance Criteria 
 
 **Phase 5(a):**
-- [ ] The sender initiates a connection using a SYN segment.
-- [ ] The receiver responds with a SYN-ACK segment.
-- [ ] The sender completes the handshake by sending an ACK segment.
-- [ ] The connection enters the ESTABLISHED state before any data transfer occurs.
-- [ ] If a handshake packet is lost, the sender retransmits the SYN after timeout.
+- [X] The sender initiates a connection using a SYN segment.
+- [X] The receiver responds with a SYN-ACK segment.
+- [X] The sender completes the handshake by sending an ACK segment.
+- [X] The connection enters the ESTABLISHED state before any data transfer occurs.
+- [X] If a handshake packet is lost, the sender retransmits the SYN after timeout.
 
 **Phase 5(b):**
-- [ ] The sender maintains a congestion window `(cwnd)`.
-- [ ] The receiver advertises its available receive window `(rwnd)`.
-- [ ] The sender limits transmission to `send_window = min(cwnd, rwnd)`
-- [ ] The sender stops transmitting when the window is full.
-- [ ] Transmission resumes when ACKs are received and the window advances.
+- [X] The sender maintains a congestion window `(cwnd)`.
+- [X] The receiver advertises its available receive window `(rwnd)`.
+- [X] The sender limits transmission to `send_window = min(cwnd, rwnd)`
+- [X] The sender stops transmitting when the window is full.
+- [X] Transmission resumes when ACKs are received and the window advances.
 
 **Phase 5(c):**
-- [ ] The sender initializes `cwnd = 1`.
-- [ ] For each ACK received during slow start, cwnd increases by 1 segment.
-- [ ] `cwnd` grows exponentially until it reaches `ssthresh`.
-- [ ] Once `cwnd >= ssthresh`, the sender transitions into congestion avoidance.
-- [ ] The console output or logs show the growth of `cwnd`.
+- [X] The sender initializes `cwnd = 1`.
+- [X] For each ACK received during slow start, cwnd increases by 1 segment.
+- [X] `cwnd` grows exponentially until it reaches `ssthresh`.
+- [X] Once `cwnd >= ssthresh`, the sender transitions into congestion avoidance.
+- [X] The console output or logs show the growth of `cwnd`.
 
 **Phase 5(d):**
-- [ ] The sender tracks duplicate ACKs.
-- [ ] When three duplicate ACKs are received, the sender immediately retransmits the missing segment.
-- [ ] The sender updates congestion parameters `ssthresh = cwnd / 2` and `cwnd = ssthresh + 3`
-- [ ] The sender enters fast recovery instead of waiting for timeout.
-- [ ] Normal transmission resumes when the missing packet is acknowledged.
+- [X] The sender tracks duplicate ACKs.
+- [X] When three duplicate ACKs are received, the sender immediately retransmits the missing segment.
+- [X] The sender updates congestion parameters `ssthresh = cwnd / 2` and `cwnd = ssthresh + 3`
+- [X] The sender enters fast recovery instead of waiting for timeout.
+- [X] Normal transmission resumes when the missing packet is acknowledged.
       
 **Phase 5(e):**
-- [ ] If a packet is lost and no ACK is received within the timeout interval, the sender retransmits the missing packet.
-- [ ] Congestion control parameters are updated: `ssthresh = cwnd / 2` and `cwnd = 1`.
-- [ ] The sender re-enters slow start after timeout.
-- [ ] The file transfer continues until all packets are acknowledged.
-      
+- [X] If a packet is lost and no ACK is received within the timeout interval, the sender retransmits the missing packet.
+- [X] Congestion control parameters are updated: `ssthresh = cwnd / 2` and `cwnd = 1`.
+- [X] The sender re-enters slow start after timeout.
+- [X] The file transfer continues until all packets are acknowledged.
+  
 **General:**
-- [ ] README.md is complete
-- [ ] Invite instructor(s) to GitHub repo and include GitHub link
-- [ ] Record demo and upload to YouTube 
+- [X] README.md is complete
+- [X] Invite instructor(s) to GitHub repo and include GitHub link
+- [X] Record demo and upload to YouTube 
 
 ### 2.3 Work Breakdown
 
@@ -1444,34 +1444,34 @@ Refer to README
 ### Pre-Recording Checklist
 
 **Phase 5 (Option 1):**
-- [ ] Both terminal windows visible side-by-side
-- [ ] Demonstrate connection establishment (SYN / SYN-ACK / ACK)
-- [ ] Successful file transfer shown
-- [ ] Demonstrate connection teardown (FIN / ACK)
+- [X] Both terminal windows visible side-by-side
+- [X] Demonstrate connection establishment (SYN / SYN-ACK / ACK)
+- [X] Successful file transfer shown
+- [X] Demonstrate connection teardown (FIN / ACK)
 
 **Phase 5 (Option 2):**
-- [ ] Both terminal windows visible side-by-side
-- [ ] Receiver advertises small rwnd
-- [ ] Sender transmission rate visibly limited by receiver window
+- [X] Both terminal windows visible side-by-side
+- [X] Receiver advertises small rwnd
+- [X] Sender transmission rate visibly limited by receiver window
 
 **Phase 5 (Option 3):**
-- [ ] Both terminal windows visible side-by-side
-- [ ] Show cwnd increasing during slow start
-- [ ] Show transition into congestion avoidance
+- [X] Both terminal windows visible side-by-side
+- [X] Show cwnd increasing during slow start
+- [X] Show transition into congestion avoidance
 
 **Phase 5 (Option 4):**
-- [ ] Both terminal windows visible side-by-side
-- [ ] Show duplicate ACKs being generated
-- [ ] Show fast retransmit triggered after 3 duplicate ACKs
+- [X] Both terminal windows visible side-by-side
+- [X] Show duplicate ACKs being generated
+- [X] Show fast retransmit triggered after 3 duplicate ACKs
 
 **Phase 5 (Option 5):**
-- [ ] Both terminal windows visible side-by-side
-- [ ] DATA packet loss demonstration
-- [ ] Show timeout-based retransmission and cwnd reset
+- [X] Both terminal windows visible side-by-side
+- [X] DATA packet loss demonstration
+- [X] Show timeout-based retransmission and cwnd reset
       
 **Video Quality:**
-- [ ] Both terminal windows visible side-by-side
-- [ ] Clear explanation of steps
-- [ ] Show file comparison/verification
+- [X] Both terminal windows visible side-by-side
+- [X] Clear explanation of steps
+- [X] Show file comparison/verification
 
 
