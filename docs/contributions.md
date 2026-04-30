@@ -15,11 +15,6 @@
 | Section 10 | Co-authored design document section | 4/29/26 |
 | Section 11 | Co-authored design document section | 4/29/26 |
 | Documentation Revision | Revised Sections 1–11 of the design document for Phase 4 updates | 4/29/26 |
-| Phase 5 Congestion Control | Implemented congestion window (`cwnd`) behavior including slow start and congestion avoidance in `sender.py` | 4/29/26 |
-| Phase 5 Flow Control | Implemented sender logic to compute effective sending window `min(cwnd, rwnd)` | 4/29/26 |
-| Phase 5 Receiver Flow Control | Implemented receiver-side flow control and advertised window (`rwnd`) handling in `receiver.py` | 4/29/26 |
-| Phase 5 Integration | Integrated congestion control and flow control logic with the existing reliable data transfer system | 4/29/26 |
-| Phase 5 Validation | Assisted with validation of Phase 5 scenarios and correctness checks | 4/29/26 |
 
 ---
 
@@ -52,7 +47,11 @@
 | Task / Section | Description | Date Completed |
 |----------------|-------------|----------------|
 | Phase 5 TCP Integration | Integrated TCP-style behaviors into the UDP transfer framework | 4/29/26 |
-| Congestion Control | Implemented TCP Reno congestion control logic including `cwnd` and `ssthresh` management | 4/29/26 |
+| Phase 5 Congestion Control | Implemented congestion window (`cwnd`) behavior including slow start and congestion avoidance in `sender.py` | 4/29/26 |
+| Phase 5 Flow Control | Implemented sender logic to compute effective sending window `min(cwnd, rwnd)` | 4/29/26 |
+| Phase 5 Receiver Flow Control | Implemented receiver-side flow control and advertised window (`rwnd`) handling in `receiver.py` | 4/29/26 |
+| Phase 5 Integration | Integrated congestion control and flow control logic with the existing reliable data transfer system | 4/29/26 |
+| Phase 5 Validation | Assisted with validation of Phase 5 scenarios and correctness checks | 4/29/26 |
 | Fast Retransmit / Recovery | Implemented Reno-style fast retransmit and fast recovery triggered by duplicate ACKs | 4/29/26 |
 | Timeout Handling | Implemented timeout-based congestion recovery behavior | 4/29/26 |
 | Packet Loss Simulation | Implemented packet loss and duplicate ACK scenarios used in experiment Options 4 and 5 | 4/29/26 |
