@@ -58,8 +58,14 @@
 ### 1.1 Demo Deliverable
 
 - **Private YouTube link **
-	- Link: https://youtu.be/5e1QwMdtTuE
+	- Link: (https://youtu.be/5e1QwMdtTuE)
 		- Timestamped outline:
+			- Phase 5 Option 1 ==> 0:00 - 0:13
+     		- Phase 5 Option 2 ==> 0:14 - 0:38
+     		- Phase 5 Option 3 ==> 0:39 - 2:22
+     		- Phase 5 Option 4 ==> 2:23 - 2:46
+       		- Phase 5 Option 5 ==> 2:47 - 5:00
+            - Phase 5 Generated Plots ==> 5:01 - 5:33
 
 ### 1.2 Required Demo Scenarios
 
@@ -67,32 +73,31 @@
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-|   |   |   |   | 
+| The two terminals are set up to show TCP connection  | Two terminals displaying information  | Both terminals should show they have established a connection  | The video shows the TCP connection at the start of each demo option  | 
 
 **Phase 5(b) - Dynamic Sender Window**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
-| Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-|   |   |   |   |
+| Sender shifts window to allow for different packets to be sent  | window is set up, and is recomputed each iteration in relation to congestion events  | the window should grow and shrink in accordance with congestion  | The printout lines on the terminal show the window  |
 
 **Phase 5(c) - TCP Slow Start Behavior**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-|   |   |   |   | 
+| Starts slowly, but as more ACKs come in, start sending more  | starts with cwnd at 1.0 and increments exponentially as ACKs come in  | it should increase the sending rate as time progresses  | The terminal shows the rate at which the sender is working; it can be visually seen as increasing  | 
 
 **Phase 5(d) - Reno Fast Retransmit / Fast Recovery**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-|   |   |   |   | 
+| Activates on triple duplicate ACK  | on a triple duplicate ACK, each additional ACK after this will inflate cwnd by 1  | should allow for faster recovery if a packet is being consistently lost  | the video shows this in the terminal, and can be seen if a packet fails to ACK more than 3 times | 
 
 **Phase 5(e) - Timeout-Based Congestion Response**
 
 | Scenario | Configuration | Expected Behavior | What Video Will Show |
 |---|---|---|---|
-|   |   |   |   | 
+| On timeout, the system should perform timeout-based congestion response  | if a timeout occurs, it resets the fast-recovery and retransmits the entire window  | should activate and retransmit the window upon a timeout  | shown in the terminal when a timeout occurs  | 
 
 
 ### 1.3 Required Figures/Plots
