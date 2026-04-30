@@ -58,7 +58,7 @@
 ### 1.1 Demo Deliverable
 
 - **Private YouTube link **
-	- Link:
+	- Link: https://youtu.be/5e1QwMdtTuE
 		- Timestamped outline:
 
 ### 1.2 Required Demo Scenarios
