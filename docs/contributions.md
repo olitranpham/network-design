@@ -15,6 +15,9 @@
 | Section 10 | Co-authored | 4/8/26 |
 | Section 11 | Co-authored | 4/8/26 |
 | Section 1-11 | Revised for Phase 4 | 4/8/26 |
+| Phase 5 Receiver Logic | Implemented receiver-side flow control and rwnd handling in receiver.py | 4/29/26 |
+| Flow Control Testing | Verified rwnd limiting behavior and interaction with cwnd | 4/29/26 |
+| Phase 5 Validation | Assisted with testing all Phase 5 scenarios and verifying correctness | 4/29/26 |
 
 ---
 
@@ -35,6 +38,8 @@
 | Section 10 | Co-authored | 4/8/26 |
 | Section 11 | Co-authored | 4/8/26 |
 | Section 1-11 | Revised for Phase 4 | 4/8/26 |
+| Phase 5 Testing | Tested Phase 5 scenarios and validated output correctness | 4/29/26 |
+| Demo Preparation | Assisted with demo setup and validation of results | 4/29/26 |
 
 ---
 
@@ -42,10 +47,10 @@
 
 | Task / Section | Description | Date Completed |
 |----------------|-------------|----------------|
-| Section 1 | Co-authored | 4/7/26 |
-| Phase 4 Experiments | Developed and ran phase4_experiments.py for performance evaluation across loss rates | 4/7/26 |
-| Charts | Generated performance plots (loss vs time, window size analysis, phase comparison) | 4/7/26 |
-| Debugging | Tuned timeout, fixed retransmission behavior, and handled edge cases | 4/7/26 |
-| README.md / DESIGN_DOC.md | Updated documentation with Phase 4 commands, results, and analysis | 4/7/26 |
+| Phase 5 Implementation | Implemented TCP congestion control (cwnd, ssthresh, slow start, congestion avoidance) in sender.py | 4/29/26 |
+| Fast Retransmit + Timeout | Implemented Reno-style fast retransmit and timeout recovery behavior | 4/29/26 |
+| Phase 5 Experiments | Developed and ran phase5_plots.py to generate performance data and plots | 4/29/26 |
+| Phase 5 Charts | Generated Phase 5 plots (completion time vs loss, cwnd evolution, phase comparison) | 4/29/26 |
+| README.md | Updated README with Phase 5 features, commands, and results | 4/29/26 |
 
 
