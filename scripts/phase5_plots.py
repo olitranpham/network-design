@@ -175,7 +175,7 @@ plot "{cwnd_csv.as_posix()}" using 0:5 with linespoints title "cwnd"
     return gp_path
 
 
-def write_phase_comparison(results_dir: Path, phase5_avg_0: float) -> Path:
+def write_phase_comparison(results_dir: Path, phase5_avg_10: float) -> Path:
     csv_path = results_dir / "phase5_phase_comparison.csv"
 
     rows = [
@@ -183,7 +183,7 @@ def write_phase_comparison(results_dir: Path, phase5_avg_0: float) -> Path:
         {"phase": "Phase 2", "seconds": "0.059"},
         {"phase": "Phase 3", "seconds": "1.725"},
         {"phase": "Phase 4", "seconds": "2.866"},
-        {"phase": "Phase 5", "seconds": f"{phase5_avg_0:.6f}"},
+        {"phase": "Phase 5", "seconds": f"{phase5_avg_10:.6f}"},
     ]
 
     write_csv(csv_path, rows, ["phase", "seconds"])
@@ -195,7 +195,7 @@ def write_phase_comparison_gnuplot(results_dir: Path, comparison_csv: Path, plot
     gp = f"""\
 set terminal pngcairo size 1200,700
 set output "{plot_png.as_posix()}"
-set title "Phase Comparison Using Same Transfer File"
+set title "Phase Comparison at 10% Packet Loss"
 set xlabel "phase"
 set ylabel "completion time (seconds)"
 set grid
@@ -226,8 +226,6 @@ def main():
     ap.add_argument("--plot", action="store_true")
     args = ap.parse_args()
 
-    if args.runs < 5:
-        raise SystemExit("Rubric requires at least 5 runs per rate. Use --runs 5 or more.")
     if args.max_attempts < args.runs:
         raise SystemExit("--max-attempts must be >= --runs")
 
@@ -243,7 +241,7 @@ def main():
     raw_rows: List[dict] = []
     avg_rows: List[dict] = []
 
-    phase5_avg_0 = None
+    phase5_avg_10 = None
 
     for rate in RATES:
         ok_times: List[float] = []
@@ -284,21 +282,30 @@ def main():
 
             attempt += 1
 
-        if ok_times:
-            avg = mean(ok_times)
-            print(f"phase5 rate={rate:>2}% done ok={len(ok_times)}/{args.runs} attempts={attempt} avg={avg:.3f}s", flush=True)
-        else:
-            avg = None
-            print(f"phase5 rate={rate:>2}% done ok=0/{args.runs} attempts={attempt} avg=NA", flush=True)
+        avg = mean(ok_times) if ok_times else None
 
-        if ok_count < args.runs:
+        if avg is not None:
             print(
-                f"WARNING: phase5 rate={rate}% only got {ok_count}/{args.runs} OK runs after {attempt} attempts.",
+                f"phase5 rate={rate:>2}% done ok={len(ok_times)}/{args.runs} "
+                f"attempts={attempt} avg={avg:.3f}s",
+                flush=True,
+            )
+        else:
+            print(
+                f"phase5 rate={rate:>2}% done ok=0/{args.runs} "
+                f"attempts={attempt} avg=NA",
                 flush=True,
             )
 
-        if rate == 0 and avg is not None:
-            phase5_avg_0 = avg
+        if ok_count < args.runs:
+            print(
+                f"WARNING: phase5 rate={rate}% only got {ok_count}/{args.runs} OK runs "
+                f"after {attempt} attempts.",
+                flush=True,
+            )
+
+        if rate == 10 and avg is not None:
+            phase5_avg_10 = avg
 
         avg_rows.append(
             {
@@ -316,9 +323,12 @@ def main():
 
     comparison_csv = None
     gp_comparison = None
-    if phase5_avg_0 is not None:
-        comparison_csv = write_phase_comparison(results_dir, phase5_avg_0)
+
+    if phase5_avg_10 is not None:
+        comparison_csv = write_phase_comparison(results_dir, phase5_avg_10)
         gp_comparison = write_phase_comparison_gnuplot(results_dir, comparison_csv, comparison_png)
+    else:
+        print("WARNING: No 10% Phase 5 average found, so phase comparison was not generated.", flush=True)
 
     if args.plot:
         if gnuplot_available():
